@@ -26,10 +26,7 @@ export default async function HomePage() {
       <SiteHeader />
 
       <section className="flex-1 flex items-center justify-center px-6">
-        <div className="w-full max-w-xl text-center">
-          <p className="mb-6 text-sm text-muted-foreground leading-relaxed">
-            Shorten links. Analyze traffic. Free forever.
-          </p>
+        <div className="w-full max-w-xl">
           <ShortenerForm />
 
           {!configured && (
@@ -42,7 +39,7 @@ export default async function HomePage() {
       </section>
 
       <footer className="absolute bottom-0 left-0 right-0 px-6 py-4 text-center text-[11px] text-muted-foreground">
-        Copyleft (ɔ) QLSS.eu 2026
+        QLSS · short links
       </footer>
     </main>
   );

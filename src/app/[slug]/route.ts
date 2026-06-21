@@ -50,8 +50,12 @@ export async function GET(
     return notFoundResponse(url.origin);
   }
 
+  // Check for explicit ref query param (e.g. ?ref=profile from the profile page).
+  // If present, use it as the referer value instead of the HTTP Referer header.
+  const explicitRef = url.searchParams.get("ref");
+
   // Build the analytics payload from request headers.
-  const payload = buildAnalyticsPayload(request, link.id);
+  const payload = buildAnalyticsPayload(request, link.id, explicitRef);
 
   // Fire-and-forget telemetry insert. We don't await it for the response.
   // The promise runs in the background and any error is logged, never
@@ -99,6 +103,7 @@ async function resolveLink(slug: string): Promise<LinkRow | null> {
 function buildAnalyticsPayload(
   request: NextRequest,
   linkId: string,
+  explicitRef?: string | null,
 ): Record<string, unknown> {
   const headers = request.headers;
 
@@ -116,7 +121,7 @@ function buildAnalyticsPayload(
   const timezone = headers.get("x-vercel-ip-timezone") ?? null;
 
   const userAgent = headers.get("user-agent") ?? null;
-  const referer = headers.get("referer") ?? null;
+  const referer = explicitRef ?? headers.get("referer") ?? null;
   const language = headers.get("accept-language") ?? null;
 
   // Parse the user-agent server-side.

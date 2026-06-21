@@ -316,7 +316,7 @@ export function LinkList({
                         {displayTitle}
                       </p>
                       {link.description && !isEditing && (
-                        <p className="mt-0.5 text-[10px] text-muted-foreground truncate">
+                        <p className="mt-0.5 text-[11px] text-muted-foreground truncate">
                           {link.description}
                         </p>
                       )}
@@ -437,13 +437,13 @@ export function LinkList({
                       <label className="text-[10px] uppercase tracking-widest text-muted-foreground block mb-1">
                         description
                       </label>
-                      <input
-                        type="text"
+                      <textarea
                         value={editDescription}
                         onChange={(e) => setEditDescription(e.target.value)}
-                        placeholder="short description"
-                        className="w-full bg-transparent border border-border px-2 py-1 text-[11px] outline-none focus:border-foreground"
+                        placeholder="what is this link for?"
+                        className="w-full bg-transparent border border-border px-2 py-1.5 text-xs outline-none focus:border-foreground resize-y min-h-16"
                         maxLength={500}
+                        rows={2}
                         disabled={isEditBusy}
                       />
                     </div>

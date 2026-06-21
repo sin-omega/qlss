@@ -72,15 +72,9 @@ export async function POST(request: NextRequest) {
     return jsonError(400, "destination_url is required.");
   }
 
-  // Auto-prepend https:// if no protocol was given (e.g. "example.com").
-  let normalizedUrl = destinationUrl;
-  if (!/^[a-z][a-z0-9+.-]*:/i.test(normalizedUrl)) {
-    normalizedUrl = `https://${normalizedUrl}`;
-  }
-
   let destination: URL;
   try {
-    destination = new URL(normalizedUrl);
+    destination = new URL(destinationUrl);
   } catch {
     return jsonError(400, "Invalid destination URL.");
   }

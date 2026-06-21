@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { href: "/dashboard/links", label: "links" },
   { href: "/dashboard/overview", label: "overview" },
   { href: "/dashboard/profile", label: "profile" },
+  { href: "/dashboard/profile-stats", label: "profile stats" },
   { href: "/dashboard/account", label: "account" },
 ] as const;
 

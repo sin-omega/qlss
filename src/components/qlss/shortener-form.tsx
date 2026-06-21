@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Copy, ChevronDown, ChevronUp } from "lucide-react";
+import { Check, Copy } from "lucide-react";
 import { useSignedIn } from "@/hooks/use-signed-in";
 
 interface CreatedLink {
@@ -12,21 +12,20 @@ interface CreatedLink {
 }
 
 /**
- * Shortener form. Anonymous: paste URL, get link. Signed-in: also
- * gets custom alias, title, and description fields.
+ * The shortener form. Anonymous use is allowed — paste a URL, get a
+ * short link back. Signed-in users additionally get an optional
+ * custom-alias field. The result replaces the input area so the page
+ * stays scrollless.
  */
 export function ShortenerForm() {
   const signedIn = useSignedIn();
 
   const [url, setUrl] = useState("");
   const [alias, setAlias] = useState("");
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [created, setCreated] = useState<CreatedLink | null>(null);
   const [copied, setCopied] = useState(false);
-  const [showDetails, setShowDetails] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -41,8 +40,6 @@ export function ShortenerForm() {
         body: JSON.stringify({
           destination_url: url,
           custom_slug: alias || undefined,
-          title: title || undefined,
-          description: description || undefined,
         }),
       });
 
@@ -55,10 +52,9 @@ export function ShortenerForm() {
       setCreated(json as CreatedLink);
       setUrl("");
       setAlias("");
-      setTitle("");
-      setDescription("");
-      setShowDetails(false);
 
+      // If the link was created anonymously, store its slug in localStorage
+      // so the dashboard can auto-claim it after the user signs in.
       if (!(json as CreatedLink).owner && (json as CreatedLink).slug) {
         try {
           const key = "qlss:anonymous_slugs";
@@ -68,7 +64,7 @@ export function ShortenerForm() {
             localStorage.setItem(key, JSON.stringify(existing));
           }
         } catch {
-          // ignore
+          // localStorage might be unavailable (private mode, etc.) — fine.
         }
       }
     } catch {
@@ -96,7 +92,7 @@ export function ShortenerForm() {
   }
 
   // ---------------------------------------------------------------------
-  // Result state
+  // Result state — replaces the input so the page stays at one height
   // ---------------------------------------------------------------------
   if (created) {
     return (
@@ -132,9 +128,13 @@ export function ShortenerForm() {
               className="shrink-0 inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 border border-border bg-background hover:bg-accent"
             >
               {copied ? (
-                <><Check className="h-3 w-3" /> copied</>
+                <>
+                  <Check className="h-3 w-3" /> copied
+                </>
               ) : (
-                <><Copy className="h-3 w-3" /> copy</>
+                <>
+                  <Copy className="h-3 w-3" /> copy
+                </>
               )}
             </button>
           </div>
@@ -153,18 +153,17 @@ export function ShortenerForm() {
   }
 
   // ---------------------------------------------------------------------
-  // Input form
+  // Default state — input form
   // ---------------------------------------------------------------------
   return (
     <div className="w-full">
       <form onSubmit={handleSubmit} className="w-full space-y-2">
-        {/* URL input */}
         <div className="flex items-stretch border border-border bg-card focus-within:border-foreground transition-colors">
           <span className="pl-4 pr-2 text-muted-foreground select-none text-sm flex items-center">
             &gt;
           </span>
           <input
-            type="text"
+            type="url"
             required
             autoFocus
             value={url}
@@ -184,81 +183,30 @@ export function ShortenerForm() {
           </button>
         </div>
 
-        {/* Expandable details — signed-in users only */}
         {signedIn && (
-          <div className="border border-border bg-card">
-            <button
-              type="button"
-              onClick={() => setShowDetails((v) => !v)}
-              className="w-full px-4 py-1.5 text-[10px] uppercase tracking-widest text-muted-foreground flex items-center justify-between hover:text-foreground transition-colors"
-            >
-              <span>details</span>
-              {showDetails ? (
-                <ChevronUp className="h-3 w-3" />
-              ) : (
-                <ChevronDown className="h-3 w-3" />
-              )}
-            </button>
-
-            {showDetails && (
-              <div className="px-4 pb-3 space-y-2 border-t border-border">
-                {/* Custom alias */}
-                <div className="flex items-stretch border border-border bg-background focus-within:border-foreground transition-colors">
-                  <span className="pl-3 pr-1.5 text-muted-foreground select-none text-[11px] flex items-center">
-                    /
-                  </span>
-                  <input
-                    type="text"
-                    value={alias}
-                    onChange={(e) => setAlias(e.target.value.toLowerCase())}
-                    placeholder="custom alias (optional)"
-                    className="flex-1 bg-transparent border-0 outline-none py-2 text-xs placeholder:text-muted-foreground/60"
-                    disabled={busy}
-                    autoComplete="off"
-                    spellCheck={false}
-                    maxLength={32}
-                  />
-                  {alias && (
-                    <button
-                      type="button"
-                      onClick={() => setAlias("")}
-                      className="px-2 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      clear
-                    </button>
-                  )}
-                </div>
-
-                {/* Title */}
-                <div className="flex items-stretch border border-border bg-background focus-within:border-foreground transition-colors">
-                  <input
-                    type="text"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="title (optional)"
-                    className="flex-1 bg-transparent border-0 outline-none py-2 text-xs placeholder:text-muted-foreground/60 px-2"
-                    disabled={busy}
-                    autoComplete="off"
-                    spellCheck={false}
-                    maxLength={140}
-                  />
-                </div>
-
-                {/* Description — single-line, smaller */}
-                <div className="flex items-stretch border border-border bg-background focus-within:border-foreground transition-colors">
-                  <input
-                    type="text"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="description (optional)"
-                    className="flex-1 bg-transparent border-0 outline-none py-2 text-[11px] placeholder:text-muted-foreground/60 px-2"
-                    disabled={busy}
-                    autoComplete="off"
-                    spellCheck={false}
-                    maxLength={500}
-                  />
-                </div>
-              </div>
+          <div className="flex items-stretch border border-border bg-card focus-within:border-foreground transition-colors">
+            <span className="pl-4 pr-2 text-muted-foreground select-none text-xs flex items-center">
+              /
+            </span>
+            <input
+              type="text"
+              value={alias}
+              onChange={(e) => setAlias(e.target.value.toLowerCase())}
+              placeholder="custom alias (optional)"
+              className="flex-1 bg-transparent border-0 outline-none py-2.5 text-sm placeholder:text-muted-foreground/60"
+              disabled={busy}
+              autoComplete="off"
+              spellCheck={false}
+              maxLength={32}
+            />
+            {alias && (
+              <button
+                type="button"
+                onClick={() => setAlias("")}
+                className="px-3 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                clear
+              </button>
             )}
           </div>
         )}

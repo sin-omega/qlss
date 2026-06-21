@@ -73,7 +73,7 @@ export default function NotFound() {
       </section>
 
       <footer className="absolute bottom-0 left-0 right-0 px-6 py-4 text-center text-[11px] text-muted-foreground">
-        Copyleft (ɔ) QLSS.eu 2026
+        QLSS · short links
       </footer>
     </main>
   );
