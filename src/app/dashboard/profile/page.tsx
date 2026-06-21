@@ -55,12 +55,7 @@ export default async function DashboardProfilePage() {
           )}
         </div>
 
-        <ProfileCustomizer
-          initialSettings={settings}
-          username={username}
-          hasProfileFolder={hasProfileFolder}
-          profileFolderName={profileFolderName}
-        />
+        <ProfileCustomizer initialSettings={settings} />
       </div>
     </section>
   );
