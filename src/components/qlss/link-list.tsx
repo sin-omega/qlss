@@ -316,7 +316,7 @@ export function LinkList({
                         {displayTitle}
                       </p>
                       {link.description && !isEditing && (
-                        <p className="mt-0.5 text-[11px] text-muted-foreground truncate">
+                        <p className="mt-0.5 text-[10px] text-muted-foreground truncate">
                           {link.description}
                         </p>
                       )}

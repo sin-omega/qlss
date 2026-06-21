@@ -2,27 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { siteOrigin } from "@/lib/env";
 import { Loader2, Link2, Lock, Check, X, Plus } from "lucide-react";
 
 interface LinkedAccountsProps {
   initialProviders: string[];
+  userEmail: string | undefined;
 }
 
 /**
- * UI for managing the auth methods linked to the current user.
- *
- * - Email/password row:
- *   - If already linked: shows a "✓ linked" badge.
- *   - If not linked: shows an "add password" button that reveals an
- *     inline password input + "save" button when clicked.
- *     Calls `supabase.auth.updateUser({ password })`.
- *
- * - Google row:
- *   - If linked: shows a "✓ linked" badge.
- *   - If not linked: shows a "link Google" button that starts the OAuth
- *     link flow via `supabase.auth.linkIdentity({ provider: "google" })`.
+ * UI for managing auth methods linked to the current user.
  */
-export function LinkedAccounts({ initialProviders }: LinkedAccountsProps) {
+export function LinkedAccounts({ initialProviders, userEmail }: LinkedAccountsProps) {
   const supabase = createClient();
   const [providers, setProviders] = useState<string[]>(initialProviders);
   const [busy, setBusy] = useState<"password" | "google" | null>(null);
@@ -38,7 +29,7 @@ export function LinkedAccounts({ initialProviders }: LinkedAccountsProps) {
   const hasPassword = providers.includes("email");
   const hasGoogle = providers.includes("google");
 
-  async function handleSavePassword(e: React.FormEvent) {
+  async function handleAddPassword(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setSuccess(null);
@@ -51,14 +42,32 @@ export function LinkedAccounts({ initialProviders }: LinkedAccountsProps) {
       setProviders((p) => Array.from(new Set([...p, "email"])));
       setPassword("");
       setShowPasswordInput(false);
-      setSuccess(
-        hasPassword
-          ? "Password changed. Use the new password next time you sign in."
-          : "Password added. You can now sign in with your email + password.",
-      );
+      setSuccess("Password added. You can now sign in with your email + password.");
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Could not save password.";
+      setError(humanizeError(message));
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function handleChangePassword() {
+    if (!userEmail) return;
+    setError(null);
+    setSuccess(null);
+    setBusy("password");
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(userEmail, {
+        redirectTo: `${siteOrigin()}/auth`,
+      });
+      if (error) throw error;
+
+      setSuccess("Password reset email sent. Check your inbox.");
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Could not send reset email.";
       setError(humanizeError(message));
     } finally {
       setBusy(null);
@@ -75,8 +84,6 @@ export function LinkedAccounts({ initialProviders }: LinkedAccountsProps) {
         provider: "google",
       });
       if (error) throw error;
-      // Browser will redirect to Google. On return, the user will have
-      // a new identity linked. We don't need to do anything else here.
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Could not link Google.";
@@ -105,29 +112,39 @@ export function LinkedAccounts({ initialProviders }: LinkedAccountsProps) {
               )}
             </div>
 
-            {/* Button: "add password" if not set, "change password" if set */}
-            {!showPasswordInput && (
+            {/* No password set: show "add password" which reveals inline input */}
+            {!hasPassword && !showPasswordInput && (
               <button
                 type="button"
                 onClick={() => setShowPasswordInput(true)}
                 className="text-xs text-foreground border border-border bg-background hover:bg-accent px-3 py-1.5 transition-colors inline-flex items-center gap-1.5"
               >
-                {hasPassword ? (
-                  "change password"
+                <Plus className="h-3 w-3" />
+                add password
+              </button>
+            )}
+
+            {/* Has password: "change password" sends reset email */}
+            {hasPassword && (
+              <button
+                type="button"
+                onClick={handleChangePassword}
+                disabled={busy !== null}
+                className="text-xs text-foreground border border-border bg-background hover:bg-accent px-3 py-1.5 transition-colors disabled:opacity-50"
+              >
+                {busy === "password" ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
                 ) : (
-                  <>
-                    <Plus className="h-3 w-3" />
-                    add password
-                  </>
+                  "change password"
                 )}
               </button>
             )}
           </div>
 
-          {/* Inline password input — revealed only when the button is clicked */}
-          {showPasswordInput && (
+          {/* Inline password input — only for adding a new password */}
+          {!hasPassword && showPasswordInput && (
             <form
-              onSubmit={handleSavePassword}
+              onSubmit={handleAddPassword}
               className="mt-3 flex items-stretch gap-2"
             >
               <div className="flex items-stretch flex-1 border border-border bg-background focus-within:border-foreground transition-colors">
@@ -141,11 +158,7 @@ export function LinkedAccounts({ initialProviders }: LinkedAccountsProps) {
                   autoFocus
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder={
-                    hasPassword
-                      ? "new password (min 6 chars)"
-                      : "new password (min 6 chars)"
-                  }
+                  placeholder="new password (min 6 chars)"
                   className="flex-1 bg-transparent border-0 outline-none py-2 text-sm placeholder:text-muted-foreground/60"
                   disabled={busy !== null}
                 />

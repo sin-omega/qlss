@@ -86,7 +86,8 @@ export default async function UserProfilePage({
     "#0f172a", "#1e293b", "#334155", "#1e1b4b",
   ].includes(bgColor);
 
-  const fgColor = isDark ? "#e2e8f0" : themeColor || "#0c0c0a";
+  const accentColor = themeColor || (isDark ? "#60a5fa" : "#0c0c0a");
+  const fgColor = isDark ? "#e2e8f0" : "#0c0c0a";
   const mutedColor = isDark ? "#94a3b8" : "#6a6a64";
   const borderColor = isDark ? "#334155" : "#d9d8d0";
   const cardColor = isDark ? "#1e293b" : "#ffffff";
@@ -156,7 +157,7 @@ export default async function UserProfilePage({
       {/* Profile header */}
       <header className="px-6 pb-8" style={{ borderBottom: `1px solid ${borderColor}` }}>
         <div className="mx-auto max-w-xl text-center">
-          <h1 className="text-3xl font-bold tracking-tight" style={{ color: fgColor }}>
+          <h1 className="text-3xl font-bold tracking-tight" style={{ color: accentColor }}>
             {displayName || `@${profile.username}`}
           </h1>
           {!displayName && (
@@ -178,7 +179,7 @@ export default async function UserProfilePage({
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs transition-opacity hover:opacity-70 inline-flex items-center gap-1"
-                  style={{ color: themeColor || fgColor }}
+                  style={{ color: accentColor }}
                 >
                   <ExternalLink className="h-3 w-3" />
                   {sl.platform}
@@ -209,11 +210,11 @@ export default async function UserProfilePage({
                     className="block p-3 hover:opacity-80 transition-opacity"
                     style={cardStyles()}
                   >
-                    <p className="text-sm font-medium" style={{ color: fgColor }}>
+                    <p className="text-sm font-medium" style={{ color: accentColor }}>
                       {link.title ?? link.slug}
                     </p>
                     {showDescriptions && link.description && (
-                      <p className="text-[11px] mt-0.5 leading-relaxed" style={{ color: mutedColor }}>
+                      <p className="text-[10px] mt-0.5 leading-relaxed" style={{ color: mutedColor }}>
                         {link.description}
                       </p>
                     )}
@@ -239,11 +240,11 @@ export default async function UserProfilePage({
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium" style={{ color: fgColor }}>
+                        <p className="text-sm font-medium" style={{ color: accentColor }}>
                           {link.title ?? link.slug}
                         </p>
                         {showDescriptions && link.description && (
-                          <p className="text-[11px] mt-0.5 leading-relaxed" style={{ color: mutedColor }}>
+                          <p className="text-[10px] mt-0.5 leading-relaxed" style={{ color: mutedColor }}>
                             {link.description}
                           </p>
                         )}

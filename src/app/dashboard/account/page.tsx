@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
 import { ChangeUsernameForm } from "@/components/qlss/change-username";
-import { EditDescriptionForm } from "@/components/qlss/edit-description";
 import { LinkedAccounts } from "@/components/qlss/linked-accounts";
 import { DeleteAccountSection } from "@/components/qlss/delete-account";
 
@@ -39,13 +38,8 @@ export default async function DashboardAccountPage() {
         {/* Change username */}
         <ChangeUsernameForm currentUsername={profile?.username ?? ""} />
 
-        {/* Edit description / bio */}
-        <EditDescriptionForm
-          currentDescription={profile?.description ?? ""}
-        />
-
         {/* Linked sign-in methods */}
-        <LinkedAccounts initialProviders={providers} />
+        <LinkedAccounts initialProviders={providers} userEmail={user.email} />
 
         {/* Danger zone */}
         <DeleteAccountSection username={profile?.username ?? ""} />

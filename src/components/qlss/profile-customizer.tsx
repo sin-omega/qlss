@@ -14,6 +14,7 @@ import {
   Plus,
   Eye,
   ExternalLink,
+  FolderPlus,
 } from "lucide-react";
 
 interface SocialLink {
@@ -71,14 +72,17 @@ const SOCIAL_PLATFORMS = [
 
 /**
  * Profile page customizer with live preview — carrd.co style.
- * Left: settings editor. Right: sticky live preview of the profile page.
  */
 export function ProfileCustomizer({
   initialSettings,
   username,
+  hasProfileFolder,
+  profileFolderName,
 }: {
   initialSettings: Record<string, unknown>;
   username: string;
+  hasProfileFolder: boolean;
+  profileFolderName: string;
 }) {
   const router = useRouter();
 
@@ -93,6 +97,8 @@ export function ProfileCustomizer({
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [creatingFolder, setCreatingFolder] = useState(false);
+  const [folderError, setFolderError] = useState<string | null>(null);
 
   useEffect(() => {
     setSettings(initialSettings as Settings);
@@ -138,6 +144,28 @@ export function ProfileCustomizer({
     }
   }
 
+  async function handleCreateProfileFolder() {
+    setCreatingFolder(true);
+    setFolderError(null);
+    try {
+      const res = await fetch("/api/folders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: profileFolderName, profile_page: true }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setFolderError(json?.error ?? "Could not create profile folder.");
+        return;
+      }
+      router.refresh();
+    } catch {
+      setFolderError("Network error.");
+    } finally {
+      setCreatingFolder(false);
+    }
+  }
+
   function addSocialLink() {
     if (!newUrl.trim() || socialLinks.length >= 10) return;
     setSocialLinks((prev) => [
@@ -154,11 +182,13 @@ export function ProfileCustomizer({
   }
 
   // ---- Derived preview styles ----
+  // Theme color always applies as accent; fg adapts to dark/light bg
   const isDark = settings.bg_color
     ? ["#0f172a", "#1e293b", "#334155", "#1e1b4b"].includes(settings.bg_color)
     : false;
 
-  const fgColor = isDark ? "#e2e8f0" : settings.theme_color || "#0c0c0a";
+  const accentColor = settings.theme_color || (isDark ? "#60a5fa" : "#0c0c0a");
+  const fgColor = isDark ? "#e2e8f0" : "#0c0c0a";
   const mutedColor = isDark ? "#94a3b8" : "#6a6a64";
   const borderColor = isDark ? "#334155" : "#d9d8d0";
   const cardColor = isDark ? "#1e293b" : "#ffffff";
@@ -170,12 +200,44 @@ export function ProfileCustomizer({
         ? "system-ui, -apple-system, sans-serif"
         : "'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
 
-  // Sample links for preview
   const sampleLinks = [
-    { slug: "example", title: "My Portfolio", description: "Check out my work", destination_url: "https://example.com" },
-    { slug: "blog", title: "Blog", description: "Thoughts and tutorials", destination_url: "https://blog.example.com" },
-    { slug: "repo", title: "GitHub Repo", description: "Open source projects", destination_url: "https://github.com/example" },
+    { slug: "example", title: "My Portfolio", description: "Check out my work" },
+    { slug: "blog", title: "Blog", description: "Thoughts and tutorials" },
+    { slug: "repo", title: "GitHub Repo", description: "Open source projects" },
   ];
+
+  // ---- No profile folder yet? Show create button ----
+  if (!hasProfileFolder) {
+    return (
+      <div className="border border-border bg-card">
+        <div className="px-4 py-1.5 border-b border-border text-[10px] uppercase tracking-widest text-muted-foreground">
+          profile page
+        </div>
+        <div className="p-4">
+          <p className="text-xs text-muted-foreground leading-relaxed mb-4">
+            You don&apos;t have a profile page yet. Create one to customize it with
+            a theme, bio, social links, and featured links.
+          </p>
+          <button
+            type="button"
+            onClick={handleCreateProfileFolder}
+            disabled={creatingFolder}
+            className="text-xs bg-foreground text-background hover:bg-foreground/90 px-4 py-1.5 inline-flex items-center gap-1.5 disabled:opacity-50"
+          >
+            {creatingFolder ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <FolderPlus className="h-3 w-3" />
+            )}
+            create profile page
+          </button>
+          {folderError && (
+            <p className="mt-2 text-xs text-destructive">! {folderError}</p>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSave}>
@@ -449,7 +511,7 @@ export function ProfileCustomizer({
               {/* Header */}
               <div className="text-center pb-4" style={{ borderBottom: `1px solid ${borderColor}` }}>
                 <p className="text-[10px]" style={{ color: mutedColor }}>QLSS.eu</p>
-                <h2 className="text-xl font-bold mt-2" style={{ color: fgColor }}>
+                <h2 className="text-xl font-bold mt-2" style={{ color: accentColor }}>
                   {settings.display_name || `@${username}`}
                 </h2>
                 {!settings.display_name && (
@@ -468,7 +530,7 @@ export function ProfileCustomizer({
                       <span
                         key={i}
                         className="text-[10px] inline-flex items-center gap-0.5"
-                        style={{ color: settings.theme_color || fgColor }}
+                        style={{ color: accentColor }}
                       >
                         <ExternalLink className="h-2.5 w-2.5" />
                         {sl.platform}
@@ -489,9 +551,9 @@ export function ProfileCustomizer({
                       <div
                         key={l.slug}
                         className="p-2 transition-opacity"
-                        style={previewCardStyle(settings.link_style, settings.theme_color, isDark, borderColor, cardColor)}
+                        style={previewCardStyle(settings.link_style, accentColor, isDark, borderColor, cardColor)}
                       >
-                        <p className="text-[11px] font-medium" style={{ color: fgColor }}>
+                        <p className="text-xs font-medium" style={{ color: accentColor }}>
                           {l.title}
                         </p>
                         {settings.show_descriptions !== false && (
@@ -508,9 +570,9 @@ export function ProfileCustomizer({
                       <div
                         key={l.slug}
                         className="p-2 transition-opacity"
-                        style={previewCardStyle(settings.link_style, settings.theme_color, isDark, borderColor, cardColor)}
+                        style={previewCardStyle(settings.link_style, accentColor, isDark, borderColor, cardColor)}
                       >
-                        <p className="text-[11px] font-medium" style={{ color: fgColor }}>
+                        <p className="text-xs font-medium" style={{ color: accentColor }}>
                           {l.title}
                         </p>
                         {settings.show_descriptions !== false && (
@@ -533,7 +595,7 @@ export function ProfileCustomizer({
 
 function previewCardStyle(
   linkStyle: string | undefined,
-  themeColor: string | undefined,
+  accentColor: string,
   isDark: boolean,
   borderColor: string,
   cardColor: string,
@@ -543,9 +605,7 @@ function previewCardStyle(
   }
   if (linkStyle === "filled") {
     return {
-      backgroundColor: themeColor
-        ? `${themeColor}15`
-        : isDark ? "#0f172a" : "#f5f5f0",
+      backgroundColor: `${accentColor}15`,
     };
   }
   return {};

@@ -20,6 +20,17 @@ export default async function DashboardProfilePage() {
   const settings = (profile?.settings ?? {}) as Record<string, unknown>;
   const username = profile?.username ?? "...";
 
+  // Check if the user has a profile page folder
+  const { data: profileFolder } = await supabase
+    .from("folders")
+    .select("id, name")
+    .eq("user_id", user.id)
+    .eq("profile_page", true)
+    .maybeSingle();
+
+  const hasProfileFolder = !!profileFolder;
+  const profileFolderName = profileFolder?.name ?? "profile page";
+
   return (
     <section className="px-6 py-10 md:py-12">
       <div className="mx-auto max-w-4xl space-y-8">
@@ -31,7 +42,12 @@ export default async function DashboardProfilePage() {
           </p>
         </div>
 
-        <ProfileCustomizer initialSettings={settings} username={username} />
+        <ProfileCustomizer
+          initialSettings={settings}
+          username={username}
+          hasProfileFolder={hasProfileFolder}
+          profileFolderName={profileFolderName}
+        />
       </div>
     </section>
   );
