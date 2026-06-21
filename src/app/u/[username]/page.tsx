@@ -31,11 +31,7 @@ interface SocialLink {
 
 /**
  * Public user profile page at /@username (rewritten from /u/[username]).
- *
- * Supports customization via profile settings:
- *   - theme_color, bg_color, layout, link_style, font_style
- *   - show_descriptions, show_destination
- *   - display_name, social_links
+ * Clean, carrd-style layout with theme/color customization.
  */
 export default async function UserProfilePage({
   params,
@@ -64,7 +60,6 @@ export default async function UserProfilePage({
 
   const serviceClient = createServiceClient();
 
-  // Look up the profile by username (case-insensitive).
   const { data: profileRow } = await serviceClient
     .from("profiles")
     .select("id, username, description, created_at, settings")
@@ -74,7 +69,7 @@ export default async function UserProfilePage({
   const profile = profileRow as ProfileRow | null;
   if (!profile) notFound();
 
-  // Parse settings (fallback to defaults)
+  // Parse settings
   const s = profile.settings ?? {};
   const themeColor = (s.theme_color as string) || "";
   const bgColor = (s.bg_color as string) || "";
@@ -84,6 +79,7 @@ export default async function UserProfilePage({
   const showDescriptions = s.show_descriptions !== false;
   const showDestination = s.show_destination !== false;
   const displayName = (s.display_name as string) || "";
+  const bio = (s.bio as string) || profile.description || "";
   const socialLinks = (s.social_links as SocialLink[]) || [];
 
   const isDark = [
@@ -95,7 +91,7 @@ export default async function UserProfilePage({
   const borderColor = isDark ? "#334155" : "#d9d8d0";
   const cardColor = isDark ? "#1e293b" : "#ffffff";
 
-  // Find the user's profile page folder.
+  // Find profile page folder and its links
   const { data: profileFolder } = await serviceClient
     .from("folders")
     .select("id")
@@ -103,7 +99,6 @@ export default async function UserProfilePage({
     .eq("profile_page", true)
     .maybeSingle();
 
-  // Fetch links from the profile page folder only.
   let links: LinkRow[] = [];
   if (profileFolder) {
     const { data: linksData } = await serviceClient
@@ -112,15 +107,10 @@ export default async function UserProfilePage({
       .eq("user_id", profile.id)
       .eq("folder_id", profileFolder.id)
       .order("created_at", { ascending: false });
-    links = (linksData ?? []) as LinkRow[];
+    links = (linksData ?? []) as unknown as LinkRow[];
   }
 
   const origin = siteOrigin();
-
-  // Build dynamic styles
-  const dynamicStyles: Record<string, string> = {};
-  if (bgColor) dynamicStyles.backgroundColor = bgColor;
-  if (themeColor) dynamicStyles.color = fgColor;
 
   const fontFamily =
     fontStyle === "serif"
@@ -128,6 +118,20 @@ export default async function UserProfilePage({
       : fontStyle === "sans"
         ? "system-ui, -apple-system, sans-serif"
         : "'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
+
+  function cardStyles(): React.CSSProperties {
+    if (linkStyle === "bordered") {
+      return { border: `1px solid ${borderColor}`, backgroundColor: cardColor };
+    }
+    if (linkStyle === "filled") {
+      return {
+        backgroundColor: themeColor
+          ? `${themeColor}15`
+          : isDark ? "#0f172a" : "#f5f5f0",
+      };
+    }
+    return {};
+  }
 
   return (
     <main
@@ -137,7 +141,7 @@ export default async function UserProfilePage({
         fontFamily,
       }}
     >
-      {/* Subtle top bar with back link */}
+      {/* Back link */}
       <div className="px-6 py-5">
         <Link
           href="/"
@@ -150,42 +154,23 @@ export default async function UserProfilePage({
       </div>
 
       {/* Profile header */}
-      <header
-        className="px-6 pt-8 pb-12"
-        style={{
-          borderBottom: `1px solid ${borderColor}`,
-        }}
-      >
-        <div className="mx-auto max-w-2xl text-center">
-          {/* Display name or @username */}
-          <h1
-            className="text-3xl font-bold tracking-tight"
-            style={{ color: fgColor }}
-          >
-            {displayName ? displayName : `@${profile.username}`}
+      <header className="px-6 pb-8" style={{ borderBottom: `1px solid ${borderColor}` }}>
+        <div className="mx-auto max-w-xl text-center">
+          <h1 className="text-3xl font-bold tracking-tight" style={{ color: fgColor }}>
+            {displayName || `@${profile.username}`}
           </h1>
           {!displayName && (
-            <p
-              className="mt-1 text-xs"
-              style={{ color: mutedColor }}
-            >
+            <p className="text-[11px] mt-1" style={{ color: mutedColor }}>
               @{profile.username}
             </p>
           )}
-
-          {/* Bio */}
-          {profile.description ? (
-            <p
-              className="mt-4 text-sm leading-relaxed max-w-md mx-auto"
-              style={{ color: mutedColor }}
-            >
-              {profile.description}
+          {bio && (
+            <p className="text-sm leading-relaxed max-w-md mx-auto mt-3" style={{ color: mutedColor }}>
+              {bio}
             </p>
-          ) : null}
-
-          {/* Social links */}
+          )}
           {socialLinks.length > 0 && (
-            <div className="flex items-center justify-center gap-3 mt-6 flex-wrap">
+            <div className="flex items-center justify-center gap-3 mt-5 flex-wrap">
               {socialLinks.map((sl, i) => (
                 <a
                   key={i}
@@ -204,175 +189,79 @@ export default async function UserProfilePage({
         </div>
       </header>
 
-      {/* Links list */}
-      <section className="px-6 py-10">
-        <div className="mx-auto max-w-2xl">
-          <div className="flex items-baseline justify-between mb-6">
-            <h2
-              className="text-[10px] uppercase tracking-widest"
-              style={{ color: mutedColor }}
-            >
-              links
-            </h2>
-            {links.length > 0 && (
-              <span className="text-xs" style={{ color: mutedColor }}>
-                {links.length} total
-              </span>
-            )}
-          </div>
-
+      {/* Links */}
+      <section className="px-6 py-8">
+        <div className="mx-auto max-w-xl">
           {links.length === 0 ? (
-            <p
-              className="py-16 text-center text-sm"
-              style={{ color: mutedColor }}
-            >
+            <p className="py-16 text-center text-sm" style={{ color: mutedColor }}>
               {profileFolder
                 ? "No links yet."
-                : "No links — the user hasn't set up their profile page yet."}
+                : "This user hasn't set up their profile page yet."}
             </p>
           ) : layout === "grid" ? (
             <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {links.map((link) => (
-                <LinkCard
-                  key={link.id}
-                  link={link}
-                  origin={origin}
-                  themeColor={themeColor}
-                  fgColor={fgColor}
-                  mutedColor={mutedColor}
-                  borderColor={borderColor}
-                  cardColor={cardColor}
-                  isDark={isDark}
-                  showDescriptions={showDescriptions}
-                  showDestination={showDestination}
-                  linkStyle={linkStyle}
-                />
+                <li key={link.id}>
+                  <a
+                    href={`${origin}/${link.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block p-3 hover:opacity-80 transition-opacity"
+                    style={cardStyles()}
+                  >
+                    <p className="text-sm font-medium" style={{ color: fgColor }}>
+                      {link.title ?? link.slug}
+                    </p>
+                    {showDescriptions && link.description && (
+                      <p className="text-[11px] mt-0.5 leading-relaxed" style={{ color: mutedColor }}>
+                        {link.description}
+                      </p>
+                    )}
+                    {showDestination && (
+                      <p className="text-[10px] mt-1 truncate" style={{ color: mutedColor, opacity: 0.6 }}>
+                        {link.destination_url}
+                      </p>
+                    )}
+                  </a>
+                </li>
               ))}
             </ul>
           ) : (
-            <ul
-              className={
-                layout === "compact" ? "space-y-1.5" : "space-y-3"
-              }
-            >
+            <ul className={layout === "compact" ? "space-y-1.5" : "space-y-3"}>
               {links.map((link) => (
-                <LinkCard
-                  key={link.id}
-                  link={link}
-                  origin={origin}
-                  themeColor={themeColor}
-                  fgColor={fgColor}
-                  mutedColor={mutedColor}
-                  borderColor={borderColor}
-                  cardColor={cardColor}
-                  isDark={isDark}
-                  showDescriptions={showDescriptions}
-                  showDestination={showDestination}
-                  linkStyle={linkStyle}
-                />
+                <li key={link.id}>
+                  <a
+                    href={`${origin}/${link.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`block p-3 hover:opacity-80 transition-opacity ${layout === "compact" ? "p-2" : ""}`}
+                    style={cardStyles()}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium" style={{ color: fgColor }}>
+                          {link.title ?? link.slug}
+                        </p>
+                        {showDescriptions && link.description && (
+                          <p className="text-[11px] mt-0.5 leading-relaxed" style={{ color: mutedColor }}>
+                            {link.description}
+                          </p>
+                        )}
+                        {showDestination && (
+                          <p className="text-[10px] mt-1 truncate" style={{ color: mutedColor, opacity: 0.6 }}>
+                            {link.destination_url}
+                          </p>
+                        )}
+                      </div>
+                      <ExternalLink className="h-3.5 w-3.5 shrink-0 mt-0.5" style={{ color: mutedColor }} />
+                    </div>
+                  </a>
+                </li>
               ))}
             </ul>
           )}
         </div>
       </section>
     </main>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Link card component
-// ---------------------------------------------------------------------------
-
-function LinkCard({
-  link,
-  origin,
-  themeColor,
-  fgColor,
-  mutedColor,
-  borderColor,
-  cardColor,
-  isDark,
-  showDescriptions,
-  showDestination,
-  linkStyle,
-}: {
-  link: LinkRow;
-  origin: string;
-  themeColor: string;
-  fgColor: string;
-  mutedColor: string;
-  borderColor: string;
-  cardColor: string;
-  isDark: boolean;
-  showDescriptions: boolean;
-  showDestination: boolean;
-  linkStyle: string;
-}) {
-  const shortUrl = `${origin}/${link.slug}`;
-  const displayTitle = link.title ?? link.slug;
-
-  // Different card styles
-  let cardStyles: React.CSSProperties = {};
-  if (linkStyle === "bordered") {
-    cardStyles = {
-      border: `1px solid ${borderColor}`,
-      backgroundColor: cardColor,
-    };
-  } else if (linkStyle === "filled") {
-    cardStyles = {
-      backgroundColor: themeColor
-        ? `${themeColor}15`
-        : isDark
-          ? "#0f172a"
-          : "#f5f5f0",
-    };
-  } else {
-    // minimal
-    cardStyles = {};
-  }
-
-  return (
-    <li
-      className="p-3 hover:opacity-80 transition-all"
-      style={cardStyles}
-    >
-      <a
-        href={shortUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="block group"
-      >
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <h3
-              className="text-sm font-medium group-hover:underline"
-              style={{ color: fgColor }}
-            >
-              {displayTitle}
-            </h3>
-            {showDescriptions && link.description && (
-              <p
-                className="mt-0.5 text-xs leading-relaxed"
-                style={{ color: mutedColor }}
-              >
-                {link.description}
-              </p>
-            )}
-            {showDestination && (
-              <p
-                className="mt-1 text-[11px] truncate"
-                style={{ color: mutedColor, opacity: 0.7 }}
-              >
-                {link.destination_url}
-              </p>
-            )}
-          </div>
-          <ExternalLink
-            className="h-3.5 w-3.5 shrink-0 mt-0.5"
-            style={{ color: mutedColor }}
-          />
-        </div>
-      </a>
-    </li>
   );
 }
