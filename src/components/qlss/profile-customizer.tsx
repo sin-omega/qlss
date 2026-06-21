@@ -74,16 +74,15 @@ const SOCIAL_PLATFORMS = [
  * Profile page customizer with live preview — carrd.co style.
  */
 export function ProfileCustomizer({
-  initialSettings,
-  username,
-  hasProfileFolder,
-  profileFolderName,
+  hasProfileFolder = true,
+  profileFolderName = "profile page",
 }: {
   initialSettings: Record<string, unknown>;
   username: string;
-  hasProfileFolder: boolean;
-  profileFolderName: string;
-}) {
+  hasProfileFolder?: boolean;
+  profileFolderName?: string;
+})
+ {
   const router = useRouter();
 
   const [settings, setSettings] = useState<Settings>(
