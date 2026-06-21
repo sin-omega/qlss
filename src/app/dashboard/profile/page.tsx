@@ -7,11 +7,7 @@ export const dynamic = "force-dynamic";
 
 export default async function DashboardProfilePage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return null;
+  const { data: { user } } = await supabase.auth.getUser();
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -29,7 +25,6 @@ export default async function DashboardProfilePage() {
     .eq("profile_page", true)
     .maybeSingle();
 
-  const hasProfileFolder = !!profileFolder;
 
   return (
     <section className="px-6 py-10 md:py-12">
@@ -43,16 +38,12 @@ export default async function DashboardProfilePage() {
             </p>
           </div>
           {hasProfileFolder && (
-            <Link
-              href="/dashboard/profile-stats"
-              className="text-xs text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1.5 border border-border bg-card px-3 py-1.5 hover:bg-accent"
-            >
+            <Link href="/dashboard/profile-stats" className="text-xs text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1.5 border border-border bg-card px-3 py-1.5 hover:bg-accent">
               <BarChart3 className="h-3 w-3" />
               view stats
             </Link>
           )}
         </div>
-
         <ProfileCustomizer initialSettings={settings} />
       </div>
     </section>
