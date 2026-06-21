@@ -20,7 +20,6 @@ export default async function DashboardProfilePage() {
   const settings = (profile?.settings ?? {}) as Record<string, unknown>;
   const username = profile?.username ?? "...";
 
-  // Check if the user has a profile page folder
   const { data: profileFolder } = await supabase
     .from("folders")
     .select("id, name")
