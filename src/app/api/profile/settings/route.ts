@@ -17,6 +17,11 @@ const ALLOWED_KEYS = new Set([
   "social_links",
   "link_style",
   "font_style",
+  "avatar_emoji",
+  "border_radius",
+  "cta_text",
+  "cta_url",
+  "status_text",
 ]);
 
 /**
