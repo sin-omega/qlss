@@ -31,7 +31,6 @@ export default async function DashboardProfilePage() {
     .maybeSingle();
 
   const hasProfileFolder = !!profileFolder;
-  const profileFolderName = profileFolder?.name ?? "profile page";
 
   return (
     <section className="px-6 py-10 md:py-12">
