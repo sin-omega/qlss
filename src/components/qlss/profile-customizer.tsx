@@ -74,6 +74,8 @@ const SOCIAL_PLATFORMS = [
  * Profile page customizer with live preview — carrd.co style.
  */
 export function ProfileCustomizer({
+  initialSettings,
+  username,
   hasProfileFolder = true,
   profileFolderName = "profile page",
 }: {
@@ -81,8 +83,7 @@ export function ProfileCustomizer({
   username: string;
   hasProfileFolder?: boolean;
   profileFolderName?: string;
-})
- {
+}) {
   const router = useRouter();
 
   const [settings, setSettings] = useState<Settings>(
@@ -181,7 +182,6 @@ export function ProfileCustomizer({
   }
 
   // ---- Derived preview styles ----
-  // Theme color always applies as accent; fg adapts to dark/light bg
   const isDark = settings.bg_color
     ? ["#0f172a", "#1e293b", "#334155", "#1e1b4b"].includes(settings.bg_color)
     : false;
