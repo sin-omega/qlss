@@ -55,7 +55,6 @@ export default async function DashboardProfilePage() {
         </div>
 
         <ProfileCustomizer initialSettings={settings} />
-      </div>
     </section>
   );
 }
