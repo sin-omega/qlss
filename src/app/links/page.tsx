@@ -2,8 +2,10 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured, siteOrigin } from "@/lib/env";
 import { LinkList } from "@/components/qlss/link-list";
+import { SiteHeader } from "@/components/qlss/site-header";
+import { SiteFooter } from "@/components/qlss/site-footer";
 import Link from "next/link";
-import { ArrowLeft, LinkIcon, BarChart3 } from "lucide-react";
+import { LinkIcon, BarChart3 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -17,18 +19,17 @@ interface LinkRow {
 }
 
 export default async function LinksPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const signedIn = !!user;
+
   if (!isSupabaseConfigured()) {
     return (
       <main className="cli-grid relative min-h-screen w-full flex flex-col">
-        <header className="px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between text-xs">
-          <Link href="/" className="font-bold tracking-tight hover:opacity-70 transition-opacity">
-            <span className="text-base">Q</span><span>LSS</span>
-          </Link>
-          <Link href="/" className="text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1.5">
-            <ArrowLeft className="h-3 w-3" />
-            home
-          </Link>
-        </header>
+        <SiteHeader signedIn={signedIn} backHref="/" backLabel="home" />
         <div className="header-accent-line" />
         <section className="flex-1 flex items-center justify-center px-4 sm:px-6">
           <div className="text-center max-w-md">
@@ -38,18 +39,11 @@ export default async function LinksPage() {
             </p>
           </div>
         </section>
-        <hr className="footer-separator" />
-        <footer className="mt-auto px-4 sm:px-6 py-4 text-center text-[11px] text-muted-foreground">
-          QLSS · short links
-        </footer>
+        <hr className="footer-separator mt-auto" />
+        <SiteFooter />
       </main>
     );
   }
-
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
   if (!user) redirect("/auth");
 
@@ -63,6 +57,8 @@ export default async function LinksPage() {
   if (error) {
     return (
       <main className="cli-grid relative min-h-screen w-full flex flex-col">
+        <SiteHeader signedIn={true} backHref="/" backLabel="home" />
+        <div className="header-accent-line" />
         <section className="flex-1 flex items-center justify-center px-4 sm:px-6">
           <div className="text-center max-w-md">
             <h1 className="text-lg font-bold tracking-tight">Error</h1>
@@ -71,6 +67,8 @@ export default async function LinksPage() {
             </p>
           </div>
         </section>
+        <hr className="footer-separator mt-auto" />
+        <SiteFooter />
       </main>
     );
   }
@@ -97,35 +95,12 @@ export default async function LinksPage() {
 
   return (
     <main className="cli-grid relative min-h-screen w-full flex flex-col">
-      <header className="px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between text-xs">
-        <Link href="/" className="font-bold tracking-tight hover:opacity-70 transition-opacity">
-          <span className="text-base">Q</span><span>LSS</span>
-        </Link>
-        <Link
-          href="/"
-          className="text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1.5"
-        >
-          <ArrowLeft className="h-3 w-3" />
-          home
-        </Link>
-      </header>
+      <SiteHeader signedIn={true} backHref="/" backLabel="home" />
       <div className="header-accent-line" />
 
       <section className="pt-10 pb-4 px-4 sm:px-6">
         <div className="mx-auto max-w-2xl animate-page-enter">
-          <div className="flex items-center justify-between">
-            <Link
-              href="/"
-              className="text-xs text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1.5"
-            >
-              <ArrowLeft className="h-3 w-3" />
-              back
-            </Link>
-          </div>
-
-          <h1 className="text-lg font-bold tracking-tight mt-3">
-            my links
-          </h1>
+          <h1 className="text-lg font-bold tracking-tight">my links</h1>
         </div>
       </section>
 
@@ -154,26 +129,7 @@ export default async function LinksPage() {
       <section className="px-4 sm:px-6 pb-16">
         <div className="mx-auto max-w-2xl">
           {allLinks.length === 0 ? (
-            <div className="border border-border bg-card py-12 px-6 text-center">
-              <pre className="text-[10px] text-muted-foreground leading-relaxed inline-block mb-4 text-left">{`   ┌──────────┐
-   │  ◇  ◇  ◇ │
-   │  ┌────┐  │
-   │  │ ∅  │  │
-   │  └────┘  │
-   │  ─ ─ ─ ─  │
-   └──────────┘`}</pre>
-              <p className="text-sm text-foreground mb-1">No links yet.</p>
-              <p className="text-[11px] text-muted-foreground leading-relaxed mb-3">
-                Your shortened links will appear here. Start by creating one — paste any long URL and hit shorten.
-              </p>
-              <a
-                href="/"
-                className="text-xs text-foreground underline hover:opacity-70 inline-flex items-center gap-1.5"
-              >
-                create your first link
-                <kbd className="border border-border px-1 text-[9px] ml-1 text-muted-foreground">Enter</kbd>
-              </a>
-            </div>
+            <EmptyLinks />
           ) : (
             <LinkList
               links={allLinks}
@@ -184,10 +140,30 @@ export default async function LinksPage() {
         </div>
       </section>
 
-      <hr className="footer-separator" />
-      <footer className="mt-auto px-4 sm:px-6 py-4 text-center text-[11px] text-muted-foreground">
-        QLSS · short links
-      </footer>
+      <hr className="footer-separator mt-auto" />
+      <SiteFooter />
     </main>
+  );
+}
+
+function EmptyLinks() {
+  return (
+    <div className="border border-border bg-card py-12 px-6 text-center">
+      <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3">
+        no links yet
+      </p>
+      <p className="text-sm text-foreground mb-1 font-medium">
+        Your shortened links will appear here.
+      </p>
+      <p className="text-[11px] text-muted-foreground leading-relaxed mb-4">
+        Paste any long URL on the home page and hit shorten to create your first link.
+      </p>
+      <Link
+        href="/"
+        className="text-xs text-foreground border border-border hover:bg-accent px-4 py-2 inline-flex items-center gap-1.5 transition-colors"
+      >
+        create your first link
+      </Link>
+    </div>
   );
 }

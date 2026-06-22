@@ -2,17 +2,26 @@
 
 import { useTheme } from "next-themes";
 import Link from "next/link";
+import { ArrowLeft, Sun, Moon } from "lucide-react";
 import { SignOutButton } from "@/components/qlss/sign-out-button";
-import { Sun, Moon } from "lucide-react";
 
 /**
- * Top header — client component.
+ * Shared top header for all pages.
  *
- * Left: QLSS wordmark with glow + status dot.
+ * Left: QLSS wordmark.
+ * Center (optional): back navigation.
  * Right (authed): "my links" · theme toggle · sign out.
  * Right (unauthed): theme toggle · "sign in".
  */
-export function SiteHeader({ signedIn }: { signedIn: boolean }) {
+export function SiteHeader({
+  signedIn,
+  backHref,
+  backLabel,
+}: {
+  signedIn: boolean;
+  backHref?: string;
+  backLabel?: string;
+}) {
   const { theme, setTheme } = useTheme();
 
   return (
@@ -26,6 +35,18 @@ export function SiteHeader({ signedIn }: { signedIn: boolean }) {
         </Link>
       </div>
       <nav className="flex items-center gap-3 text-muted-foreground">
+        {backHref && (
+          <>
+            <Link
+              href={backHref}
+              className="hover:text-foreground transition-colors inline-flex items-center gap-1.5"
+            >
+              <ArrowLeft className="h-3 w-3" />
+              <span className="hidden sm:inline">{backLabel ?? "back"}</span>
+            </Link>
+            <span className="text-muted-foreground/30 select-none">·</span>
+          </>
+        )}
         {signedIn && (
           <>
             <Link

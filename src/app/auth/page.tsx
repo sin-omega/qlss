@@ -2,14 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured, siteOrigin } from "@/lib/env";
+import { SiteHeader } from "@/components/qlss/site-header";
+import { SiteFooter } from "@/components/qlss/site-footer";
 import { ArrowLeft, Loader2, Mail } from "lucide-react";
 
-/**
- * Auth page — Google + magic link only. No password, no username.
- */
 export default function AuthPage() {
   const router = useRouter();
   const supabase = createClient();
@@ -19,6 +17,7 @@ export default function AuthPage() {
   const [busy, setBusy] = useState<"google" | "email" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
 
   const configured = isSupabaseConfigured();
 
@@ -26,7 +25,10 @@ export default function AuthPage() {
     if (!configured) return;
     (async () => {
       const { data } = await supabase.auth.getSession();
-      if (data.session) router.replace("/");
+      if (data.session) {
+        setSignedIn(true);
+        router.replace("/");
+      }
     })();
   }, [configured, router, supabase]);
 
@@ -87,32 +89,7 @@ export default function AuthPage() {
 
   return (
     <main className="cli-grid relative min-h-screen w-full flex flex-col">
-      <header className="px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between text-xs">
-        <Link
-          href="/"
-          className="font-bold tracking-tight hover:opacity-70 transition-opacity"
-        >
-          <span className="text-base">Q</span><span>LSS</span>
-        </Link>
-        {view !== "landing" ? (
-          <button
-            type="button"
-            onClick={goBack}
-            className="text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1.5"
-          >
-            <ArrowLeft className="h-3 w-3" />
-            back
-          </button>
-        ) : (
-          <Link
-            href="/"
-            className="text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1.5"
-          >
-            <ArrowLeft className="h-3 w-3" />
-            back
-          </Link>
-        )}
-      </header>
+      <SiteHeader signedIn={signedIn} backHref="/" backLabel="home" />
       <div className="header-accent-line" />
 
       <section className="flex-1 flex items-center justify-center px-4 sm:px-6">
@@ -182,6 +159,16 @@ export default function AuthPage() {
 
           {view === "email" && !magicLinkSent && (
             <>
+              <div className="flex items-center justify-between mb-6">
+                <button
+                  type="button"
+                  onClick={goBack}
+                  className="text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1.5"
+                >
+                  <ArrowLeft className="h-3 w-3" />
+                  back
+                </button>
+              </div>
               <h1 className="text-lg font-bold tracking-tight mb-1 text-center">
                 sign in with email
               </h1>
@@ -256,10 +243,8 @@ export default function AuthPage() {
         </div>
       </section>
 
-      <hr className="footer-separator" />
-      <footer className="mt-auto px-4 sm:px-6 py-4 text-center text-[11px] text-muted-foreground">
-        QLSS · short links
-      </footer>
+      <hr className="footer-separator mt-auto" />
+      <SiteFooter />
     </main>
   );
 }

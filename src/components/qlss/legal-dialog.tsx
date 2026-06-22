@@ -64,10 +64,32 @@ function AbuseForm() {
   const [abuseEmail, setAbuseEmail] = useState("");
   const [abuseReason, setAbuseReason] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function handleSendReport(e: React.FormEvent) {
+  async function handleSendReport(e: React.FormEvent) {
     e.preventDefault();
-    setSubmitted(true);
+    setSending(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/abuse", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: abuseEmail || undefined,
+          message: abuseReason,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json() as { error?: string };
+        throw new Error(data.error ?? "Failed to submit report.");
+      }
+      setSubmitted(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to submit report.");
+    } finally {
+      setSending(false);
+    }
   }
 
   return (
@@ -109,11 +131,15 @@ function AbuseForm() {
             />
             <button
               type="submit"
-              className="border border-border bg-card text-foreground hover:bg-accent px-4 py-2 text-xs transition-colors btn-press touch-target inline-flex items-center gap-1.5"
+              disabled={sending}
+              className="border border-border bg-card text-foreground hover:bg-accent px-4 py-2 text-xs transition-colors btn-press touch-target inline-flex items-center gap-1.5 disabled:opacity-50"
             >
               <Send className="h-3 w-3" />
-              send report
+              {sending ? "sending..." : "send report"}
             </button>
+            {error && (
+              <p className="text-[10px] text-destructive mt-1">! {error}</p>
+            )}
           </form>
         )}
       </div>

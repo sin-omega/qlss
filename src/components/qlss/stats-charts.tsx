@@ -8,8 +8,6 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  BarChart,
-  Bar,
   PieChart,
   Pie,
   Cell,
@@ -30,38 +28,22 @@ function useChartColors() {
   const dark = resolvedTheme === "dark";
 
   return {
-    // Text / axis
     axis: dark ? "#8a8880" : "#6a6a64",
     label: dark ? "#8a8880" : "#6a6a64",
-    // Primary stroke / fill
     stroke: dark ? "#e8e6df" : "#0c0c0a",
     gradFrom: dark ? "rgba(232, 230, 223, 0.25)" : "rgba(12, 12, 10, 0.25)",
     gradTo: dark ? "rgba(232, 230, 223, 0)" : "rgba(12, 12, 10, 0)",
-    // Tooltip
     tooltipBg: dark ? "#222220" : "#ffffff",
     tooltipBorder: dark ? "#3a3a36" : "#d9d8d0",
-    // Pie stroke
     pieStroke: dark ? "#222220" : "#fbfbf9",
-    // Bar fill
-    barFill: dark ? "#e8e6df" : "#0c0c0a",
-    // Bar cursor
-    barCursor: dark ? "#333330" : "#ecebe4",
   };
 }
 
 export function StatsCharts({ rows }: { rows: AnalyticsRowForCharts[] }) {
   const colors = useChartColors();
   const timeSeries = aggregateTimeSeries(rows);
-  const topCountries = aggregateTop(
-    rows,
-    (r) => formatCountryName(r.country),
-    5,
-  );
-  const topRegions = aggregateTop(
-    rows,
-    (r) => formatRegionName(r.country, r.region),
-    5,
-  );
+  const topCountries = aggregateTop(rows, (r) => formatCountryName(r.country), 5);
+  const topRegions = aggregateTop(rows, (r) => formatRegionName(r.country, r.region), 5);
   const topBrowsers = aggregateTop(rows, (r) => r.browser_name, 5);
   const topDevices = aggregateTop(rows, (r) => r.device_type, 5);
 
@@ -128,10 +110,10 @@ export function StatsCharts({ rows }: { rows: AnalyticsRowForCharts[] }) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <ChartCard title="top browsers">
-          <MiniBarChart data={topBrowsers} colors={colors} tooltipStyle={tooltipStyle} />
+          <PieSection data={topBrowsers} colors={colors} tooltipStyle={tooltipStyle} />
         </ChartCard>
         <ChartCard title="top devices">
-          <MiniBarChart data={topDevices} colors={colors} tooltipStyle={tooltipStyle} />
+          <PieSection data={topDevices} colors={colors} tooltipStyle={tooltipStyle} />
         </ChartCard>
       </div>
     </div>
@@ -158,8 +140,6 @@ function ChartCard({
 interface ChartColors {
   label: string;
   pieStroke: string;
-  barFill: string;
-  barCursor: string;
 }
 
 function PieSection({
@@ -195,11 +175,8 @@ function PieSection({
             stroke={colors.pieStroke}
             strokeWidth={1}
           >
-            {data.map((entry, i) => (
-              <Cell
-                key={`cell-${i}`}
-                fill={PIE_COLORS[i % PIE_COLORS.length]}
-              />
+            {data.map((_entry, i) => (
+              <Cell key={`cell-${i}`} fill={PIE_COLORS[i % PIE_COLORS.length]} />
             ))}
           </Pie>
           <Tooltip
@@ -223,51 +200,6 @@ function PieSection({
         ))}
       </ul>
     </div>
-  );
-}
-
-function MiniBarChart({
-  data,
-  colors,
-  tooltipStyle,
-}: {
-  data: { name: string; count: number }[];
-  colors: ChartColors & { axis: string; tooltipBorder: string; tooltipBg: string };
-  tooltipStyle: React.CSSProperties;
-}) {
-  if (data.length === 0) {
-    return (
-      <div className="h-[100px] flex items-center justify-center text-[11px] text-muted-foreground">
-        no data
-      </div>
-    );
-  }
-
-  return (
-    <ResponsiveContainer width="100%" height={100}>
-      <BarChart
-        data={data}
-        layout="vertical"
-        margin={{ top: 0, right: 8, bottom: 0, left: 0 }}
-      >
-        <XAxis type="number" hide />
-        <YAxis
-          type="category"
-          dataKey="name"
-          stroke={colors.axis}
-          fontSize={9}
-          tickLine={false}
-          axisLine={false}
-          width={70}
-        />
-        <Tooltip
-          contentStyle={tooltipStyle}
-          labelStyle={{ color: colors.label }}
-          cursor={{ fill: colors.barCursor }}
-        />
-        <Bar dataKey="count" fill={colors.barFill} name="clicks" />
-      </BarChart>
-    </ResponsiveContainer>
   );
 }
 

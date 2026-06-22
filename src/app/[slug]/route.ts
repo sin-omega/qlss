@@ -176,34 +176,55 @@ function safeDestination(raw: string): URL | null {
   }
 }
 
-function pincodeRequiredResponse(origin: string, slug: string): NextResponse {
-  const html = `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>QLSS — Pincode Required</title>
-<style>
-  :root { color-scheme: light; }
-  * { box-sizing: border-box; }
+// ============================================================================
+// Shared CSS for standalone HTML pages (404, pincode)
+// ============================================================================
+function sharedPageCSS(): string {
+  return `
+  :root {
+    color-scheme: light dark;
+    --bg: #fbfbf9;
+    --fg: #0c0c0a;
+    --muted: #6a6a64;
+    --border: #d9d8d0;
+    --card: #ffffff;
+    --hover: #ecebe4;
+    --grid: rgba(12, 12, 10, 0.035);
+    --error: #b44040;
+    --safe: #2c6e49;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0c0c0a;
+      --fg: #e8e6df;
+      --muted: #8a8880;
+      --border: #3a3a36;
+      --card: #1a1a18;
+      --hover: #2a2a26;
+      --grid: rgba(232, 230, 223, 0.04);
+      --error: #e06060;
+      --safe: #3ebd65;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body {
-    margin: 0;
     height: 100%;
-    overflow: hidden;
+    overflow-x: hidden;
   }
   body {
     font-family: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    background: #fbfbf9;
-    color: #0c0c0a;
+    background: var(--bg);
+    color: var(--fg);
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 2rem;
+    min-height: 100vh;
+    padding: 1.5rem;
     background-image:
-      linear-gradient(to right, rgba(12, 12, 10, 0.035) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(12, 12, 10, 0.035) 1px, transparent 1px);
+      linear-gradient(to right, var(--grid) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
     background-size: 24px 24px;
-    position: relative;
   }
   .wordmark {
     position: absolute;
@@ -213,31 +234,65 @@ function pincodeRequiredResponse(origin: string, slug: string): NextResponse {
     font-weight: 700;
     letter-spacing: -0.01em;
   }
-  .wrap { max-width: 24rem; width: 100%; text-align: center; }
+  .wrap {
+    max-width: 24rem;
+    width: 100%;
+    text-align: center;
+  }
   .prompt {
-    color: #6a6a64;
+    color: var(--muted);
     font-size: 0.7rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     margin-bottom: 0.75rem;
   }
-  .prompt span { color: #0c0c0a; }
+  .prompt span { color: var(--fg); }
   h1 {
     font-size: 1.25rem;
     font-weight: 700;
     letter-spacing: -0.02em;
-    margin: 0 0 0.75rem;
+    margin-bottom: 0.75rem;
   }
   .sub {
-    color: #6a6a64;
+    color: var(--muted);
     font-size: 0.8rem;
     line-height: 1.6;
-    margin: 0 0 1.5rem;
+    margin-bottom: 1.5rem;
   }
+  .footer {
+    position: absolute;
+    bottom: 1rem;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 0.65rem;
+    color: var(--muted);
+  }
+  .btn-link {
+    color: var(--fg);
+    font-size: 0.75rem;
+    text-decoration: none;
+    border: 1px solid var(--border);
+    padding: 0.5rem 1.25rem;
+    background: var(--card);
+    display: inline-block;
+    transition: background 0.15s;
+  }
+  .btn-link:hover { background: var(--hover); }
+  @media (max-width: 480px) {
+    body { padding: 1rem; }
+    .wrap { max-width: 100%; }
+    h1 { font-size: 1.1rem; }
+    .prompt { font-size: 0.65rem; }
+  }`;
+}
+
+function pincodeRequiredResponse(origin: string, slug: string): NextResponse {
+  const css = sharedPageCSS() + `
   .pin-form {
     display: flex;
-    border: 1px solid #d9d8d0;
-    background: #ffffff;
+    border: 1px solid var(--border);
+    background: var(--card);
     overflow: hidden;
   }
   .pin-form input {
@@ -248,52 +303,45 @@ function pincodeRequiredResponse(origin: string, slug: string): NextResponse {
     font-family: inherit;
     font-size: 0.85rem;
     background: transparent;
-    color: #0c0c0a;
+    color: var(--fg);
+    min-width: 0;
   }
+  .pin-form input::placeholder { color: var(--muted); opacity: 0.6; }
   .pin-form button {
     border: none;
-    border-left: 1px solid #d9d8d0;
-    background: #ffffff;
+    border-left: 1px solid var(--border);
+    background: var(--card);
     padding: 0.6rem 1.25rem;
     font-family: inherit;
     font-size: 0.85rem;
     font-weight: 500;
     cursor: pointer;
-    color: #0c0c0a;
+    color: var(--fg);
     transition: background 0.15s;
+    white-space: nowrap;
   }
-  .pin-form button:hover { background: #ecebe4; }
+  .pin-form button:hover { background: var(--hover); }
   .error {
-    color: #b44040;
+    color: var(--error);
     font-size: 0.75rem;
     margin-top: 0.75rem;
     display: none;
   }
   .back {
-    color: #6a6a64;
-    font-size: 0.75rem;
     margin-top: 1.5rem;
   }
-  .back a {
-    color: #0c0c0a;
-    text-decoration: none;
-    border: 1px solid #d9d8d0;
-    padding: 0.4rem 1rem;
-    background: #ffffff;
-    display: inline-block;
-    transition: background 0.15s;
-  }
-  .back a:hover { background: #ecebe4; }
-  .footer {
-    position: absolute;
-    bottom: 1rem;
-    left: 0;
-    right: 0;
-    text-align: center;
-    font-size: 0.65rem;
-    color: #6a6a64;
-  }
-</style>
+  @media (max-width: 480px) {
+    .pin-form input { padding: 0.6rem 0.75rem; font-size: 1rem; }
+    .pin-form button { padding: 0.6rem 1rem; }
+  }`;
+
+  const html = `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>QLSS — Pincode Required</title>
+<style>${css}</style>
 </head>
 <body>
 <div class="wordmark">QLSS</div>
@@ -306,11 +354,12 @@ function pincodeRequiredResponse(origin: string, slug: string): NextResponse {
     <button type="submit">go</button>
   </form>
   <p class="error" id="err">incorrect pincode</p>
-  <div class="back"><a href="${escapeHtml(origin)}">&larr; back to qlss</a></div>
+  <div class="back"><a class="btn-link" href="${escapeHtml(origin)}">&larr; back to qlss</a></div>
 </div>
-<div class="footer">QLSS · short links</div>
+<div class="footer">QLSS &middot; short links</div>
 <script>
-  if (new URLSearchParams(window.location.search).has('pin') && !new URLSearchParams(window.location.search).get('pin')) {
+  var params = new URLSearchParams(window.location.search);
+  if (params.has('pin') && !params.get('pin')) {
     document.getElementById('err').style.display = 'block';
   }
 </script>
@@ -323,92 +372,19 @@ function pincodeRequiredResponse(origin: string, slug: string): NextResponse {
 }
 
 function notFoundResponse(origin: string, message?: string): NextResponse {
-  const html = renderNotFoundHtml(origin, message);
-  return new NextResponse(html, {
-    status: 404,
-    headers: { "Content-Type": "text/html; charset=utf-8" },
-  });
-}
+  const css = sharedPageCSS() + `
+  h1 { font-size: 1.5rem; }
+  @media (max-width: 480px) {
+    h1 { font-size: 1.25rem; }
+  }`;
 
-function renderNotFoundHtml(origin: string, message?: string): string {
-  return `<!doctype html>
+  const html = `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>QLSS — 404</title>
-<style>
-  :root { color-scheme: light; }
-  * { box-sizing: border-box; }
-  html, body {
-    margin: 0;
-    height: 100%;
-    overflow: hidden;
-  }
-  body {
-    font-family: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    background: #fbfbf9;
-    color: #0c0c0a;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-    background-image:
-      linear-gradient(to right, rgba(12, 12, 10, 0.035) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(12, 12, 10, 0.035) 1px, transparent 1px);
-    background-size: 24px 24px;
-    position: relative;
-  }
-  .wordmark {
-    position: absolute;
-    top: 1.25rem;
-    left: 1.5rem;
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-  }
-  .wrap { max-width: 24rem; width: 100%; text-align: center; }
-  .prompt {
-    color: #6a6a64;
-    font-size: 0.7rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    margin-bottom: 0.75rem;
-  }
-  .prompt span { color: #0c0c0a; }
-  h1 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    margin: 0 0 0.75rem;
-  }
-  .sub {
-    color: #6a6a64;
-    font-size: 0.8rem;
-    line-height: 1.6;
-    margin: 0 0 1.5rem;
-  }
-  a {
-    color: #0c0c0a;
-    font-size: 0.75rem;
-    text-decoration: none;
-    border: 1px solid #d9d8d0;
-    padding: 0.5rem 1.25rem;
-    background: #ffffff;
-    display: inline-block;
-    transition: background 0.15s;
-  }
-  a:hover { background: #ecebe4; }
-  .footer {
-    position: absolute;
-    bottom: 1rem;
-    left: 0;
-    right: 0;
-    text-align: center;
-    font-size: 0.65rem;
-    color: #6a6a64;
-  }
-</style>
+<style>${css}</style>
 </head>
 <body>
 <div class="wordmark">QLSS</div>
@@ -416,11 +392,15 @@ function renderNotFoundHtml(origin: string, message?: string): string {
   <div class="prompt"><span>$</span> qlss --resolve</div>
   <h1>${escapeHtml(message ?? "link not found")}</h1>
   <p class="sub">This short link doesn't exist. It may have been deleted, or it was never made.</p>
-  <a href="${escapeHtml(origin)}">← back to qlss</a>
+  <a class="btn-link" href="${escapeHtml(origin)}">&larr; back to qlss</a>
 </div>
-<div class="footer">QLSS · short links</div>
+<div class="footer">QLSS &middot; short links</div>
 </body>
 </html>`;
+  return new NextResponse(html, {
+    status: 404,
+    headers: { "Content-Type": "text/html; charset=utf-8" },
+  });
 }
 
 function escapeHtml(s: string): string {

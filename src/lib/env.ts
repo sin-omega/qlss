@@ -6,21 +6,34 @@ export function isSupabaseConfigured() {
 }
 
 export function siteOrigin(): string {
+  let url = "";
+
   if (typeof window !== "undefined") {
-    return window.location.origin;
-  }
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-  if (siteUrl) {
-    // Strip trailing slash to prevent double-slash
-    return siteUrl.replace(/\/+$/, "");
-  }
-  if (process.env.VERCEL_URL) {
-    const url = process.env.VERCEL_URL;
-    // Vercel may or may not include https:// — normalize it
-    if (url.startsWith("http://") || url.startsWith("https://")) {
-      return url.replace(/\/+$/, "");
+    url = window.location.origin;
+  } else {
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+    if (siteUrl) {
+      url = siteUrl;
+    } else if (process.env.VERCEL_URL) {
+      const vurl = process.env.VERCEL_URL;
+      url = vurl.startsWith("http://") || vurl.startsWith("https://") ? vurl : `https://${vurl}`;
+    } else {
+      return "http://localhost:3000";
     }
-    return `https://${url}`;
   }
-  return "http://localhost:3000";
+
+  // Strip trailing slashes
+  url = url.replace(/\/+$/, "");
+
+  // Prevent double protocol (e.g. https://https://qlss.eu)
+  if (url.startsWith("https://https://") || url.startsWith("http://http://")) {
+    url = url.replace(/^(https?:\/\/)(https?:\/\/)/, "$2");
+  }
+
+  // Ensure protocol exists
+  if (!url.startsWith("http://") && !url.startsWith("https://")) {
+    url = `https://${url}`;
+  }
+
+  return url;
 }

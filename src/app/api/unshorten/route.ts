@@ -28,8 +28,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Only http(s) URLs are supported." }, { status: 400 });
   }
 
-  const encodedUrl = encodeURIComponent(parsedUrl.toString());
-  const apiUrl = `https://unshorten.me/api/${encodedUrl}`;
+  const targetUrl = parsedUrl.toString();
+  const apiUrl = `https://unshorten.me/api/v2/unshorten?url=${encodeURIComponent(targetUrl)}`;
 
   try {
     const controller = new AbortController();
@@ -51,8 +51,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const json = await res.json();
-    return NextResponse.json(json);
+    const json = (await res.json()) as Record<string, unknown>;
+
+    // v2 returns { resolved_url, url, success }
+    const resolved = json.resolved_url ?? json.url ?? targetUrl;
+    return NextResponse.json({
+      url: targetUrl,
+      resolved_url: typeof resolved === "string" ? resolved : targetUrl,
+      success: true,
+    });
   } catch (err: unknown) {
     if (err instanceof DOMException && err.name === "AbortError") {
       return NextResponse.json({ error: "Request timed out." }, { status: 504 });
