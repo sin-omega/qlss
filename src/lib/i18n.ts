@@ -18,7 +18,7 @@ const dictionary: Dict = {
       copyright: "QLSS · short links",
       privacy_policy: "privacy policy",
       terms_of_service: "terms of service",
-      report_abuse: "report abuse",
+      report_abuse: "report bug/abuse",
     },
     common: {
       back: "back",
@@ -74,7 +74,7 @@ const dictionary: Dict = {
     },
     home: {
       shorten_tab: "shorten",
-      unshorten_tab: "unshorten (coming soon)",
+      unshorten_tab: "unshorten",
       bulk_tab: "bulk",
       paste_url: "paste a long url",
       shorten_btn: "shorten",
@@ -84,7 +84,7 @@ const dictionary: Dict = {
       pincode:
         "pincode (optional — visitors must enter it to access)",
       expires: "expires",
-      utm_params: "utm params",
+      utm_params: "utm params (optional)",
       utm_active: "active",
       utm_appended: "utm params appended",
       clear_utm: "clear all utm",
