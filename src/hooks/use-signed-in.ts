@@ -3,17 +3,6 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-<<<<<<< HEAD
-=======
-/**
- * Tiny hook that subscribes to the Supabase auth state.
- * Returns `signedIn` (boolean | null) — null while the initial
- * session check is in flight, then a definite true/false.
- *
- * Used by the shortener forms to decide whether to show the
- * "custom alias" field (registered-user feature).
- */
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
 export function useSignedIn() {
   const supabase = createClient();
   const [signedIn, setSignedIn] = useState<boolean | null>(null);

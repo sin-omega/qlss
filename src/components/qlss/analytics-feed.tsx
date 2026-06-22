@@ -7,14 +7,7 @@ interface AnalyticsRow {
   country: string | null;
   region: string | null;
   city: string | null;
-<<<<<<< HEAD
   timezone: string | null;
-=======
-  latitude: number | null;
-  longitude: number | null;
-  timezone: string | null;
-  user_agent: string | null;
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
   browser_name: string | null;
   browser_version: string | null;
   os_name: string | null;
@@ -26,17 +19,6 @@ interface AnalyticsRow {
   clicked_at: string;
 }
 
-<<<<<<< HEAD
-=======
-/**
- * CLI-styled flat list of recent visitors. Each entry is a compact,
- * monospaced record — feels like tailing a log.
- *
- * Layout per row:
- *   [time] [IP] · [estimated location]              [ASN] [bot]
- *     [browser] · [os] · [device] · [referer]
- */
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
 export function AnalyticsFeed({ rows }: { rows: AnalyticsRow[] }) {
   return (
     <div className="border border-border bg-card">
@@ -53,19 +35,11 @@ export function AnalyticsFeed({ rows }: { rows: AnalyticsRow[] }) {
 }
 
 function VisitorRow({ row }: { row: AnalyticsRow }) {
-<<<<<<< HEAD
   const location = formatLocation(row.country, row.region);
   const when = formatWhen(row.clicked_at, row.timezone);
   const browser = row.browser_name
     ? `${row.browser_name}${row.browser_version ? ` ${row.browser_version}` : ""}`
     : null;
-=======
-  // Use the geo helper to convert ISO codes to lowercase "region, country"
-  // e.g. "mazowieckie, poland". Falls back to null if both are missing.
-  const location = formatLocation(row.country, row.region);
-  const when = formatWhen(row.clicked_at, row.timezone);
-  const browser = formatBrowser(row);
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
   const os = row.os_name
     ? `${row.os_name}${row.os_version ? ` ${row.os_version}` : ""}`
     : "—";
@@ -73,10 +47,6 @@ function VisitorRow({ row }: { row: AnalyticsRow }) {
 
   return (
     <div className="px-4 py-2.5 text-xs leading-relaxed">
-<<<<<<< HEAD
-=======
-      {/* Line 1: time · IP · estimated location · ASN · bot badge */}
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
       <div className="flex items-baseline justify-between gap-3">
         <div className="flex items-baseline gap-2 min-w-0 flex-wrap">
           <span className="text-muted-foreground tabular-nums shrink-0">
@@ -101,10 +71,6 @@ function VisitorRow({ row }: { row: AnalyticsRow }) {
         </span>
       </div>
 
-<<<<<<< HEAD
-=======
-      {/* Line 2: browser · os · device · referer */}
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
       <div className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-0.5 text-muted-foreground text-[11px]">
         <span>
           <span className="text-muted-foreground/70">brw</span>{" "}
@@ -127,20 +93,6 @@ function VisitorRow({ row }: { row: AnalyticsRow }) {
   );
 }
 
-<<<<<<< HEAD
-=======
-// ---------------------------------------------------------------------------
-// Formatters
-// ---------------------------------------------------------------------------
-
-function formatBrowser(row: AnalyticsRow): string | null {
-  if (!row.browser_name) return null;
-  return `${row.browser_name}${
-    row.browser_version ? ` ${row.browser_version}` : ""
-  }`;
-}
-
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
 function formatWhen(iso: string, timezone: string | null): string {
   try {
     const date = new Date(iso);

@@ -4,51 +4,20 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { isSupabaseConfigured } from "@/lib/env";
 import { normalizeSlug, isReservedSlug } from "@/lib/slug";
 
-<<<<<<< HEAD
-=======
-// Tell Vercel / Next to run this on the Node.js runtime (not the edge) so we
-// get full `ua-parser-js` support and a stable `fetch` for the async insert.
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 interface LinkRow {
   id: string;
   destination_url: string;
-<<<<<<< HEAD
   pincode: string | null;
 }
 
-=======
-}
-
-/**
- * The redirect + telemetry handler.
- *
- * Flow:
- *  1. Look up the slug → destination URL.
- *  2. If not found, return a calm 404 page (no scary default error UI).
- *  3. Extract telemetry from Vercel headers + standard request headers.
- *  4. Kick off an asynchronous, non-blocking insert into `analytics`
- *     using the service role client (bypasses RLS for system logging).
- *  5. Instantly return a 302 to the destination URL.
- *
- * The telemetry insert is awaited with `waitUntil`-style fire-and-forget
- * — it never blocks the redirect, and a failed insert never breaks a
- * user-facing redirect.
- */
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const { slug: rawSlug } = await params;
-<<<<<<< HEAD
-=======
-  // Normalize: lowercase + trim. Reserved slugs (api, auth, dashboard,
-  // stats, _next, favicon.ico, etc.) are NEVER short links — bail out
-  // early so we never accidentally shadow an app route.
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
   const slug = normalizeSlug(rawSlug);
   const url = new URL(request.url);
 
@@ -56,16 +25,11 @@ export async function GET(
     return notFoundResponse(url.origin);
   }
 
-<<<<<<< HEAD
-=======
-  // Resolve the link.
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
   const link = await resolveLink(slug);
   if (!link) {
     return notFoundResponse(url.origin);
   }
 
-<<<<<<< HEAD
   // Pincode protection
   if (link.pincode) {
     const providedPin = url.searchParams.get("pin");
@@ -77,26 +41,10 @@ export async function GET(
   const explicitRef = url.searchParams.get("ref");
   const payload = buildAnalyticsPayload(request, link.id, explicitRef);
 
-=======
-  // Check for explicit ref query param (e.g. ?ref=profile from the profile page).
-  // If present, use it as the referer value instead of the HTTP Referer header.
-  const explicitRef = url.searchParams.get("ref");
-
-  // Build the analytics payload from request headers.
-  const payload = buildAnalyticsPayload(request, link.id, explicitRef);
-
-  // Fire-and-forget telemetry insert. We don't await it for the response.
-  // The promise runs in the background and any error is logged, never
-  // surfaced to the visitor.
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
   void logClick(payload).catch((err) => {
     console.warn("[slug] telemetry insert failed:", err);
   });
 
-<<<<<<< HEAD
-=======
-  // Instant redirect.
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
   const destination = safeDestination(link.destination_url);
   if (!destination) {
     return notFoundResponse(url.origin, "This link points nowhere.");
@@ -111,24 +59,13 @@ export async function GET(
   });
 }
 
-<<<<<<< HEAD
-=======
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
 async function resolveLink(slug: string): Promise<LinkRow | null> {
   if (!isSupabaseConfigured()) return null;
 
   const serviceClient = createServiceClient();
   const { data, error } = await serviceClient
     .from("links")
-<<<<<<< HEAD
     .select("id, destination_url, pincode")
-=======
-    .select("id, destination_url")
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
     .eq("slug", slug)
     .maybeSingle();
 
@@ -146,11 +83,6 @@ function buildAnalyticsPayload(
 ): Record<string, unknown> {
   const headers = request.headers;
 
-<<<<<<< HEAD
-=======
-  // Vercel injects a rich set of IP / geo headers on every request.
-  // See https://vercel.com/docs/edge-network/headers/request-headers
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
   const forwardedFor = headers.get("x-vercel-forwarded-for") ?? "";
   const ip = firstIp(forwardedFor) ?? null;
 
@@ -166,13 +98,7 @@ function buildAnalyticsPayload(
   const referer = explicitRef ?? headers.get("referer") ?? null;
   const language = headers.get("accept-language") ?? null;
 
-<<<<<<< HEAD
   const ua = userAgent ? new UAParser(userAgent).getResult() : null;
-=======
-  // Parse the user-agent server-side.
-  const ua = userAgent ? new UAParser(userAgent).getResult() : null;
-
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
   const deviceType = inferDeviceType(ua);
 
   return {
@@ -224,11 +150,7 @@ function inferDeviceType(
   ua: ReturnType<typeof UAParser.prototype.getResult> | null,
 ): string | null {
   if (!ua) return null;
-<<<<<<< HEAD
   if (ua.device?.type) return ua.device.type;
-=======
-  if (ua.device?.type) return ua.device.type; // mobile, tablet, etc.
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
   const os = ua.os?.name?.toLowerCase() ?? "";
   if (os.includes("android") || os.includes("ios")) return "mobile";
   if (os.includes("windows") || os.includes("mac") || os.includes("linux")) {
@@ -247,10 +169,6 @@ function isBot(userAgent: string | null): boolean {
 function safeDestination(raw: string): URL | null {
   try {
     const url = new URL(raw);
-<<<<<<< HEAD
-=======
-    // Only allow http(s) destinations — no `javascript:`, `file:`, etc.
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
     if (url.protocol !== "http:" && url.protocol !== "https:") return null;
     return url;
   } catch {
@@ -258,7 +176,6 @@ function safeDestination(raw: string): URL | null {
   }
 }
 
-<<<<<<< HEAD
 function pincodeRequiredResponse(origin: string, slug: string): NextResponse {
   const html = `<!doctype html>
 <html lang="en">
@@ -405,8 +322,6 @@ function pincodeRequiredResponse(origin: string, slug: string): NextResponse {
   });
 }
 
-=======
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
 function notFoundResponse(origin: string, message?: string): NextResponse {
   const html = renderNotFoundHtml(origin, message);
   return new NextResponse(html, {
@@ -503,11 +418,7 @@ function renderNotFoundHtml(origin: string, message?: string): string {
   <p class="sub">This short link doesn't exist. It may have been deleted, or it was never made.</p>
   <a href="${escapeHtml(origin)}">← back to qlss</a>
 </div>
-<<<<<<< HEAD
 <div class="footer">QLSS · short links</div>
-=======
-<div class="footer">Copyleft (ɔ) QLSS.eu 2026</div>
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
 </body>
 </html>`;
 }

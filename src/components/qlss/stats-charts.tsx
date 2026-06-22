@@ -1,9 +1,6 @@
 "use client";
 
-<<<<<<< HEAD
 import { useTheme } from "next-themes";
-=======
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
 import {
   AreaChart,
   Area,
@@ -22,17 +19,12 @@ import { formatCountryName, formatRegionName } from "@/lib/geo";
 interface AnalyticsRowForCharts {
   country: string | null;
   region: string | null;
-<<<<<<< HEAD
-=======
-  city: string | null;
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
   browser_name: string | null;
   device_type: string | null;
   is_bot: boolean;
   clicked_at: string;
 }
 
-<<<<<<< HEAD
 function useChartColors() {
   const { resolvedTheme } = useTheme();
   const dark = resolvedTheme === "dark";
@@ -60,22 +52,6 @@ function useChartColors() {
 export function StatsCharts({ rows }: { rows: AnalyticsRowForCharts[] }) {
   const colors = useChartColors();
   const timeSeries = aggregateTimeSeries(rows);
-=======
-/**
- * Compact, CLI-styled charts for the per-link stats page.
- *
- * - Clicks over time (last 14 days, area chart)
- * - Top countries (pie chart)
- * - Top regions (pie chart)
- * - Top browsers (horizontal bars)
- * - Top devices (horizontal bars)
- *
- * All monochrome — black ink on paper white, matching the rest of QLSS.
- */
-export function StatsCharts({ rows }: { rows: AnalyticsRowForCharts[] }) {
-  const timeSeries = aggregateTimeSeries(rows);
-  // Convert ISO codes to lowercase human-readable names for the pies.
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
   const topCountries = aggregateTop(
     rows,
     (r) => formatCountryName(r.country),
@@ -89,7 +65,6 @@ export function StatsCharts({ rows }: { rows: AnalyticsRowForCharts[] }) {
   const topBrowsers = aggregateTop(rows, (r) => r.browser_name, 5);
   const topDevices = aggregateTop(rows, (r) => r.device_type, 5);
 
-<<<<<<< HEAD
   const tooltipStyle = {
     background: colors.tooltipBg,
     border: `1px solid ${colors.tooltipBorder}`,
@@ -100,43 +75,25 @@ export function StatsCharts({ rows }: { rows: AnalyticsRowForCharts[] }) {
 
   return (
     <div className="space-y-3">
-=======
-  return (
-    <div className="space-y-3">
-      {/* Clicks over time */}
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
       <ChartCard title="clicks · last 14 days">
         <ResponsiveContainer width="100%" height={100}>
           <AreaChart data={timeSeries} margin={{ top: 5, right: 5, bottom: 0, left: -20 }}>
             <defs>
               <linearGradient id="clicksGrad" x1="0" y1="0" x2="0" y2="1">
-<<<<<<< HEAD
                 <stop offset="0%" stopColor={colors.gradFrom} />
                 <stop offset="100%" stopColor={colors.gradTo} />
-=======
-                <stop offset="0%" stopColor="#0c0c0a" stopOpacity={0.25} />
-                <stop offset="100%" stopColor="#0c0c0a" stopOpacity={0} />
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
               </linearGradient>
             </defs>
             <XAxis
               dataKey="label"
-<<<<<<< HEAD
               stroke={colors.axis}
-=======
-              stroke="#6a6a64"
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
               fontSize={9}
               tickLine={false}
               axisLine={false}
               interval="preserveStartEnd"
             />
             <YAxis
-<<<<<<< HEAD
               stroke={colors.axis}
-=======
-              stroke="#6a6a64"
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
               fontSize={9}
               tickLine={false}
               axisLine={false}
@@ -144,30 +101,14 @@ export function StatsCharts({ rows }: { rows: AnalyticsRowForCharts[] }) {
               allowDecimals={false}
             />
             <Tooltip
-<<<<<<< HEAD
               contentStyle={tooltipStyle}
               labelStyle={{ color: colors.label }}
               cursor={{ stroke: colors.tooltipBorder, strokeWidth: 1 }}
-=======
-              contentStyle={{
-                background: "#ffffff",
-                border: "1px solid #d9d8d0",
-                borderRadius: 0,
-                fontSize: 11,
-                fontFamily: "var(--font-mono), monospace",
-              }}
-              labelStyle={{ color: "#6a6a64" }}
-              cursor={{ stroke: "#d9d8d0", strokeWidth: 1 }}
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
             />
             <Area
               type="monotone"
               dataKey="count"
-<<<<<<< HEAD
               stroke={colors.stroke}
-=======
-              stroke="#0c0c0a"
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
               strokeWidth={1.5}
               fill="url(#clicksGrad)"
               name="clicks"
@@ -176,7 +117,6 @@ export function StatsCharts({ rows }: { rows: AnalyticsRowForCharts[] }) {
         </ResponsiveContainer>
       </ChartCard>
 
-<<<<<<< HEAD
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <ChartCard title="countries">
           <PieSection data={topCountries} colors={colors} tooltipStyle={tooltipStyle} />
@@ -192,38 +132,12 @@ export function StatsCharts({ rows }: { rows: AnalyticsRowForCharts[] }) {
         </ChartCard>
         <ChartCard title="top devices">
           <MiniBarChart data={topDevices} colors={colors} tooltipStyle={tooltipStyle} />
-=======
-      {/* Pies: countries + regions */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <ChartCard title="countries">
-          <PieSection data={topCountries} />
-        </ChartCard>
-        <ChartCard title="regions">
-          <PieSection data={topRegions} />
-        </ChartCard>
-      </div>
-
-      {/* Bars: browsers + devices */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <ChartCard title="top browsers">
-          <MiniBarChart data={topBrowsers} />
-        </ChartCard>
-        <ChartCard title="top devices">
-          <MiniBarChart data={topDevices} />
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
         </ChartCard>
       </div>
     </div>
   );
 }
 
-<<<<<<< HEAD
-=======
-// ---------------------------------------------------------------------------
-// Sub-components
-// ---------------------------------------------------------------------------
-
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
 function ChartCard({
   title,
   children,
@@ -241,7 +155,6 @@ function ChartCard({
   );
 }
 
-<<<<<<< HEAD
 interface ChartColors {
   label: string;
   pieStroke: string;
@@ -258,9 +171,6 @@ function PieSection({
   colors: ChartColors & { tooltipBorder: string; tooltipBg: string };
   tooltipStyle: React.CSSProperties;
 }) {
-=======
-function PieSection({ data }: { data: { name: string; count: number }[] }) {
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
   if (data.length === 0) {
     return (
       <div className="h-[140px] flex items-center justify-center text-[11px] text-muted-foreground">
@@ -282,11 +192,7 @@ function PieSection({ data }: { data: { name: string; count: number }[] }) {
             innerRadius={28}
             outerRadius={56}
             paddingAngle={1}
-<<<<<<< HEAD
             stroke={colors.pieStroke}
-=======
-            stroke="#fbfbf9"
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
             strokeWidth={1}
           >
             {data.map((entry, i) => (
@@ -297,19 +203,8 @@ function PieSection({ data }: { data: { name: string; count: number }[] }) {
             ))}
           </Pie>
           <Tooltip
-<<<<<<< HEAD
             contentStyle={tooltipStyle}
             labelStyle={{ color: colors.label }}
-=======
-            contentStyle={{
-              background: "#ffffff",
-              border: "1px solid #d9d8d0",
-              borderRadius: 0,
-              fontSize: 11,
-              fontFamily: "var(--font-mono), monospace",
-            }}
-            labelStyle={{ color: "#6a6a64" }}
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
           />
         </PieChart>
       </ResponsiveContainer>
@@ -331,7 +226,6 @@ function PieSection({ data }: { data: { name: string; count: number }[] }) {
   );
 }
 
-<<<<<<< HEAD
 function MiniBarChart({
   data,
   colors,
@@ -341,9 +235,6 @@ function MiniBarChart({
   colors: ChartColors & { axis: string; tooltipBorder: string; tooltipBg: string };
   tooltipStyle: React.CSSProperties;
 }) {
-=======
-function MiniBarChart({ data }: { data: { name: string; count: number }[] }) {
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
   if (data.length === 0) {
     return (
       <div className="h-[100px] flex items-center justify-center text-[11px] text-muted-foreground">
@@ -363,42 +254,23 @@ function MiniBarChart({ data }: { data: { name: string; count: number }[] }) {
         <YAxis
           type="category"
           dataKey="name"
-<<<<<<< HEAD
           stroke={colors.axis}
-=======
-          stroke="#6a6a64"
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
           fontSize={9}
           tickLine={false}
           axisLine={false}
           width={70}
         />
         <Tooltip
-<<<<<<< HEAD
           contentStyle={tooltipStyle}
           labelStyle={{ color: colors.label }}
           cursor={{ fill: colors.barCursor }}
         />
         <Bar dataKey="count" fill={colors.barFill} name="clicks" />
-=======
-          contentStyle={{
-            background: "#ffffff",
-            border: "1px solid #d9d8d0",
-            borderRadius: 0,
-            fontSize: 11,
-            fontFamily: "var(--font-mono), monospace",
-          }}
-          labelStyle={{ color: "#6a6a64" }}
-          cursor={{ fill: "#ecebe4" }}
-        />
-        <Bar dataKey="count" fill="#0c0c0a" name="clicks" />
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
       </BarChart>
     </ResponsiveContainer>
   );
 }
 
-<<<<<<< HEAD
 const PIE_COLORS = [
   "#0c0c0a",
   "#6a6a64",
@@ -406,21 +278,6 @@ const PIE_COLORS = [
   "#2c6e49",
   "#8c4040",
   "#b4b3aa",
-=======
-// ---------------------------------------------------------------------------
-// Aggregation helpers
-// ---------------------------------------------------------------------------
-
-// Monochrome-with-a-hint-of-warmth palette. Pies need distinct slices,
-// so we cycle through a few shades of ink + warm grays.
-const PIE_COLORS = [
-  "#0c0c0a", // ink
-  "#6a6a64", // mid gray
-  "#b08a3e", // warm gold
-  "#2c6e49", // deep green
-  "#8c4040", // muted red
-  "#b4b3aa", // light gray
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
 ];
 
 function aggregateTimeSeries(
@@ -466,8 +323,4 @@ function aggregateTop(
     .map(([name, count]) => ({ name, count }))
     .sort((a, b) => b.count - a.count)
     .slice(0, limit);
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2

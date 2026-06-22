@@ -6,22 +6,6 @@ import { normalizeSlug, isReservedSlug } from "@/lib/slug";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-<<<<<<< HEAD
-=======
-/**
- * DELETE /api/links/[slug]
- *   Deletes the link with the given slug AND all of its analytics rows
- *   (the `analytics` table has ON DELETE CASCADE on `link_id`).
- *
- *   - Must be signed in.
- *   - The link must belong to the signed-in user (RLS enforces this;
- *     we also check explicitly so we can return a clean 404).
- *
- * PATCH /api/links/[slug]  { folder_id?: string | null }
- *   Updates the link's folder assignment. Pass `folder_id: null` to
- *   remove the link from its current folder.
- */
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
 export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ slug: string }> },
@@ -43,11 +27,6 @@ export async function DELETE(
 
   if (!user) return jsonError(401, "Sign in to delete a link.");
 
-<<<<<<< HEAD
-=======
-  // Fetch the link to confirm ownership. RLS would block the delete
-  // anyway, but we want to return a clean 404 instead of a silent noop.
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
   const { data: link } = await supabase
     .from("links")
     .select("id, user_id")
@@ -57,10 +36,6 @@ export async function DELETE(
   if (!link) return jsonError(404, "Link not found.");
   if (link.user_id !== user.id) return jsonError(403, "Not your link.");
 
-<<<<<<< HEAD
-=======
-  // Delete — analytics rows cascade automatically.
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
   const { error } = await supabase.from("links").delete().eq("id", link.id);
   if (error) {
     console.warn("[links] delete failed:", error.message);
@@ -92,19 +67,11 @@ export async function PATCH(
   if (!user) return jsonError(401, "Sign in to update a link.");
 
   let body: {
-<<<<<<< HEAD
-=======
-    folder_id?: string | null;
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
     title?: string | null;
     description?: string | null;
   };
   try {
     body = (await request.json()) as {
-<<<<<<< HEAD
-=======
-      folder_id?: string | null;
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
       title?: string | null;
       description?: string | null;
     };
@@ -112,10 +79,6 @@ export async function PATCH(
     return jsonError(400, "Send a JSON body.");
   }
 
-<<<<<<< HEAD
-=======
-  // Fetch the link to confirm ownership.
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
   const { data: link } = await supabase
     .from("links")
     .select("id, user_id")
@@ -125,25 +88,7 @@ export async function PATCH(
   if (!link) return jsonError(404, "Link not found.");
   if (link.user_id !== user.id) return jsonError(403, "Not your link.");
 
-<<<<<<< HEAD
   const update: Record<string, unknown> = {};
-=======
-  // Build the update payload from whichever fields are present.
-  const update: Record<string, unknown> = {};
-  if (body.folder_id !== undefined) {
-    const folderId = body.folder_id ?? null;
-    if (folderId) {
-      const { data: folder } = await supabase
-        .from("folders")
-        .select("id")
-        .eq("id", folderId)
-        .eq("user_id", user.id)
-        .maybeSingle();
-      if (!folder) return jsonError(404, "Folder not found.");
-    }
-    update.folder_id = folderId;
-  }
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
   if (body.title !== undefined) {
     const title = (body.title ?? "").trim();
     if (title.length > 140) {

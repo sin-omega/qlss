@@ -4,14 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2, Loader2 } from "lucide-react";
 
-<<<<<<< HEAD
-=======
-/**
- * Small delete button shown on the stats page header. Two-step:
- * click once to reveal a confirm prompt, click again to actually
- * delete. After deletion, bounces back to the dashboard.
- */
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
 export function DeleteLinkButton({ slug }: { slug: string }) {
   const router = useRouter();
   const [confirming, setConfirming] = useState(false);
@@ -26,11 +18,7 @@ export function DeleteLinkButton({ slug }: { slug: string }) {
         console.warn("delete failed:", json?.error);
         return;
       }
-<<<<<<< HEAD
       router.replace("/links");
-=======
-      router.replace("/dashboard");
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
       router.refresh();
     } finally {
       setBusy(false);

@@ -8,22 +8,6 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-mono);
   --font-mono: var(--font-mono);
-<<<<<<< HEAD
-=======
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -46,13 +30,8 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-<<<<<<< HEAD
 /* Light mode — paper white + soft black ink, monospace */
 :root {
-=======
-:root {
-  /* CLI light mode — paper white + soft black ink, monospace. */
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
   --radius: 0.25rem;
   --background: #fbfbf9;
   --foreground: #0c0c0a;
@@ -72,7 +51,6 @@
   --border: #d9d8d0;
   --input: #ecebe4;
   --ring: #0c0c0a;
-<<<<<<< HEAD
 }
 
 /* Dark mode — deep charcoal + cream text */
@@ -95,40 +73,19 @@
   --border: #3a3a36;
   --input: #333330;
   --ring: #e8e6df;
-=======
-  --chart-1: #0c0c0a;
-  --chart-2: #6a6a64;
-  --chart-3: #b42318;
-  --chart-4: #2c6e49;
-  --chart-5: #b08a3e;
-  --sidebar: #fbfbf9;
-  --sidebar-foreground: #0c0c0a;
-  --sidebar-primary: #0c0c0a;
-  --sidebar-primary-foreground: #fbfbf9;
-  --sidebar-accent: #ecebe4;
-  --sidebar-accent-foreground: #0c0c0a;
-  --sidebar-border: #d9d8d0;
-  --sidebar-ring: #0c0c0a;
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
 }
 
 @layer base {
   * {
     @apply border-border;
-<<<<<<< HEAD
     border-radius: 0 !important;
     transition: border-color 0.15s ease, background-color 0.15s ease;
-=======
-    /* Square corners — CLI feel */
-    border-radius: 0 !important;
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
   }
   html, body {
     @apply bg-background text-foreground;
     font-family: var(--font-mono), ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
     font-feature-settings: "liga" 0;
     font-variant-ligatures: none;
-<<<<<<< HEAD
     min-height: 100%;
   }
 
@@ -136,22 +93,10 @@
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
-=======
-    /* Don't lock body overflow globally — scrollless pages opt in via
-       h-screen overflow-hidden on their <main>. Scrollable pages (stats,
-       account, profile/setup) use min-h-screen and scroll naturally. */
-    min-height: 100%;
-  }
-  /* Thin monochrome scrollbars — only used inside scrollable subregions */
-  ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
   }
   ::-webkit-scrollbar-thumb {
     background: #d9d8d0;
   }
-<<<<<<< HEAD
   .dark ::-webkit-scrollbar-thumb {
     background: #3a3a36;
   }
@@ -161,11 +106,6 @@
   .dark ::-webkit-scrollbar-thumb:hover {
     background: #555550;
   }
-=======
-  ::-webkit-scrollbar-thumb:hover {
-    background: #b4b3aa;
-  }
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
   ::-webkit-scrollbar-track {
     background: transparent;
   }
@@ -173,7 +113,6 @@
     background: #0c0c0a;
     color: #fbfbf9;
   }
-<<<<<<< HEAD
   .dark ::selection {
     background: #e8e6df;
     color: #1a1a18;
@@ -184,24 +123,16 @@
   .dark input, .dark textarea {
     caret-color: #e8e6df;
   }
-=======
-  input, textarea {
-    caret-color: #0c0c0a;
-  }
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
   input[type=number]::-webkit-inner-spin-button,
   input[type=number]::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
   }
-<<<<<<< HEAD
 
   /* Smooth link transitions */
   a {
     transition: color 0.15s ease, opacity 0.15s ease;
   }
-=======
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
 }
 
 /* Blinking block cursor — used on prompts */
@@ -224,14 +155,11 @@
     linear-gradient(to bottom, rgba(12, 12, 10, 0.035) 1px, transparent 1px);
   background-size: 24px 24px;
 }
-<<<<<<< HEAD
 .dark .cli-grid {
   background-image:
     linear-gradient(to right, rgba(232, 230, 223, 0.025) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(232, 230, 223, 0.025) 1px, transparent 1px);
 }
-=======
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
 
 /* Dashed ASCII divider */
 .hr-dashed {
@@ -240,7 +168,6 @@
   height: 0;
   margin: 0;
 }
-<<<<<<< HEAD
 .dark .hr-dashed {
   border-top-color: #3a3a36;
 }
@@ -625,5 +552,3 @@
 .border-gradient {
   border-image: linear-gradient(135deg, var(--border) 0%, var(--muted-foreground) 50%, var(--border) 100%) 1;
 }
-=======
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2

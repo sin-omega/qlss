@@ -47,10 +47,6 @@ export default async function StatsPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug: rawSlug } = await params;
-<<<<<<< HEAD
-=======
-  // Normalize: lowercase + trim. Reserved slugs are never short links.
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
   const slug = normalizeSlug(rawSlug);
   if (isReservedSlug(slug)) {
     notFound();
@@ -59,7 +55,6 @@ export default async function StatsPage({
   if (!isSupabaseConfigured()) {
     return (
       <main className="cli-grid relative min-h-screen w-full flex flex-col">
-<<<<<<< HEAD
         <header className="px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between text-xs">
           <Link href="/" className="font-bold tracking-tight hover:opacity-70 transition-opacity">
             <span className="text-base">Q</span><span>LSS</span>
@@ -71,9 +66,6 @@ export default async function StatsPage({
         </header>
         <div className="header-accent-line" />
         <section className="flex-1 flex items-center justify-center px-4 sm:px-6 py-16">
-=======
-        <section className="flex-1 flex items-center justify-center px-6 py-16">
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
           <div className="text-center max-w-md">
             <h1 className="text-lg font-bold tracking-tight">Almost ready.</h1>
             <p className="mt-3 text-xs text-muted-foreground leading-relaxed">
@@ -81,13 +73,10 @@ export default async function StatsPage({
             </p>
           </div>
         </section>
-<<<<<<< HEAD
         <hr className="footer-separator" />
         <footer className="mt-auto px-4 sm:px-6 py-4 text-center text-[11px] text-muted-foreground">
           QLSS · short links
         </footer>
-=======
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
       </main>
     );
   }
@@ -109,12 +98,6 @@ export default async function StatsPage({
   if (!link) notFound();
   if (link && link.user_id !== user.id) notFound();
 
-<<<<<<< HEAD
-=======
-  // Fetch the analytics rows for this link, newest first. We fetch up to
-  // 200 so the charts have enough data to be meaningful, while the log
-  // below shows the most recent 100.
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
   const { data: analyticsRows } = await supabase
     .from("analytics")
     .select(
@@ -129,7 +112,6 @@ export default async function StatsPage({
   const shortUrl = `${siteOrigin()}/${link.slug}`;
 
   return (
-<<<<<<< HEAD
     <main className="cli-grid relative min-h-screen w-full flex flex-col">
       <header className="px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between text-xs">
         <Link href="/" className="font-bold tracking-tight hover:opacity-70 transition-opacity">
@@ -154,21 +136,6 @@ export default async function StatsPage({
             >
               <ArrowLeft className="h-3 w-3" />
               my links
-=======
-    // Note: stats page is NOT scrollless. The whole page scrolls
-    // naturally so the user can see all the charts and the full
-    // analytics log without fighting an inner scroll container.
-    <main className="cli-grid relative min-h-screen w-full flex flex-col">
-      <section className="pt-10 pb-4 px-6">
-        <div className="mx-auto max-w-2xl">
-          <div className="flex items-center justify-between">
-            <Link
-              href="/dashboard/links"
-              className="text-xs text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1.5"
-            >
-              <ArrowLeft className="h-3 w-3" />
-              back
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
             </Link>
             <DeleteLinkButton slug={link.slug} />
           </div>
@@ -190,12 +157,7 @@ export default async function StatsPage({
         </div>
       </section>
 
-<<<<<<< HEAD
       <section className="px-4 sm:px-6 pb-3">
-=======
-      {/* Stats summary — collapsible */}
-      <section className="px-6 pb-3">
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
         <div className="mx-auto max-w-2xl">
           <CollapsibleSection
             title="summary"
@@ -211,14 +173,8 @@ export default async function StatsPage({
         </div>
       </section>
 
-<<<<<<< HEAD
       {rows.length > 0 && (
         <section className="px-4 sm:px-6 pb-3">
-=======
-      {/* Charts — collapsible */}
-      {rows.length > 0 && (
-        <section className="px-6 pb-3">
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
           <div className="mx-auto max-w-2xl">
             <CollapsibleSection
               title="charts"
@@ -233,12 +189,7 @@ export default async function StatsPage({
         </section>
       )}
 
-<<<<<<< HEAD
       <section className="px-4 sm:px-6 pb-16">
-=======
-      {/* Analytics log — collapsible */}
-      <section className="px-6 pb-16">
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
         <div className="mx-auto max-w-2xl">
           <CollapsibleSection
             title="recent visitors"
@@ -257,14 +208,11 @@ export default async function StatsPage({
           </CollapsibleSection>
         </div>
       </section>
-<<<<<<< HEAD
 
       <hr className="footer-separator" />
       <footer className="mt-auto px-4 sm:px-6 py-4 text-center text-[11px] text-muted-foreground">
         QLSS · short links
       </footer>
-=======
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
     </main>
   );
 }
@@ -278,8 +226,4 @@ function Stat({ label, value }: { label: string; value: number }) {
       </p>
     </div>
   );
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2

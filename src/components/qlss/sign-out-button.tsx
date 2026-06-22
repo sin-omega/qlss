@@ -2,10 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-<<<<<<< HEAD
 import { LogOut, Loader2 } from "lucide-react";
-=======
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
 
 export function SignOutButton() {
   const router = useRouter();
@@ -27,7 +24,6 @@ export function SignOutButton() {
       type="button"
       onClick={signOut}
       disabled={busy}
-<<<<<<< HEAD
       className="text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 touch-target px-1 py-1 inline-flex items-center gap-1.5"
     >
       {busy ? (
@@ -39,11 +35,3 @@ export function SignOutButton() {
     </button>
   );
 }
-=======
-      className="text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
-    >
-      {busy ? "..." : "sign out"}
-    </button>
-  );
-}
->>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
