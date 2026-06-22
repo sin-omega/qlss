@@ -20,10 +20,9 @@ export function SiteHeader({ signedIn }: { signedIn: boolean }) {
       <div className="flex items-center gap-2.5">
         <Link
           href="/"
-          className="font-bold tracking-tight wordmark-glow inline-flex items-center gap-2"
+          className="font-bold tracking-tight hover:opacity-70 transition-opacity"
         >
-          <span className="text-base">Q</span><span>LSS</span>
-          <span className="status-dot-online" />
+          QLSS
         </Link>
       </div>
       <nav className="flex items-center gap-3 text-muted-foreground">

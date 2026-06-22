@@ -9,7 +9,18 @@ export function siteOrigin(): string {
   if (typeof window !== "undefined") {
     return window.location.origin;
   }
-  if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL;
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  if (siteUrl) {
+    // Strip trailing slash to prevent double-slash
+    return siteUrl.replace(/\/+$/, "");
+  }
+  if (process.env.VERCEL_URL) {
+    const url = process.env.VERCEL_URL;
+    // Vercel may or may not include https:// — normalize it
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+      return url.replace(/\/+$/, "");
+    }
+    return `https://${url}`;
+  }
   return "http://localhost:3000";
 }

@@ -27,7 +27,7 @@ export default async function HomePage() {
       <SiteHeader signedIn={signedIn} />
       <div className="header-accent-line" />
 
-      <section className="flex-1 flex items-center justify-center px-4 sm:px-6">
+      <section className="flex-1 flex items-start justify-center px-4 sm:px-6 pt-8 sm:pt-12">
         <div className="w-full max-w-xl animate-page-enter">
           <HomeContent signedIn={signedIn} />
 

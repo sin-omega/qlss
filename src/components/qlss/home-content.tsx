@@ -134,8 +134,8 @@ export function HomeContent({ signedIn }: { signedIn: boolean }) {
       </div>
 
       {/* Footer */}
-      <hr className="footer-separator mt-6" />
-      <footer className="group animate-fade-in mt-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 text-[11px] text-muted-foreground" style={{ animationDelay: "0.15s", animationFillMode: "both" }}>
+      <hr className="footer-separator mt-12" />
+      <footer className="group animate-fade-in mt-6 px-4 sm:px-6 pb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 text-[11px] text-muted-foreground" style={{ animationDelay: "0.15s", animationFillMode: "both" }}>
         <div className="flex items-center gap-2">
           <span>QLSS · short links</span>
           <span className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
