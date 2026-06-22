@@ -194,7 +194,7 @@ const dictionary: Dict = {
       privacy: "Privacy Policy",
       tos: "Terms of Service",
       abuse: "Report Abuse",
-      last_updated: "last updated: june 2025",
+      last_updated: "last updated: June 2026",
 
       // Privacy Policy
       privacy_intro:
@@ -247,7 +247,7 @@ const dictionary: Dict = {
       // Privacy sections (short version used in modal)
       privacy_data_collection_title: "Data Collection",
       privacy_data_collection_text:
-        "QLSS collects minimal data to provide link shortening services. We store the destination URL, optional custom alias, and creation timestamp for each shortened link. We also collect basic analytics (referring page, browser, device type) when a short link is accessed. We collect approximate geolocation data (country and region) derived from IP addresses when short links are accessed, for analytics purposes. We do not store raw IP addresses longer than necessary for analytics display. Abuse reports submitted through this service are fully anonymous — we do not collect or store reporter identity.",
+        "QLSS collects minimal data to provide link shortening services. We store the destination URL, optional custom alias, and creation timestamp for each shortened link. We also collect basic analytics (IP adress, referring page, browser, device type) when a short link is accessed. We collect approximate geolocation data (country and region) derived from IP addresses when short links are accessed, for analytics purposes. We do not store raw IP addresses longer than necessary for analytics display. Abuse reports submitted through this service are fully anonymous — we do not collect or store reporter identity.",
       privacy_data_usage_title: "Data Usage",
       privacy_data_usage_text:
         "Your data is used solely to operate the link shortening service — resolving redirects, displaying statistics, and maintaining service quality. We do not sell, share, or otherwise distribute your personal information to third parties.",
@@ -270,8 +270,10 @@ const dictionary: Dict = {
         "Abuse of the service may result in IP or account restrictions, immediate link removal, and permanent bans. We cooperate with law enforcement when required.",
       tos_dialog_changes_title: "Changes",
       tos_dialog_changes_text:
-        "We may update these terms from time to time. Continued use of the service after changes constitutes acceptance of the updated terms. Major changes will be noted with an updated revision date.",
-
+        "We may update these terms from time to time. Continued use of the service after changes constitutes acceptance of the updated terms. Major changes will be noted with an updated revision date. We cannot guarantee that all users will see the updated terms, so please check back periodically.",
+      tos_shutdown_title: "Stability & Shutdown",
+      tos_shutdown_text:
+        "While we strive to provide a stable service, QLSS is offered free of charge and may be discontinued at any time without notice. We will make reasonable efforts to provide advance notice of shutdown and allow users to export their data.",
       // Abuse form
       abuse_anonymous_note:
         "Reports are fully anonymous — we do not collect your email or identity. Provide a description of the issue below, optionally including the short link slug. All reports are reviewed by administrators and appropriate action is taken, which may include removing the link and banning the creator.",
