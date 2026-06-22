@@ -3,7 +3,7 @@
 type Dict = Record<string, string | Record<string, unknown>>;
 
 const dictionary: Dict = {
-    app: {
+  app: {
       name: "QLSS",
       tagline: "Shorten. Claim. Track. Free forever.",
       footer: "QLSS · short links",
@@ -416,7 +416,6 @@ const dictionary: Dict = {
       links_desc: "Add Supabase env vars to manage your links.",
       stats_desc: "Add Supabase env vars to see analytics.",
     },
-  },
 };
 
 // ─── Helper: deep value access ──────────────────────────────────────────────
