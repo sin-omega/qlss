@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, Fragment } from "react";
 import {
   Users,
   LinkIcon,
@@ -267,9 +267,8 @@ function UsersTab({ users }: { users: AdminUser[] }) {
             const isBusy = busy === u.id;
             const isExpanded = expandedUser === u.id;
             return (
-              <>
+              <Fragment key={u.id}>
                 <tr
-                  key={u.id}
                   className={`border-b border-border transition-colors hover:bg-accent/40 ${
                     u.banned ? "opacity-60" : ""
                   }`}
@@ -343,7 +342,7 @@ function UsersTab({ users }: { users: AdminUser[] }) {
                   </td>
                 </tr>
                 {isExpanded && (
-                  <tr key={`${u.id}-links`}>
+                  <tr>
                     <td colSpan={5} className="px-3 py-2 bg-accent/10">
                       {userLinksLoading ? (
                         <div className="flex items-center gap-2 text-xs text-muted-foreground py-2">
@@ -389,7 +388,7 @@ function UsersTab({ users }: { users: AdminUser[] }) {
                     </td>
                   </tr>
                 )}
-              </>
+              </Fragment>
             );
           })}
         </tbody>

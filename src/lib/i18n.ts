@@ -17,6 +17,18 @@ const dictionary: Record<Locale, Dict> = {
       tagline: "Shorten. Claim. Track. Free forever.",
       footer: "QLSS · short links",
     },
+    header: {
+      sign_in: "sign in",
+      my_links: "my links",
+      admin: "admin",
+      back: "back",
+    },
+    footer: {
+      copyright: "QLSS · short links",
+      privacy_policy: "privacy policy",
+      terms_of_service: "terms of service",
+      report_abuse: "report abuse",
+    },
     common: {
       back: "back",
       home: "home",
@@ -42,6 +54,32 @@ const dictionary: Record<Locale, Dict> = {
       export: "export",
       search: "search...",
       clear: "clear",
+      saved: "saved",
+      sending: "sending...",
+      submit: "submit",
+      success: "success",
+      warning: "warning",
+      yes: "yes",
+      no: "no",
+      copy: "copy",
+      copied_to_clipboard: "copied to clipboard",
+      something_went_wrong: "Something went wrong.",
+      almost_ready: "Almost ready.",
+      role: "role",
+      status: "status",
+      action: "action",
+      owner: "owner",
+      preview: "preview",
+      enabled: "enabled",
+      disabled: "disabled",
+      show: "show",
+      hide: "hide",
+      url: "url",
+      slug: "slug",
+      destination: "destination",
+      created: "created",
+      total_clicks: "total clicks",
+      last_updated: "last updated",
     },
     home: {
       shorten_tab: "shorten",
@@ -82,9 +120,22 @@ const dictionary: Record<Locale, Dict> = {
       clipboard_error_desc:
         "could not read clipboard — check permissions",
       link_copied: "link copied to clipboard",
+      url_copied: "url copied to clipboard",
+      markdown_copied: "markdown copied to clipboard",
+      html_copied: "html copied to clipboard",
       chars_saved: "chars",
       focus_hint: "/ or Ctrl+K to focus",
       clear_hint: "Esc to clear",
+      just_now: "just now",
+      new: "new",
+      today: "today",
+      old: "old",
+      never: "never",
+      valid: "valid",
+      invalid: "invalid",
+      alias_placeholder: "my-custom-link",
+      title_placeholder: "link title (optional)",
+      description_placeholder: "description (optional)",
     },
     bulk: {
       title: "bulk shorten",
@@ -145,6 +196,8 @@ const dictionary: Record<Locale, Dict> = {
         "click it to sign in — no password required",
       try_different: "try a different email",
       not_configured: "Supabase env vars not set",
+      google_error: "Could not start Google sign-in.",
+      magic_link_error: "Could not send magic link.",
     },
     legal: {
       privacy: "Privacy Policy",
@@ -199,6 +252,44 @@ const dictionary: Record<Locale, Dict> = {
       tos_contact_text:
         "For questions about these Terms, use the Report Abuse form or contact us directly.",
     },
+    legal_dialog: {
+      // Privacy sections (short version used in modal)
+      privacy_data_collection_title: "Data Collection",
+      privacy_data_collection_text:
+        "QLSS collects minimal data to provide link shortening services. We store the destination URL, optional custom alias, and creation timestamp for each shortened link. We also collect basic analytics (referring page, browser, device type) when a short link is accessed. We collect approximate geolocation data (country and region) derived from IP addresses when short links are accessed, for analytics purposes. We do not store raw IP addresses longer than necessary for analytics display. Abuse reports submitted through this service are fully anonymous — we do not collect or store reporter identity.",
+      privacy_data_usage_title: "Data Usage",
+      privacy_data_usage_text:
+        "Your data is used solely to operate the link shortening service — resolving redirects, displaying statistics, and maintaining service quality. We do not sell, share, or otherwise distribute your personal information to third parties.",
+      privacy_visibility_title: "Short Link Visibility",
+      privacy_visibility_text:
+        "Short links are public by nature — anyone with the link can access the destination. Do not use short links for sensitive or private content unless combined with a pincode.",
+      privacy_dialog_rights_title: "Your Rights",
+      privacy_dialog_rights_text:
+        "You may request deletion of your data and associated links at any time by contacting us. We comply with reasonable data removal requests within 30 days.",
+
+      // TOS sections (short version used in modal)
+      tos_acceptable_use_title: "Acceptable Use",
+      tos_acceptable_use_text:
+        "By using QLSS, you agree not to use the service for any unlawful purpose, including but not limited to: spreading malware, phishing, spam, or distributing harmful content. All shortened links must comply with applicable laws. QLSS reserves the right to remove links that violate these terms and to ban accounts engaged in abuse.",
+      tos_limitation_title: "Limitation of Liability",
+      tos_limitation_text:
+        "The service is provided \"as is\" without warranty of any kind. We are not responsible for the content of external sites that shortened links point to. QLSS reserves the right to remove any shortened link at any time without notice.",
+      tos_consequences_title: "Abuse Consequences",
+      tos_consequences_text:
+        "Abuse of the service may result in IP or account restrictions, immediate link removal, and permanent bans. We cooperate with law enforcement when required.",
+      tos_dialog_changes_title: "Changes",
+      tos_dialog_changes_text:
+        "We may update these terms from time to time. Continued use of the service after changes constitutes acceptance of the updated terms. Major changes will be noted with an updated revision date.",
+
+      // Abuse form
+      abuse_anonymous_note:
+        "Reports are fully anonymous — we do not collect your email or identity. Provide a description of the issue below, optionally including the short link slug. All reports are reviewed by administrators and appropriate action is taken, which may include removing the link and banning the creator.",
+      send_report: "send report",
+      report_placeholder: "describe the issue — include the short url",
+      report_submitted: "Report submitted. Administrators will review it.",
+      report_min_length_error: "Please describe the issue (at least 10 characters).",
+      report_submit_failed: "Failed to submit report.",
+    },
     pincode: {
       required: "pincode required",
       subtitle:
@@ -216,6 +307,7 @@ const dictionary: Record<Locale, Dict> = {
     },
     admin: {
       panel: "admin panel",
+      subtitle: "manage users, links, and site settings",
       users: "users",
       all_links: "all links",
       abuse_reports: "abuse reports",
@@ -241,6 +333,31 @@ const dictionary: Record<Locale, Dict> = {
       report_message: "message",
       reviewed: "reviewed",
       pending: "pending",
+      // Additional admin keys
+      role: "role",
+      status: "status",
+      action: "action",
+      admin_role: "admin",
+      user_role: "user",
+      view_links: "links",
+      hide_links: "hide",
+      loading_links: "loading links...",
+      no_links_for_user: "no links for this user",
+      total_clicks: "total clicks",
+      no_users_found: "no users found",
+      filter_placeholder: "filter by slug, url, or owner...",
+      no_links_match: "no links match \"{search}\"",
+      no_links_yet: "no links yet",
+      reports: "reports",
+      unreviewed: "unreviewed",
+      no_abuse_reports: "no abuse reports",
+      no_link: "no link",
+      review_btn: "review",
+      delete_report_confirm: "Delete this abuse report?",
+      delete_link_confirm: "Delete /{slug}? This cannot be undone.",
+      banner_description: "set a dismissible info banner shown at the top of the home page. leave empty to hide the banner.",
+      banner_placeholder: "banner text (e.g. welcome to qlss)",
+      delete_link_title: "Delete link",
     },
     api_errors: {
       supabase_not_configured: "Supabase is not configured.",
@@ -274,6 +391,39 @@ const dictionary: Record<Locale, Dict> = {
         "Failed to submit report.",
       abuse_submitted:
         "Report submitted — we'll review it shortly",
+      forbidden: "Forbidden.",
+      sign_in_required: "Sign in required.",
+    },
+    unshorten: {
+      title: "unshorten",
+      input_placeholder: "paste a shortened url",
+      unshorten_btn: "unshorten",
+      original_url: "original url",
+      chain_title: "redirect chain",
+      chain_length: "chain length",
+      no_redirects: "no redirects found — this is not a shortened url",
+      error_title: "could not resolve",
+      error_desc: "the url could not be resolved. it may be invalid, offline, or blocking the request.",
+      try_again: "try again",
+      resolving: "resolving...",
+      destination: "destination",
+      status_code: "status",
+    },
+    analytics: {
+      bot: "bot",
+      direct: "direct",
+      brw: "brw",
+      os: "os",
+      dev: "dev",
+      ref: "ref",
+      no_data: "no data",
+      dash: "—",
+    },
+    supabase_warning: {
+      title: "Almost ready.",
+      home_desc: "Add Supabase env vars to start shortening links.",
+      links_desc: "Add Supabase env vars to manage your links.",
+      stats_desc: "Add Supabase env vars to see analytics.",
     },
   },
 
@@ -282,6 +432,18 @@ const dictionary: Record<Locale, Dict> = {
       name: "QLSS",
       tagline: "Skracaj. Przypisuj. Śledź. Na zawsze za darmo.",
       footer: "QLSS · krótkie linki",
+    },
+    header: {
+      sign_in: "zaloguj się",
+      my_links: "moje linki",
+      admin: "admin",
+      back: "wróć",
+    },
+    footer: {
+      copyright: "QLSS · krótkie linki",
+      privacy_policy: "polityka prywatności",
+      terms_of_service: "regulamin",
+      report_abuse: "zgłoś nadużycie",
     },
     common: {
       back: "wróć",
@@ -308,6 +470,32 @@ const dictionary: Record<Locale, Dict> = {
       export: "eksportuj",
       search: "szukaj...",
       clear: "wyczyść",
+      saved: "zapisano",
+      sending: "wysyłanie...",
+      submit: "wyślij",
+      success: "sukces",
+      warning: "ostrzeżenie",
+      yes: "tak",
+      no: "nie",
+      copy: "kopiuj",
+      copied_to_clipboard: "skopiowano do schowka",
+      something_went_wrong: "Coś poszło nie tak.",
+      almost_ready: "Prawie gotowe.",
+      role: "rola",
+      status: "status",
+      action: "akcja",
+      owner: "właściciel",
+      preview: "podgląd",
+      enabled: "włączony",
+      disabled: "wyłączony",
+      show: "pokaż",
+      hide: "ukryj",
+      url: "adres url",
+      slug: "slug",
+      destination: "cel",
+      created: "utworzono",
+      total_clicks: "łączne kliknięcia",
+      last_updated: "ostatnia aktualizacja",
     },
     home: {
       shorten_tab: "skróć",
@@ -348,9 +536,22 @@ const dictionary: Record<Locale, Dict> = {
       clipboard_error_desc:
         "nie można odczytać schowka — sprawdź uprawnienia",
       link_copied: "link skopiowany do schowka",
+      url_copied: "adres url skopiowany do schowka",
+      markdown_copied: "markdown skopiowany do schowka",
+      html_copied: "html skopiowany do schowka",
       chars_saved: "znaki",
       focus_hint: "/ lub Ctrl+K aby zaznaczyć",
       clear_hint: "Esc aby wyczyścić",
+      just_now: "przed chwilą",
+      new: "nowy",
+      today: "dziś",
+      old: "stary",
+      never: "nigdy",
+      valid: "poprawny",
+      invalid: "niepoprawny",
+      alias_placeholder: "moj-niestandardowy-link",
+      title_placeholder: "tytuł linku (opcjonalnie)",
+      description_placeholder: "opis (opcjonalnie)",
     },
     bulk: {
       title: "masowe skracanie",
@@ -412,6 +613,8 @@ const dictionary: Record<Locale, Dict> = {
       try_different: "spróbuj inny e-mail",
       not_configured:
         "Zmienne środowiskowe Supabase nie są ustawione",
+      google_error: "Nie udało się rozpocząć logowania przez Google.",
+      magic_link_error: "Nie udało się wysłać magicznego linku.",
     },
     legal: {
       privacy: "Polityka prywatności",
@@ -466,6 +669,44 @@ const dictionary: Record<Locale, Dict> = {
       tos_contact_text:
         "W przypadku pytań dotyczących Regulaminu skorzystaj z formularza Zgłoś nadużycie lub skontaktuj się z nami bezpośrednio.",
     },
+    legal_dialog: {
+      // Sekcje polityki prywatności (krótka wersja w modalu)
+      privacy_data_collection_title: "Zbieranie danych",
+      privacy_data_collection_text:
+        "QLSS zbiera minimalną ilość danych niezbędnych do świadczenia usług skracania linków. Przechowujemy docelowy adres URL, opcjonalny niestandardowy alias i znacznik czasu utworzenia dla każdego skróconego linku. Zbieramy również podstawowe dane analityczne (odwołująca strona, przeglądarka, typ urządzenia) podczas uzyskiwania dostępu do krótkiego linku. Zbieramy przybliżone dane geolokalizacyjne (kraj i region) pochodzące z adresów IP podczas uzyskiwania dostępu do krótkich linków, w celach analitycznych. Nie przechowujemy surowych adresów IP dłużej niż to konieczne do wyświetlania analityki. Zgłoszenia nadużyć przesłane za pośrednictwem tej usługi są w pełni anonimowe — nie zbieramy ani nie przechowujemy tożsamości zgłaszającego.",
+      privacy_data_usage_title: "Wykorzystanie danych",
+      privacy_data_usage_text:
+        "Twoje dane są wykorzystywane wyłącznie do obsługi serwisu skracania linków — rozwiązywania przekierowań, wyświetlania statystyk i utrzymania jakości usług. Nie sprzedajemy, nie udostępniamy ani w żaden inny sposób nie rozpowszechniamy Twoich danych osobowych stronom trzecim.",
+      privacy_visibility_title: "Widoczność krótkich linków",
+      privacy_visibility_text:
+        "Krótkie linki z natury są publiczne — każdy, kto posiada link, może uzyskać dostęp do celu. Nie używaj krótkich linków do poufnych lub prywatnych treści, chyba że są połączone z kodem pin.",
+      privacy_dialog_rights_title: "Twoje prawa",
+      privacy_dialog_rights_text:
+        "W każdej chwili możesz zwrócić się o usunięcie swoich danych i powiązanych linków, kontaktując się z nami. Spełniamy uzasadnione żądania usunięcia danych w ciągu 30 dni.",
+
+      // Sekcje regulaminu (krótka wersja w modalu)
+      tos_acceptable_use_title: "Zasady korzystania",
+      tos_acceptable_use_text:
+        "Korzystając z QLSS, zgadzasz się nie używać serwisu do żadnego nielegalnego celu, w tym między innymi: rozpowszechniania złośliwego oprogramowania, phishingu, spamu lub dystrybucji szkodliwych treści. Wszystkie skrócone linki muszą być zgodne z obowiązującym prawem. QLSS zastrzega sobie prawo do usunięcia linków naruszających te zasady i zbanowania kont angażujących się w nadużycia.",
+      tos_limitation_title: "Ograniczenie odpowiedzialności",
+      tos_limitation_text:
+        "Serwis jest udostępniany \"w stanie obecnym\" bez jakichkolwiek gwarancji. Nie odpowiadamy za treść zewnętrznych stron, do których prowadzą skrócone linki. QLSS zastrzega sobie prawo do usunięcia dowolnego skróconego linku w dowolnym momencie bez powiadomienia.",
+      tos_consequences_title: "Konsekwencje nadużyć",
+      tos_consequences_text:
+        "Nadużywanie serwisu może skutkować ograniczeniami IP lub konta, natychmiastowym usunięciem linków i trwałymi banami. Współpracujemy z organami ścigania, gdy jest to wymagane.",
+      tos_dialog_changes_title: "Zmiany",
+      tos_dialog_changes_text:
+        "Możemy aktualizować niniejszy Regulamin od czasu do czasu. Kontynuowanie korzystania z Serwisu po zmianach oznacza akceptację zaktualizowanego Regulaminu. Większe zmiany zostaną odnotowane z zaktualizowaną datą rewizji.",
+
+      // Formularz nadużyć
+      abuse_anonymous_note:
+        "Zgłoszenia są w pełni anonimowe — nie zbieramy Twojego e-maila ani tożsamości. Podaj poniżej opis problemu, opcjonalnie dołączając slug krótkiego linku. Wszystkie zgłoszenia są sprawdzane przez administratorów i podejmowane są odpowiednie działania, które mogą obejmować usunięcie linku i zbanowanie twórcy.",
+      send_report: "wyślij zgłoszenie",
+      report_placeholder: "opisz problem — dołącz krótki adres url",
+      report_submitted: "Zgłoszenie wysłane. Administratorzy je sprawdzą.",
+      report_min_length_error: "Opisz problem (minimum 10 znaków).",
+      report_submit_failed: "Nie udało się wysłać zgłoszenia.",
+    },
     pincode: {
       required: "wymagany pin",
       subtitle:
@@ -483,6 +724,7 @@ const dictionary: Record<Locale, Dict> = {
     },
     admin: {
       panel: "panel admina",
+      subtitle: "zarządzaj użytkownikami, linkami i ustawieniami",
       users: "użytkownicy",
       all_links: "wszystkie linki",
       abuse_reports: "zgłoszenia nadużyć",
@@ -508,6 +750,31 @@ const dictionary: Record<Locale, Dict> = {
       report_message: "wiadomość",
       reviewed: "sprawdzone",
       pending: "oczekujące",
+      // Dodatkowe klucze admina
+      role: "rola",
+      status: "status",
+      action: "akcja",
+      admin_role: "admin",
+      user_role: "użytkownik",
+      view_links: "linki",
+      hide_links: "ukryj",
+      loading_links: "ładowanie linków...",
+      no_links_for_user: "brak linków dla tego użytkownika",
+      total_clicks: "łączne kliknięcia",
+      no_users_found: "nie znaleziono użytkowników",
+      filter_placeholder: "filtruj po slug, url lub właścicielu...",
+      no_links_match: "brak linków pasujących do \"{search}\"",
+      no_links_yet: "brak linków",
+      reports: "zgłoszenia",
+      unreviewed: "niesprawdzone",
+      no_abuse_reports: "brak zgłoszeń nadużyć",
+      no_link: "brak linku",
+      review_btn: "sprawdź",
+      delete_report_confirm: "Usunąć to zgłoszenie nadużycia?",
+      delete_link_confirm: "Usunąć /{slug}? Tej operacji nie można cofnąć.",
+      banner_description: "ustaw dismissable baner informacyjny wyświetlany na górze strony głównej. zostaw puste, aby ukryć baner.",
+      banner_placeholder: "tekst baneru (np. witamy w qlss)",
+      delete_link_title: "Usuń link",
     },
     api_errors: {
       supabase_not_configured:
@@ -544,6 +811,39 @@ const dictionary: Record<Locale, Dict> = {
         "Nie udało się wysłać zgłoszenia.",
       abuse_submitted:
         "Zgłoszenie wysłane — sprawdzimy je wkrótce",
+      forbidden: "Brak dostępu.",
+      sign_in_required: "Wymagane logowanie.",
+    },
+    unshorten: {
+      title: "rozwiń",
+      input_placeholder: "wklej skrócony adres url",
+      unshorten_btn: "rozwiń",
+      original_url: "oryginalny url",
+      chain_title: "łańcuch przekierowań",
+      chain_length: "długość łańcucha",
+      no_redirects: "nie znaleziono przekierowań — to nie jest skrócony url",
+      error_title: "nie udało się rozwiązać",
+      error_desc: "nie można rozwiązać adresu url. może być nieprawidłowy, offline lub blokować żądanie.",
+      try_again: "spróbuj ponownie",
+      resolving: "rozwiązywanie...",
+      destination: "cel",
+      status_code: "status",
+    },
+    analytics: {
+      bot: "bot",
+      direct: "bezpośredni",
+      brw: "przegl",
+      os: "sys",
+      dev: "urz",
+      ref: "źród",
+      no_data: "brak danych",
+      dash: "—",
+    },
+    supabase_warning: {
+      title: "Prawie gotowe.",
+      home_desc: "Dodaj zmienne środowiskowe Supabase, aby rozpocząć skracanie linków.",
+      links_desc: "Dodaj zmienne środowiskowe Supabase, aby zarządzać linkami.",
+      stats_desc: "Dodaj zmienne środowiskowe Supabase, aby przeglądać statystyki.",
     },
   },
 };
