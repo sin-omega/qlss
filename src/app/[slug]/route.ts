@@ -194,7 +194,7 @@ function sharedPageCSS(): string {
     --safe: #2c6e49;
   }
   @media (prefers-color-scheme: dark) {
-    :root {
+    :root:not([data-theme="light"]) {
       --bg: #0c0c0a;
       --fg: #e8e6df;
       --muted: #8a8880;
@@ -205,6 +205,28 @@ function sharedPageCSS(): string {
       --error: #e06060;
       --safe: #3ebd65;
     }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0c0c0a;
+    --fg: #e8e6df;
+    --muted: #8a8880;
+    --border: #3a3a36;
+    --card: #1a1a18;
+    --hover: #2a2a26;
+    --grid: rgba(232, 230, 223, 0.04);
+    --error: #e06060;
+    --safe: #3ebd65;
+  }
+  :root[data-theme="light"] {
+    --bg: #fbfbf9;
+    --fg: #0c0c0a;
+    --muted: #6a6a64;
+    --border: #d9d8d0;
+    --card: #ffffff;
+    --hover: #ecebe4;
+    --grid: rgba(12, 12, 10, 0.035);
+    --error: #b44040;
+    --safe: #2c6e49;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body {
@@ -325,8 +347,8 @@ function pincodeRequiredResponse(origin: string, slug: string): NextResponse {
     color: var(--error);
     font-size: 0.75rem;
     margin-top: 0.75rem;
-    display: none;
   }
+  .error { display: none; }
   .back {
     margin-top: 1.5rem;
   }
@@ -353,15 +375,30 @@ function pincodeRequiredResponse(origin: string, slug: string): NextResponse {
     <input type="text" name="pin" placeholder="enter pincode" autocomplete="off" autofocus />
     <button type="submit">go</button>
   </form>
-  <p class="error" id="err">incorrect pincode</p>
+  <p class="error" id="err">incorrect pincode — try again</p>
   <div class="back"><a class="btn-link" href="${escapeHtml(origin)}">&larr; back to qlss</a></div>
 </div>
 <div class="footer">QLSS &middot; short links</div>
 <script>
-  var params = new URLSearchParams(window.location.search);
-  if (params.has('pin') && !params.get('pin')) {
-    document.getElementById('err').style.display = 'block';
-  }
+  (function() {
+    var params = new URLSearchParams(window.location.search);
+    var pin = params.get('pin');
+    // Show error if pin was provided but wrong
+    if (pin !== null && pin !== '') {
+      document.getElementById('err').style.display = 'block';
+    }
+    // Sync theme with main app via next-themes cookie
+    try {
+      function getCookie(name) {
+        var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+        return match ? match[2] : null;
+      }
+      var theme = getCookie('theme') || localStorage.getItem('theme') || 'system';
+      if (theme === 'dark' || theme === 'light') {
+        document.documentElement.setAttribute('data-theme', theme);
+      }
+    } catch(e) {}
+  })();
 </script>
 </body>
 </html>`;
@@ -395,6 +432,18 @@ function notFoundResponse(origin: string, message?: string): NextResponse {
   <a class="btn-link" href="${escapeHtml(origin)}">&larr; back to qlss</a>
 </div>
 <div class="footer">QLSS &middot; short links</div>
+<script>
+  try {
+    function getCookie(name) {
+      var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+      return match ? match[2] : null;
+    }
+    var theme = getCookie('theme') || localStorage.getItem('theme') || 'system';
+    if (theme === 'dark' || theme === 'light') {
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+  } catch(e) {}
+</script>
 </body>
 </html>`;
   return new NextResponse(html, {

@@ -17,10 +17,12 @@ export function SiteHeader({
   signedIn,
   backHref,
   backLabel,
+  isAdmin,
 }: {
   signedIn: boolean;
   backHref?: string;
   backLabel?: string;
+  isAdmin?: boolean;
 }) {
   const { theme, setTheme } = useTheme();
 
@@ -49,6 +51,17 @@ export function SiteHeader({
         )}
         {signedIn && (
           <>
+            {isAdmin && (
+              <>
+                <Link
+                  href="/admin"
+                  className="footer-link hover:text-foreground transition-colors"
+                >
+                  admin
+                </Link>
+                <span className="text-muted-foreground/30 select-none">·</span>
+              </>
+            )}
             <Link
               href="/links"
               className="footer-link hover:text-foreground transition-colors"

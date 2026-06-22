@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Link, Undo2 } from "lucide-react";
+import { Link, Undo2, Layers, Lock } from "lucide-react";
 import { ShortenerForm } from "@/components/qlss/shortener-form";
-import { UnshortenerForm } from "@/components/qlss/unshortener-form";
+import { BulkForm } from "@/components/qlss/bulk-form";
 import { LegalDialog } from "@/components/qlss/legal-dialog";
 
-type Tab = "shorten" | "unshorten";
+type Tab = "shorten" | "unshorten" | "bulk";
 type LegalPage = "privacy" | "tos" | "abuse" | null;
 
 export function HomeContent({ signedIn }: { signedIn: boolean }) {
@@ -15,12 +15,14 @@ export function HomeContent({ signedIn }: { signedIn: boolean }) {
 
   const tabContainerRef = useRef<HTMLDivElement>(null);
   const shortenBtnRef = useRef<HTMLButtonElement>(null);
+  const bulkBtnRef = useRef<HTMLButtonElement>(null);
   const unshortenBtnRef = useRef<HTMLButtonElement>(null);
   const indicatorRef = useRef<HTMLDivElement>(null);
 
+  const activeBtnRef = tab === "shorten" ? shortenBtnRef : tab === "bulk" ? bulkBtnRef : unshortenBtnRef;
+
   const updateIndicator = useCallback(() => {
-    const btn =
-      tab === "shorten" ? shortenBtnRef.current : unshortenBtnRef.current;
+    const btn = activeBtnRef.current;
     const container = tabContainerRef.current;
     const indicator = indicatorRef.current;
     if (!btn || !container || !indicator) return;
@@ -30,7 +32,7 @@ export function HomeContent({ signedIn }: { signedIn: boolean }) {
 
     indicator.style.width = `${btnRect.width}px`;
     indicator.style.transform = `translateX(${btnRect.left - containerRect.left}px)`;
-  }, [tab]);
+  }, [tab, activeBtnRef]);
 
   useEffect(() => {
     updateIndicator();
@@ -54,15 +56,26 @@ export function HomeContent({ signedIn }: { signedIn: boolean }) {
 
       if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
         e.preventDefault();
-        setTab((prev) =>
-          prev === "shorten" ? "unshorten" : "shorten"
-        );
+        const tabs: Tab[] = signedIn
+          ? ["shorten", "bulk", "unshorten"]
+          : ["shorten", "unshorten"];
+        const idx = tabs.indexOf(tab);
+        const next = e.key === "ArrowRight" ? Math.min(idx + 1, tabs.length - 1) : Math.max(idx - 1, 0);
+        setTab(tabs[next]);
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [tab, signedIn]);
+
+  const tabs: { key: Tab; label: string; icon: React.ReactNode; disabled?: boolean; ref: React.RefObject<HTMLButtonElement | null> }[] = [
+    { key: "shorten", label: "shorten", icon: <Link className="h-3.5 w-3.5" />, ref: shortenBtnRef },
+    ...(signedIn
+      ? [{ key: "bulk" as Tab, label: "bulk", icon: <Layers className="h-3.5 w-3.5" />, ref: bulkBtnRef }]
+      : []),
+    { key: "unshorten", label: "unshorten (soon)", icon: <Undo2 className="h-3.5 w-3.5" />, disabled: true, ref: unshortenBtnRef },
+  ];
 
   return (
     <>
@@ -74,38 +87,29 @@ export function HomeContent({ signedIn }: { signedIn: boolean }) {
         role="tablist"
         aria-label="Choose action"
       >
-        <button
-          ref={shortenBtnRef}
-          type="button"
-          role="tab"
-          aria-selected={tab === "shorten"}
-          tabIndex={tab === "shorten" ? 0 : -1}
-          onClick={() => setTab("shorten")}
-          className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-xs transition-colors touch-target btn-press ${
-            tab === "shorten"
-              ? "text-foreground font-medium"
-              : "text-muted-foreground hover:text-foreground hover:bg-accent/40"
-          }`}
-        >
-          <Link className="h-3.5 w-3.5" />
-          shorten
-        </button>
-        <button
-          ref={unshortenBtnRef}
-          type="button"
-          role="tab"
-          aria-selected={tab === "unshorten"}
-          tabIndex={tab === "unshorten" ? 0 : -1}
-          onClick={() => setTab("unshorten")}
-          className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-xs transition-colors touch-target btn-press border-l border-border ${
-            tab === "unshorten"
-              ? "text-foreground font-medium"
-              : "text-muted-foreground hover:text-foreground hover:bg-accent/40"
-          }`}
-        >
-          <Undo2 className="h-3.5 w-3.5" />
-          unshorten
-        </button>
+        {tabs.map((t, i) => (
+          <button
+            key={t.key}
+            ref={t.ref}
+            type="button"
+            role="tab"
+            aria-selected={tab === t.key}
+            tabIndex={tab === t.key ? 0 : -1}
+            onClick={() => !t.disabled && setTab(t.key)}
+            className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-xs transition-colors touch-target btn-press ${
+              i > 0 ? "border-l border-border" : ""
+            } ${
+              t.disabled
+                ? "text-muted-foreground/40 cursor-not-allowed"
+                : tab === t.key
+                  ? "text-foreground font-medium"
+                  : "text-muted-foreground hover:text-foreground hover:bg-accent/40"
+            }`}
+          >
+            {t.icon}
+            {t.label}
+          </button>
+        ))}
         <div
           ref={indicatorRef}
           className="tab-indicator absolute bottom-0 left-0 h-[2px] bg-foreground"
@@ -115,8 +119,15 @@ export function HomeContent({ signedIn }: { signedIn: boolean }) {
       <div key={tab} className="tab-content-enter">
         {tab === "shorten" ? (
           <ShortenerForm signedIn={signedIn} />
+        ) : tab === "bulk" && signedIn ? (
+          <BulkForm />
         ) : (
-          <UnshortenerForm />
+          <div className="border border-border bg-card py-12 px-6 text-center">
+            <Lock className="h-6 w-6 text-muted-foreground/30 mx-auto mb-3" />
+            <p className="text-xs text-muted-foreground">
+              unshorten is coming soon.
+            </p>
+          </div>
         )}
       </div>
 
@@ -126,19 +137,9 @@ export function HomeContent({ signedIn }: { signedIn: boolean }) {
 }
 
 function HeroTagline() {
-  const words = ["shorten.", "share.", "track."];
-
   return (
-    <p className="text-[11px] text-muted-foreground mb-4 tracking-wide text-gradient cli-cursor">
-      {words.map((word, i) => (
-        <span
-          key={word}
-          className="tagline-word inline-block mr-2"
-          style={{ animationDelay: `${i * 0.25}s` }}
-        >
-          {word}
-        </span>
-      ))}
+    <p className="text-[11px] text-muted-foreground mb-4 tracking-wide text-gradient">
+      Shorten. Claim. Track. Free forever.
     </p>
   );
 }

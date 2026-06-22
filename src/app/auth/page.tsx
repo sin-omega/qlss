@@ -89,7 +89,7 @@ export default function AuthPage() {
 
   return (
     <main className="cli-grid relative min-h-screen w-full flex flex-col">
-      <SiteHeader signedIn={signedIn} backHref="/" backLabel="home" />
+      <SiteHeader signedIn={signedIn} isAdmin={false} backHref="/" backLabel="home" />
       <div className="header-accent-line" />
 
       <section className="flex-1 flex items-center justify-center px-4 sm:px-6">

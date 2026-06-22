@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { isSupabaseConfigured, siteOrigin } from "@/lib/env";
 import { normalizeSlug, isReservedSlug } from "@/lib/slug";
 import { AnalyticsFeed } from "@/components/qlss/analytics-feed";
@@ -64,7 +65,7 @@ export default async function StatsPage({
   if (!isSupabaseConfigured()) {
     return (
       <main className="cli-grid relative min-h-screen w-full flex flex-col">
-        <SiteHeader signedIn={signedIn} backHref="/" backLabel="home" />
+        <SiteHeader signedIn={signedIn} isAdmin={false} backHref="/" backLabel="home" />
         <div className="header-accent-line" />
         <section className="flex-1 flex items-center justify-center px-4 sm:px-6 py-16">
           <div className="text-center max-w-md">
@@ -81,6 +82,15 @@ export default async function StatsPage({
   }
 
   if (!user) redirect("/auth");
+
+  // Check admin status
+  const service = createServiceClient();
+  const { data: adminProfile } = await service
+    .from("profiles")
+    .select("is_admin")
+    .eq("id", user.id)
+    .maybeSingle();
+  const isAdmin = adminProfile?.is_admin ?? false;
 
   const { data: linkRow } = await supabase
     .from("links")
@@ -107,7 +117,7 @@ export default async function StatsPage({
 
   return (
     <main className="cli-grid relative min-h-screen w-full flex flex-col">
-      <SiteHeader signedIn={true} backHref="/links" backLabel="my links" />
+      <SiteHeader signedIn={true} isAdmin={isAdmin} backHref="/links" backLabel="my links" />
       <div className="header-accent-line" />
 
       <section className="pt-10 pb-4 px-4 sm:px-6">

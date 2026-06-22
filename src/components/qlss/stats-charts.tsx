@@ -41,6 +41,8 @@ function useChartColors() {
 
 export function StatsCharts({ rows }: { rows: AnalyticsRowForCharts[] }) {
   const colors = useChartColors();
+  const dark = colors.pieStroke === "#222220";
+  const pieColors = dark ? PIE_COLORS_DARK : PIE_COLORS_LIGHT;
   const timeSeries = aggregateTimeSeries(rows);
   const topCountries = aggregateTop(rows, (r) => formatCountryName(r.country), 5);
   const topRegions = aggregateTop(rows, (r) => formatRegionName(r.country, r.region), 5);
@@ -101,19 +103,19 @@ export function StatsCharts({ rows }: { rows: AnalyticsRowForCharts[] }) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <ChartCard title="countries">
-          <PieSection data={topCountries} colors={colors} tooltipStyle={tooltipStyle} />
+          <PieSection data={topCountries} colors={colors} pieColors={pieColors} tooltipStyle={tooltipStyle} />
         </ChartCard>
         <ChartCard title="regions">
-          <PieSection data={topRegions} colors={colors} tooltipStyle={tooltipStyle} />
+          <PieSection data={topRegions} colors={colors} pieColors={pieColors} tooltipStyle={tooltipStyle} />
         </ChartCard>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <ChartCard title="top browsers">
-          <PieSection data={topBrowsers} colors={colors} tooltipStyle={tooltipStyle} />
+          <PieSection data={topBrowsers} colors={colors} pieColors={pieColors} tooltipStyle={tooltipStyle} />
         </ChartCard>
         <ChartCard title="top devices">
-          <PieSection data={topDevices} colors={colors} tooltipStyle={tooltipStyle} />
+          <PieSection data={topDevices} colors={colors} pieColors={pieColors} tooltipStyle={tooltipStyle} />
         </ChartCard>
       </div>
     </div>
@@ -145,10 +147,12 @@ interface ChartColors {
 function PieSection({
   data,
   colors,
+  pieColors,
   tooltipStyle,
 }: {
   data: { name: string; count: number }[];
   colors: ChartColors & { tooltipBorder: string; tooltipBg: string };
+  pieColors: string[];
   tooltipStyle: React.CSSProperties;
 }) {
   if (data.length === 0) {
@@ -176,7 +180,7 @@ function PieSection({
             strokeWidth={1}
           >
             {data.map((_entry, i) => (
-              <Cell key={`cell-${i}`} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+              <Cell key={`cell-${i}`} fill={pieColors[i % pieColors.length]} />
             ))}
           </Pie>
           <Tooltip
@@ -190,7 +194,7 @@ function PieSection({
           <li key={entry.name} className="flex items-baseline gap-1.5">
             <span
               className="inline-block w-2 h-2 shrink-0"
-              style={{ background: PIE_COLORS[i % PIE_COLORS.length] }}
+              style={{ background: pieColors[i % pieColors.length] }}
             />
             <span className="truncate flex-1">{entry.name}</span>
             <span className="text-muted-foreground tabular-nums">
@@ -203,13 +207,22 @@ function PieSection({
   );
 }
 
-const PIE_COLORS = [
+const PIE_COLORS_LIGHT = [
   "#0c0c0a",
   "#6a6a64",
   "#b08a3e",
   "#2c6e49",
   "#8c4040",
   "#b4b3aa",
+];
+
+const PIE_COLORS_DARK = [
+  "#e8e6df",
+  "#b08a3e",
+  "#3ebd65",
+  "#e06060",
+  "#7cb3d4",
+  "#c8a8e0",
 ];
 
 function aggregateTimeSeries(

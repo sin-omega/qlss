@@ -221,8 +221,6 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
   const [typedUrl, setTypedUrl] = useState("");
   const [showConfetti, setShowConfetti] = useState(false);
   const [showCheckmark, setShowCheckmark] = useState(false);
-  const [totalShortened, setTotalShortened] = useState(0);
-  const [counterBump, setCounterBump] = useState(false);
   const [pincode, setPincode] = useState("");
   const [utmOpen, setUtmOpen] = useState(false);
   const [utm, setUtm] = useState<UTMParams>({ source: "", medium: "", campaign: "", term: "", content: "" });
@@ -240,11 +238,6 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 300);
     return () => clearTimeout(t);
-  }, []);
-
-  // Load total shortened count on mount
-  useEffect(() => {
-    setTotalShortened(getTotalShortened());
   }, []);
 
   // URL validation state
@@ -301,12 +294,9 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
     if (created) {
       setShowConfetti(true);
       setShowCheckmark(true);
-      setCounterBump(true);
       const t = setTimeout(() => setShowConfetti(false), 800);
-      const t2 = setTimeout(() => setCounterBump(false), 300);
       return () => {
         clearTimeout(t);
-        clearTimeout(t2);
       };
     }
   }, [created]);
@@ -433,10 +423,6 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
       });
       refreshRecent();
 
-      // Increment counter
-      incrementTotalShortened();
-      setTotalShortened(getTotalShortened());
-
       if (!linkData.owner && linkData.slug) {
         try {
           const key = "qlss:anonymous_slugs";
@@ -527,11 +513,6 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
     setUtmOpen(false);
     setExpiryOpen(false);
     setCopyMenuOpen(false);
-  }
-
-  function clearRecent() {
-    localStorage.removeItem(RECENT_KEY);
-    setRecentLinks([]);
   }
 
   // ---------------------------------------------------------------------
@@ -786,18 +767,6 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
   // ---------------------------------------------------------------------
   return (
     <div className="w-full space-y-3 animate-fade-in">
-      {/* Links shortened counter */}
-      {totalShortened > 0 && (
-        <div className="flex items-center justify-center gap-2 text-[10px] text-muted-foreground">
-          <span>
-            <span className={`text-foreground font-medium tabular-nums ${counterBump ? "animate-counter-bump" : ""}`}>
-              {totalShortened}
-            </span>{" "}
-            link{totalShortened !== 1 ? "s" : ""} shortened
-          </span>
-        </div>
-      )}
-
       <form onSubmit={handleSubmit} className="w-full space-y-2">
         <div className="flex items-stretch border border-border bg-card focus-within:border-foreground transition-colors input-focus-glow">
           <span className="pl-4 pr-2 text-muted-foreground select-none text-sm flex items-center">
@@ -1099,58 +1068,6 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
           <p className="text-xs text-destructive leading-relaxed text-center">
             ! {error}
           </p>
-        </div>
-      )}
-
-      {/* Recent links history */}
-      {recentLinks.length > 0 && !created && (
-        <div className="border border-border bg-card">
-          <div className="px-4 py-2 border-b border-border text-[10px] uppercase tracking-widest text-muted-foreground flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <Clock className="h-3 w-3" />
-              <span>recent</span>
-            </div>
-            <button
-              type="button"
-              onClick={clearRecent}
-              className="text-muted-foreground hover:text-foreground transition-colors text-[10px] touch-target"
-            >
-              clear
-            </button>
-          </div>
-          <ul>
-            {recentLinks.map((link, i) => (
-              <li key={link.slug}>
-                <div className="px-4 py-2.5 flex items-center justify-between gap-3 group">
-                  <div className="min-w-0 flex-1">
-                    <a
-                      href={link.short_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs hover:underline block truncate"
-                    >
-                      /{link.slug}
-                    </a>
-                    <p className="text-[10px] text-muted-foreground/70 truncate mt-0.5">
-                      -&gt; {truncateUrl(link.destination_url)}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <AgeBadge iso={link.created_at} />
-                    <button
-                      type="button"
-                      onClick={() => handleCopyToast(link.short_url)}
-                      className="text-muted-foreground hover:text-foreground transition-colors opacity-0 group-hover:opacity-100 touch-target"
-                      title="Copy"
-                    >
-                      <Copy className="h-3 w-3" />
-                    </button>
-                  </div>
-                </div>
-                {i < recentLinks.length - 1 && <hr className="hr-dashed border-0" />}
-              </li>
-            ))}
-          </ul>
         </div>
       )}
     </div>
