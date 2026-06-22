@@ -2,12 +2,11 @@ import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/env";
 import { SiteHeader } from "@/components/qlss/site-header";
 import { HomeContent } from "@/components/qlss/home-content";
+import { SiteFooter } from "@/components/qlss/site-footer";
 import { AlertTriangle } from "lucide-react";
 
 /**
  * Home page — same view for both authed and unauthed users.
- * Authed users see: shortener + custom alias (unlocked) + "my links" in header.
- * Unauthed users see: shortener + custom alias (locked) + "sign in" in header.
  */
 export default async function HomePage() {
   let signedIn = false;
@@ -46,6 +45,9 @@ export default async function HomePage() {
           )}
         </div>
       </section>
+
+      <hr className="footer-separator mt-auto" />
+      <SiteFooter />
     </main>
   );
 }

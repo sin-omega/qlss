@@ -36,16 +36,13 @@ export function HomeContent({ signedIn }: { signedIn: boolean }) {
     updateIndicator();
   }, [tab, updateIndicator]);
 
-  // Recalculate on resize
   useEffect(() => {
     window.addEventListener("resize", updateIndicator);
     return () => window.removeEventListener("resize", updateIndicator);
   }, [updateIndicator]);
 
-  // Keyboard navigation: left/right arrows to switch tabs
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Only handle if no input/textarea is focused
       const target = e.target as HTMLElement;
       if (
         target.tagName === "INPUT" ||
@@ -67,18 +64,10 @@ export function HomeContent({ signedIn }: { signedIn: boolean }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const footerLinks: { label: string; page: LegalPage }[] = [
-    { label: "privacy policy", page: "privacy" as LegalPage },
-    { label: "terms of service", page: "tos" as LegalPage },
-    { label: "report abuse", page: "abuse" as LegalPage },
-  ];
-
   return (
     <>
-      {/* Hero tagline */}
       <HeroTagline />
 
-      {/* Tab switch */}
       <div
         ref={tabContainerRef}
         className="relative flex border border-border bg-card mb-4"
@@ -117,14 +106,12 @@ export function HomeContent({ signedIn }: { signedIn: boolean }) {
           <Undo2 className="h-3.5 w-3.5" />
           unshorten
         </button>
-        {/* Sliding indicator pill */}
         <div
           ref={indicatorRef}
           className="tab-indicator absolute bottom-0 left-0 h-[2px] bg-foreground"
         />
       </div>
 
-      {/* Tab content with crossfade */}
       <div key={tab} className="tab-content-enter">
         {tab === "shorten" ? (
           <ShortenerForm signedIn={signedIn} />
@@ -133,33 +120,6 @@ export function HomeContent({ signedIn }: { signedIn: boolean }) {
         )}
       </div>
 
-      {/* Footer */}
-      <hr className="footer-separator mt-12" />
-      <footer className="group animate-fade-in mt-6 px-4 sm:px-6 pb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 text-[11px] text-muted-foreground" style={{ animationDelay: "0.15s", animationFillMode: "both" }}>
-        <div className="flex items-center gap-2">
-          <span>QLSS · short links</span>
-          <span className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            <span className="status-dot-online" />
-            <span>online</span>
-          </span>
-        </div>
-        <div className="flex items-center gap-3">
-          {footerLinks.map((link, i) => (
-            <span key={link.page} className="flex items-center gap-3">
-              {i > 0 && <span aria-hidden="true">·</span>}
-              <button
-                type="button"
-                onClick={() => setLegalPage(link.page)}
-                className="footer-link hover:text-foreground transition-colors touch-target"
-              >
-                {link.label}
-              </button>
-            </span>
-          ))}
-        </div>
-      </footer>
-
-      {/* Legal dialog */}
       <LegalDialog page={legalPage} onClose={() => setLegalPage(null)} />
     </>
   );
