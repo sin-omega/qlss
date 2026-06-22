@@ -22,7 +22,7 @@ const TITLES: Record<string, string> = {
 const PRIVACY_SECTIONS: LegalSection[] = [
   {
     heading: "Data Collection",
-    body: "QLSS collects minimal data to provide link shortening services. We store the destination URL, optional custom alias, and creation timestamp for each shortened link. We also collect basic analytics (referring page, browser, device type) when a short link is accessed. We collect approximate geolocation data (country and region) derived from IP addresses when short links are accessed, for analytics purposes. We do not store raw IP addresses longer than necessary for analytics display. Abuse reports submitted through this service are fully anonymous — we do not collect or store reporter identity.",
+    body: "QLSS collects minimal data to provide link shortening services. We store the destination URL, optional custom alias, and creation timestamp for each shortened link. We also collect basic analytics (IP adress, referring page, browser, device type) when a short link is accessed. We collect approximate geolocation data (country and region) derived from IP addresses when short links are accessed, for analytics purposes. We do not store raw IP addresses longer than necessary for analytics display. Abuse reports submitted through this service are fully anonymous — we do not collect or store reporter identity.",
   },
   {
     heading: "Data Usage",
@@ -55,6 +55,10 @@ const TOS_SECTIONS: LegalSection[] = [
     heading: "Changes",
     body: "We may update these terms from time to time. Continued use of the service after changes constitutes acceptance of the updated terms. Major changes will be noted with an updated revision date.",
   },
+  {
+    heading: "Stability and shutdown",
+    body: "We will try to keep the service running, but we do not guarantee uptime. In the event of a shutdown, we will provide notice and allow users to export their data where feasible.",
+  }
 ];
 
 const ABUSE_CONTENT =
