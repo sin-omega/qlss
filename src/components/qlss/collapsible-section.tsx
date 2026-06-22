@@ -3,6 +3,24 @@
 import { useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
+<<<<<<< HEAD
+=======
+/**
+ * Reusable collapsible section with a colored left accent.
+ *
+ * Used on the stats pages to declutter the page — visitors can collapse
+ * sections they don't care about right now.
+ *
+ * Props:
+ *   - title: section heading
+ *   - accent: tailwind color class for the left border (e.g. "border-l-2 border-l-foreground",
+ *       or use the `accentColor` prop for a specific hex color)
+ *   - accentColor: hex color for the left accent bar (e.g. "#0c0c0a")
+ *   - defaultOpen: whether the section starts expanded (default true)
+ *   - children: the section content
+ *   - summary: optional small text shown on the right of the header (e.g. "5 visitors")
+ */
+>>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
 export function CollapsibleSection({
   title,
   accentColor = "#0c0c0a",

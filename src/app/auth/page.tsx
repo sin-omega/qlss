@@ -5,18 +5,49 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured, siteOrigin } from "@/lib/env";
+<<<<<<< HEAD
 import { ArrowLeft, Loader2, Mail } from "lucide-react";
 
 /**
  * Auth page — Google + magic link only. No password, no username.
+=======
+import { normalizeUsername, isValidUsername } from "@/lib/username";
+import { ArrowLeft, Loader2 } from "lucide-react";
+
+/**
+ * Auth page with 3 sign-in methods:
+ *
+ * 1. Continue with Google — standard OAuth
+ * 2. Continue with email — magic link (passwordless). If the account has a
+ *    password, shows a "use password instead" link that switches to password mode.
+ * 3. Continue with username — username + password sign-in
+>>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
  */
 export default function AuthPage() {
   const router = useRouter();
   const supabase = createClient();
 
+<<<<<<< HEAD
   const [view, setView] = useState<"landing" | "email">("landing");
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState<"google" | "email" | null>(null);
+=======
+  // Which sign-in view is active:
+  // "landing" = initial 3-button screen
+  // "email" = magic link flow (email input, no password)
+  // "email-password" = email + password sign-in (after "use password instead")
+  // "username" = username + password sign-in
+  const [view, setView] = useState<
+    "landing" | "email" | "email-password" | "username"
+  >("landing");
+
+  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState<"google" | "email" | "password" | null>(
+    null,
+  );
+>>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
   const [error, setError] = useState<string | null>(null);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
 
@@ -26,10 +57,20 @@ export default function AuthPage() {
     if (!configured) return;
     (async () => {
       const { data } = await supabase.auth.getSession();
+<<<<<<< HEAD
       if (data.session) router.replace("/");
     })();
   }, [configured, router, supabase]);
 
+=======
+      if (data.session) router.replace("/dashboard");
+    })();
+  }, [configured, router, supabase]);
+
+  // ---------------------------------------------------------------------------
+  // 1. Google OAuth
+  // ---------------------------------------------------------------------------
+>>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
   async function handleGoogle() {
     setError(null);
     setBusy("google");
@@ -37,7 +78,11 @@ export default function AuthPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
+<<<<<<< HEAD
           redirectTo: `${siteOrigin()}/api/auth/callback?next=/`,
+=======
+          redirectTo: `${siteOrigin()}/api/auth/callback`,
+>>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
         },
       });
       if (error) throw error;
@@ -49,6 +94,12 @@ export default function AuthPage() {
     }
   }
 
+<<<<<<< HEAD
+=======
+  // ---------------------------------------------------------------------------
+  // 2. Email magic link (passwordless)
+  // ---------------------------------------------------------------------------
+>>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
   async function handleMagicLink(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -63,7 +114,11 @@ export default function AuthPage() {
       const { error } = await supabase.auth.signInWithOtp({
         email: trimmed,
         options: {
+<<<<<<< HEAD
           emailRedirectTo: `${siteOrigin()}/api/auth/callback?next=/`,
+=======
+          emailRedirectTo: `${siteOrigin()}/api/auth/callback`,
+>>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
         },
       });
       if (error) throw error;
@@ -78,21 +133,126 @@ export default function AuthPage() {
     }
   }
 
+<<<<<<< HEAD
+=======
+  // ---------------------------------------------------------------------------
+  // 3. Email + password sign-in (after "use password instead")
+  // ---------------------------------------------------------------------------
+  async function handleEmailPassword(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setBusy("password");
+
+    try {
+      const trimmed = email.trim();
+      if (!trimmed.includes("@")) {
+        throw new Error("Please enter a valid email address.");
+      }
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email: trimmed,
+        password,
+      });
+      if (error) throw error;
+      router.replace("/dashboard");
+      router.refresh();
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Something went wrong.";
+      setError(humanizeError(message));
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // 4. Username + password sign-in
+  // ---------------------------------------------------------------------------
+  async function handleUsernamePassword(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setBusy("password");
+
+    try {
+      const trimmed = username.trim();
+      const normalized = normalizeUsername(trimmed);
+      if (!isValidUsername(normalized)) {
+        throw new Error("Enter a valid username.");
+      }
+
+      // Look up the email for this username.
+      const res = await fetch("/api/auth/lookup-username", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: normalized }),
+      });
+      if (!res.ok) {
+        throw new Error("Could not look up username. Try again.");
+      }
+      const json = (await res.json()) as { email: string | null };
+      if (!json.email) {
+        throw new Error("No account found with that username.");
+      }
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email: json.email,
+        password,
+      });
+      if (error) throw error;
+      router.replace("/dashboard");
+      router.refresh();
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Something went wrong.";
+      setError(humanizeError(message));
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Helpers
+  // ---------------------------------------------------------------------------
+>>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
   function goBack() {
     setError(null);
     setView("landing");
     setEmail("");
+<<<<<<< HEAD
     setMagicLinkSent(false);
   }
 
   return (
     <main className="cli-grid relative min-h-screen w-full flex flex-col">
       <header className="px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between text-xs">
+=======
+    setUsername("");
+    setPassword("");
+    setMagicLinkSent(false);
+  }
+
+  function switchToEmailPassword() {
+    setError(null);
+    setView("email-password");
+    setMagicLinkSent(false);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Render
+  // ---------------------------------------------------------------------------
+  return (
+    <main className="cli-grid relative h-screen w-full overflow-hidden flex flex-col">
+      <header className="absolute top-0 left-0 right-0 z-10 px-6 py-5 flex items-center justify-between text-xs">
+>>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
         <Link
           href="/"
           className="font-bold tracking-tight hover:opacity-70 transition-opacity"
         >
+<<<<<<< HEAD
           <span className="text-base">Q</span><span>LSS</span>
+=======
+          QLSS
+>>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
         </Link>
         {view !== "landing" ? (
           <button
@@ -113,20 +273,35 @@ export default function AuthPage() {
           </Link>
         )}
       </header>
+<<<<<<< HEAD
       <div className="header-accent-line" />
 
       <section className="flex-1 flex items-center justify-center px-4 sm:px-6">
         <div className="w-full max-w-sm animate-page-enter">
+=======
+
+      <section className="flex-1 flex items-center justify-center px-6">
+        <div className="w-full max-w-sm">
+          {/* ---- LANDING: 3 buttons ---- */}
+>>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
           {view === "landing" && !magicLinkSent && (
             <>
               <h1 className="text-lg font-bold tracking-tight mb-1 text-center">
                 sign in to QLSS
               </h1>
               <p className="text-xs text-muted-foreground mb-8 text-center leading-relaxed">
+<<<<<<< HEAD
                 manage links &amp; view analytics
               </p>
 
               <div className="space-y-2.5">
+=======
+                claim links &amp; view analytics
+              </p>
+
+              <div className="space-y-2.5">
+                {/* Google */}
+>>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
                 <button
                   type="button"
                   onClick={handleGoogle}
@@ -141,12 +316,16 @@ export default function AuthPage() {
                   Continue with Google
                 </button>
 
+<<<<<<< HEAD
                 <div className="relative flex items-center gap-3 py-1">
                   <div className="flex-1 border-t border-border" />
                   <span className="text-[10px] text-muted-foreground uppercase tracking-widest">or</span>
                   <div className="flex-1 border-t border-border" />
                 </div>
 
+=======
+                {/* Email (magic link) */}
+>>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
                 <button
                   type="button"
                   onClick={() => {
@@ -159,6 +338,7 @@ export default function AuthPage() {
                   <EmailMark />
                   Continue with email
                 </button>
+<<<<<<< HEAD
               </div>
 
               {error && (
@@ -176,10 +356,43 @@ export default function AuthPage() {
                     not set.
                   </p>
                 </div>
+=======
+
+                {/* Username + password */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setError(null);
+                    setView("username");
+                  }}
+                  disabled={busy !== null || !configured}
+                  className="w-full flex items-center justify-center gap-3 border border-border bg-card hover:bg-accent px-4 py-3 text-sm transition-colors disabled:opacity-50"
+                >
+                  <UserMark />
+                  Continue with username
+                </button>
+              </div>
+
+              {error && (
+                <p className="mt-4 text-xs text-destructive leading-relaxed text-center">
+                  ! {error}
+                </p>
+              )}
+
+              {!configured && (
+                <p className="mt-6 text-xs text-muted-foreground leading-relaxed border border-dashed border-border p-3 bg-card text-center">
+                  <span className="text-foreground">!</span> Supabase env vars
+                  not set.
+                </p>
+>>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
               )}
             </>
           )}
 
+<<<<<<< HEAD
+=======
+          {/* ---- EMAIL: magic link form ---- */}
+>>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
           {view === "email" && !magicLinkSent && (
             <>
               <h1 className="text-lg font-bold tracking-tight mb-1 text-center">
@@ -207,11 +420,17 @@ export default function AuthPage() {
                 </div>
 
                 {error && (
+<<<<<<< HEAD
                   <div className="border border-destructive/20 bg-destructive/5 px-4 py-2.5">
                     <p className="text-xs text-destructive leading-relaxed text-center">
                       ! {error}
                     </p>
                   </div>
+=======
+                  <p className="text-xs text-destructive leading-relaxed text-center">
+                    ! {error}
+                  </p>
+>>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
                 )}
 
                 <button
@@ -226,12 +445,31 @@ export default function AuthPage() {
                   )}
                 </button>
               </form>
+<<<<<<< HEAD
             </>
           )}
 
           {view === "email" && magicLinkSent && (
             <div className="text-center">
               <Mail className="h-8 w-8 text-muted-foreground mx-auto mb-4" />
+=======
+
+              <div className="mt-6 text-center">
+                <button
+                  type="button"
+                  onClick={switchToEmailPassword}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  use password instead
+                </button>
+              </div>
+            </>
+          )}
+
+          {/* ---- EMAIL: magic link sent confirmation ---- */}
+          {view === "email" && magicLinkSent && (
+            <div className="text-center">
+>>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
               <h1 className="text-lg font-bold tracking-tight mb-3">
                 check your inbox
               </h1>
@@ -253,17 +491,176 @@ export default function AuthPage() {
               </button>
             </div>
           )}
+<<<<<<< HEAD
         </div>
       </section>
 
       <hr className="footer-separator" />
       <footer className="mt-auto px-4 sm:px-6 py-4 text-center text-[11px] text-muted-foreground">
+=======
+
+          {/* ---- EMAIL + PASSWORD (use password instead) ---- */}
+          {view === "email-password" && (
+            <>
+              <h1 className="text-lg font-bold tracking-tight mb-1 text-center">
+                sign in with password
+              </h1>
+              <p className="text-xs text-muted-foreground mb-8 text-center leading-relaxed">
+                enter your email and password
+              </p>
+
+              <form onSubmit={handleEmailPassword} className="space-y-4">
+                <div className="flex items-center border border-border bg-card focus-within:border-foreground transition-colors">
+                  <span className="pl-3 pr-2 text-muted-foreground select-none text-sm">
+                    &gt;
+                  </span>
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="email address"
+                    className="flex-1 bg-transparent border-0 outline-none py-2.5 text-sm placeholder:text-muted-foreground/60"
+                    disabled={busy !== null}
+                    autoFocus
+                  />
+                </div>
+
+                <div className="flex items-center border border-border bg-card focus-within:border-foreground transition-colors">
+                  <span className="pl-3 pr-2 text-muted-foreground select-none text-sm">
+                    &gt;
+                  </span>
+                  <input
+                    type="password"
+                    required
+                    minLength={6}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="password"
+                    className="flex-1 bg-transparent border-0 outline-none py-2.5 text-sm placeholder:text-muted-foreground/60"
+                    disabled={busy !== null}
+                  />
+                </div>
+
+                {error && (
+                  <p className="text-xs text-destructive leading-relaxed text-center">
+                    ! {error}
+                  </p>
+                )}
+
+                <button
+                  type="submit"
+                  className="w-full bg-foreground text-background hover:bg-foreground/90 py-3 text-sm transition-colors disabled:opacity-50"
+                  disabled={busy !== null}
+                >
+                  {busy === "password" ? (
+                    <Loader2 className="h-4 w-4 animate-spin mx-auto" />
+                  ) : (
+                    "sign in"
+                  )}
+                </button>
+              </form>
+
+              <div className="mt-6 text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setError(null);
+                    setView("email");
+                    setPassword("");
+                    setMagicLinkSent(false);
+                  }}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  send magic link instead
+                </button>
+              </div>
+            </>
+          )}
+
+          {/* ---- USERNAME + PASSWORD ---- */}
+          {view === "username" && (
+            <>
+              <h1 className="text-lg font-bold tracking-tight mb-1 text-center">
+                sign in with username
+              </h1>
+              <p className="text-xs text-muted-foreground mb-8 text-center leading-relaxed">
+                enter your username and password
+              </p>
+
+              <form onSubmit={handleUsernamePassword} className="space-y-4">
+                <div className="flex items-center border border-border bg-card focus-within:border-foreground transition-colors">
+                  <span className="pl-3 pr-2 text-muted-foreground select-none text-sm">
+                    @
+                  </span>
+                  <input
+                    type="text"
+                    required
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value.toLowerCase())}
+                    placeholder="username"
+                    className="flex-1 bg-transparent border-0 outline-none py-2.5 text-sm placeholder:text-muted-foreground/60"
+                    disabled={busy !== null}
+                    autoFocus
+                    autoComplete="off"
+                    spellCheck={false}
+                  />
+                </div>
+
+                <div className="flex items-center border border-border bg-card focus-within:border-foreground transition-colors">
+                  <span className="pl-3 pr-2 text-muted-foreground select-none text-sm">
+                    &gt;
+                  </span>
+                  <input
+                    type="password"
+                    required
+                    minLength={6}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="password"
+                    className="flex-1 bg-transparent border-0 outline-none py-2.5 text-sm placeholder:text-muted-foreground/60"
+                    disabled={busy !== null}
+                  />
+                </div>
+
+                {error && (
+                  <p className="text-xs text-destructive leading-relaxed text-center">
+                    ! {error}
+                  </p>
+                )}
+
+                <button
+                  type="submit"
+                  className="w-full bg-foreground text-background hover:bg-foreground/90 py-3 text-sm transition-colors disabled:opacity-50"
+                  disabled={busy !== null}
+                >
+                  {busy === "password" ? (
+                    <Loader2 className="h-4 w-4 animate-spin mx-auto" />
+                  ) : (
+                    "sign in"
+                  )}
+                </button>
+              </form>
+            </>
+          )}
+        </div>
+      </section>
+
+      <footer className="absolute bottom-0 left-0 right-0 px-6 py-4 text-center text-[11px] text-muted-foreground">
+>>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
         QLSS · short links
       </footer>
     </main>
   );
 }
 
+<<<<<<< HEAD
+=======
+// ---------------------------------------------------------------------------
+// SVG marks
+// ---------------------------------------------------------------------------
+
+>>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
 function GoogleMark() {
   return (
     <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
@@ -304,9 +701,33 @@ function EmailMark() {
   );
 }
 
+<<<<<<< HEAD
 function humanizeError(message: string): string {
   const m = message.toLowerCase();
   if (m.includes("invalid login")) return "Wrong email or password.";
+=======
+function UserMark() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="16"
+      height="16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-hidden="true"
+    >
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  );
+}
+
+function humanizeError(message: string): string {
+  const m = message.toLowerCase();
+  if (m.includes("invalid login"))
+    return "Wrong email or password.";
+>>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
   if (m.includes("user already registered"))
     return "An account with that email already exists.";
   if (m.includes("rate limit"))
@@ -314,6 +735,12 @@ function humanizeError(message: string): string {
   if (m.includes("password"))
     return "Password must be at least 6 characters.";
   if (m.includes("not found") || m.includes("no account"))
+<<<<<<< HEAD
     return "No account found with that email.";
   return message;
 }
+=======
+    return "No account found with that username.";
+  return message;
+}
+>>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2

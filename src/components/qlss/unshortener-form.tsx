@@ -166,13 +166,8 @@ export function UnshortenerForm() {
       }
     } catch {
       toast({
-        title: null,
-        description: (
-          <span className="flex items-center gap-2 text-xs">
-            <Ban className="h-3 w-3 shrink-0 text-muted-foreground" />
-            could not read clipboard — check permissions
-          </span>
-        ),
+        title: "clipboard error",
+        description: "could not read clipboard — check permissions",
         duration: 2000,
       });
     }
@@ -236,13 +231,8 @@ export function UnshortenerForm() {
     navigator.clipboard.writeText(text).then(() => {
       setCopied(true);
       toast({
-        title: null,
-        description: (
-          <span className="flex items-center gap-2 text-xs">
-            <Check className="h-3 w-3 shrink-0" style={{ color: "#2c6e49" }} />
-            copied to clipboard
-          </span>
-        ),
+        title: "copied",
+        description: "copied to clipboard",
         duration: 1500,
       });
       setTimeout(() => setCopied(false), 2000);

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/env";
 import { SiteHeader } from "@/components/qlss/site-header";
@@ -12,17 +13,37 @@ import { AlertTriangle } from "lucide-react";
 export default async function HomePage() {
   let signedIn = false;
 
+=======
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { isSupabaseConfigured } from "@/lib/env";
+import { SiteHeader } from "@/components/qlss/site-header";
+import { ShortenerForm } from "@/components/qlss/shortener-form";
+
+/**
+ * Public home page.
+ *
+ * - If signed in → redirect to /dashboard (the app proper).
+ * - If not signed in → show the public shortener (anonymous use OK).
+ */
+export default async function HomePage() {
+>>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
   if (isSupabaseConfigured()) {
     const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
+<<<<<<< HEAD
     signedIn = !!user;
+=======
+    if (user) redirect("/dashboard");
+>>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
   }
 
   const configured = isSupabaseConfigured();
 
   return (
+<<<<<<< HEAD
     <main className="cli-grid relative min-h-screen w-full flex flex-col">
       <SiteHeader signedIn={signedIn} />
       <div className="header-accent-line" />
@@ -49,3 +70,27 @@ export default async function HomePage() {
     </main>
   );
 }
+=======
+    <main className="cli-grid relative h-screen w-full overflow-hidden flex flex-col">
+      <SiteHeader />
+
+      <section className="flex-1 flex items-center justify-center px-6">
+        <div className="w-full max-w-xl">
+          <ShortenerForm />
+
+          {!configured && (
+            <p className="mt-6 text-xs text-muted-foreground leading-relaxed border border-dashed border-border p-3 bg-card">
+              <span className="text-foreground">!</span> Supabase env vars not
+              set. Add them to enable shortening.
+            </p>
+          )}
+        </div>
+      </section>
+
+      <footer className="absolute bottom-0 left-0 right-0 px-6 py-4 text-center text-[11px] text-muted-foreground">
+        QLSS · short links
+      </footer>
+    </main>
+  );
+}
+>>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2

@@ -378,13 +378,8 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
       }
     } catch {
       toast({
-        title: null,
-        description: (
-          <span className="flex items-center gap-2 text-xs">
-            <Ban className="h-3 w-3 shrink-0 text-muted-foreground" />
-            could not read clipboard — check permissions
-          </span>
-        ),
+        title: "clipboard error",
+        description: "could not read clipboard — check permissions",
         duration: 2000,
       });
     }
@@ -464,13 +459,8 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
   function handleCopyText(text: string, label: string) {
     navigator.clipboard.writeText(text).then(() => {
       toast({
-        title: null,
-        description: (
-          <span className="flex items-center gap-2 text-xs">
-            <Check className="h-3 w-3 shrink-0" />
-            {label}
-          </span>
-        ),
+        title: "copied",
+        description: label,
         duration: 2000,
       });
       setCopyMenuOpen(false);

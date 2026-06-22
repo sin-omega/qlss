@@ -1,6 +1,10 @@
 {
   "name": "qlss",
+<<<<<<< HEAD
   "version": "2.0.0",
+=======
+  "version": "1.0.0",
+>>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -41,16 +45,26 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
+<<<<<<< HEAD
     "embla-carousel-react": "^8.6.0",
+=======
+    "date-fns": "^4.1.0",
+    "embla-carousel-react": "^8.6.0",
+    "framer-motion": "^12.23.2",
+>>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
     "input-otp": "^1.4.2",
     "lucide-react": "^0.525.0",
     "next": "^16.1.1",
     "next-themes": "^0.4.6",
+<<<<<<< HEAD
     "qrcode.react": "^4.2.0",
+=======
+>>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
     "react": "^19.0.0",
     "react-day-picker": "^9.8.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.60.0",
+<<<<<<< HEAD
     "react-resizable-panels": "^3.0.3",
     "recharts": "^2.15.4",
     "sonner": "^2.0.6",
@@ -60,6 +74,20 @@
   },
   "devDependencies": {
     "@hookform/resolvers": "^5.1.1",
+=======
+    "react-markdown": "^10.1.0",
+    "react-resizable-panels": "^3.0.3",
+    "react-syntax-highlighter": "^15.6.1",
+    "recharts": "^2.15.4",
+    "sonner": "^2.0.6",
+    "tailwind-merge": "^3.3.1",
+    "tailwindcss-animate": "^1.0.7",
+    "ua-parser-js": "^2.0.10",
+    "vaul": "^1.1.2",
+    "zod": "^4.0.2"
+  },
+  "devDependencies": {
+>>>>>>> ea7fb57a502bb3e44839d80d58b2f794f8c8deb2
     "@tailwindcss/postcss": "^4",
     "@types/node": "26.0.0",
     "@types/react": "^19",
