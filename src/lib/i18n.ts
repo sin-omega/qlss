@@ -870,7 +870,9 @@ function getNestedValue(obj: unknown, path: string[]): string {
  * t("en", "legal", "privacy")        // "Privacy Policy"
  */
 export function t(locale: Locale, ...path: string[]): string {
-  return getNestedValue(dictionary[locale], path);
+  // Support both t(locale, "app", "tagline") and t(locale, "app.tagline")
+  const flatPath = path.flatMap((p) => p.split("."));
+  return getNestedValue(dictionary[locale], flatPath);
 }
 
 // ─── Locale detection ───────────────────────────────────────────────────────
