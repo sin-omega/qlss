@@ -10,6 +10,13 @@ const ERROR_MESSAGES = [
   "404 — link deleted or never existed",
   "path does not resolve",
   "dead link",
+  "link not found",
+  "this page is missing",
+  "idk what you were looking for",
+  "four oh four",
+  "the link you requested is not available",
+  "chcialobysie frajerku ten link nie istnieje",
+  "404 - thats my body count",
 ];
 
 function getServerSnapshot() { return ""; }

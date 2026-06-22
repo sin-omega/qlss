@@ -16,7 +16,7 @@ interface LegalSection {
 const TITLES: Record<string, string> = {
   privacy: "Privacy Policy",
   tos: "Terms of Service",
-  abuse: "Report Abuse",
+  abuse: "Report Bug/Abuse",
 };
 
 const PRIVACY_SECTIONS: LegalSection[] = [
@@ -262,7 +262,7 @@ export function LegalDialog({ page, onClose }: LegalDialogProps) {
         {/* Footer */}
         <div className="px-4 py-2.5 border-t border-border flex items-center justify-between">
           <span className="text-[9px] text-muted-foreground/50">
-            last updated: june 2025
+            last updated: June 2026
           </span>
           <button
             type="button"
