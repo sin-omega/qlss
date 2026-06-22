@@ -32,7 +32,7 @@ export default async function LinksPage() {
       <main className="cli-grid relative min-h-screen w-full flex flex-col">
         <SiteHeader signedIn={signedIn} isAdmin={false} backHref="/" backLabel="home" />
         <div className="header-accent-line" />
-        <section className="flex-1 flex items-center justify-center px-4 sm:px-6">
+        <section className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-16">
           <div className="text-center max-w-md">
             <h1 className="text-lg font-bold tracking-tight">Almost ready.</h1>
             <p className="mt-3 text-xs text-muted-foreground leading-relaxed">
@@ -40,7 +40,6 @@ export default async function LinksPage() {
             </p>
           </div>
         </section>
-        <hr className="footer-separator mt-auto" />
         <SiteFooter />
       </main>
     );
@@ -69,7 +68,7 @@ export default async function LinksPage() {
       <main className="cli-grid relative min-h-screen w-full flex flex-col">
         <SiteHeader signedIn={true} isAdmin={false} backHref="/" backLabel="home" />
         <div className="header-accent-line" />
-        <section className="flex-1 flex items-center justify-center px-4 sm:px-6">
+        <section className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-16">
           <div className="text-center max-w-md">
             <h1 className="text-lg font-bold tracking-tight">Error</h1>
             <p className="mt-3 text-xs text-muted-foreground leading-relaxed">
@@ -77,7 +76,6 @@ export default async function LinksPage() {
             </p>
           </div>
         </section>
-        <hr className="footer-separator mt-auto" />
         <SiteFooter />
       </main>
     );
@@ -150,7 +148,6 @@ export default async function LinksPage() {
         </div>
       </section>
 
-      <hr className="footer-separator mt-auto" />
       <SiteFooter />
     </main>
   );

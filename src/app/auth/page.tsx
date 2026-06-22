@@ -92,7 +92,7 @@ export default function AuthPage() {
       <SiteHeader signedIn={signedIn} isAdmin={false} backHref="/" backLabel="home" />
       <div className="header-accent-line" />
 
-      <section className="flex-1 flex items-center justify-center px-4 sm:px-6">
+      <section className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-16">
         <div className="w-full max-w-sm animate-page-enter">
           {view === "landing" && !magicLinkSent && (
             <>
@@ -243,7 +243,6 @@ export default function AuthPage() {
         </div>
       </section>
 
-      <hr className="footer-separator mt-auto" />
       <SiteFooter />
     </main>
   );

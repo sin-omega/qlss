@@ -75,7 +75,6 @@ export default async function StatsPage({
             </p>
           </div>
         </section>
-        <hr className="footer-separator mt-auto" />
         <SiteFooter />
       </main>
     );
@@ -196,7 +195,6 @@ export default async function StatsPage({
         </div>
       </section>
 
-      <hr className="footer-separator mt-auto" />
       <SiteFooter />
     </main>
   );

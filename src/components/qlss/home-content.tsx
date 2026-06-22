@@ -5,11 +5,14 @@ import { Link, Undo2, Layers, Lock } from "lucide-react";
 import { ShortenerForm } from "@/components/qlss/shortener-form";
 import { BulkForm } from "@/components/qlss/bulk-form";
 import { LegalDialog } from "@/components/qlss/legal-dialog";
+import { t } from "@/lib/i18n";
+import { useLocale } from "@/components/qlss/providers";
 
 type Tab = "shorten" | "unshorten" | "bulk";
 type LegalPage = "privacy" | "tos" | "abuse" | null;
 
 export function HomeContent({ signedIn }: { signedIn: boolean }) {
+  const { locale } = useLocale();
   const [tab, setTab] = useState<Tab>("shorten");
   const [legalPage, setLegalPage] = useState<LegalPage>(null);
 
@@ -56,9 +59,7 @@ export function HomeContent({ signedIn }: { signedIn: boolean }) {
 
       if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
         e.preventDefault();
-        const tabs: Tab[] = signedIn
-          ? ["shorten", "bulk", "unshorten"]
-          : ["shorten", "unshorten"];
+        const tabs: Tab[] = ["shorten", "bulk", "unshorten"];
         const idx = tabs.indexOf(tab);
         const next = e.key === "ArrowRight" ? Math.min(idx + 1, tabs.length - 1) : Math.max(idx - 1, 0);
         setTab(tabs[next]);
@@ -67,14 +68,12 @@ export function HomeContent({ signedIn }: { signedIn: boolean }) {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [tab, signedIn]);
+  }, [tab]);
 
   const tabs: { key: Tab; label: string; icon: React.ReactNode; disabled?: boolean; ref: React.RefObject<HTMLButtonElement | null> }[] = [
-    { key: "shorten", label: "shorten", icon: <Link className="h-3.5 w-3.5" />, ref: shortenBtnRef },
-    ...(signedIn
-      ? [{ key: "bulk" as Tab, label: "bulk", icon: <Layers className="h-3.5 w-3.5" />, ref: bulkBtnRef }]
-      : []),
-    { key: "unshorten", label: "unshorten (soon)", icon: <Undo2 className="h-3.5 w-3.5" />, disabled: true, ref: unshortenBtnRef },
+    { key: "shorten", label: t(locale, "home.shorten_tab"), icon: <Link className="h-3.5 w-3.5" />, ref: shortenBtnRef },
+    { key: "bulk", label: t(locale, "home.bulk_tab"), icon: <Layers className="h-3.5 w-3.5" />, disabled: !signedIn, ref: bulkBtnRef },
+    { key: "unshorten", label: t(locale, "home.unshorten_tab"), icon: <Undo2 className="h-3.5 w-3.5" />, disabled: true, ref: unshortenBtnRef },
   ];
 
   return (
@@ -87,27 +86,27 @@ export function HomeContent({ signedIn }: { signedIn: boolean }) {
         role="tablist"
         aria-label="Choose action"
       >
-        {tabs.map((t, i) => (
+        {tabs.map((tb, i) => (
           <button
-            key={t.key}
-            ref={t.ref}
+            key={tb.key}
+            ref={tb.ref}
             type="button"
             role="tab"
-            aria-selected={tab === t.key}
-            tabIndex={tab === t.key ? 0 : -1}
-            onClick={() => !t.disabled && setTab(t.key)}
+            aria-selected={tab === tb.key}
+            tabIndex={tab === tb.key ? 0 : -1}
+            onClick={() => !tb.disabled && setTab(tb.key)}
             className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-xs transition-colors touch-target btn-press ${
               i > 0 ? "border-l border-border" : ""
             } ${
-              t.disabled
+              tb.disabled
                 ? "text-muted-foreground/40 cursor-not-allowed"
-                : tab === t.key
+                : tab === tb.key
                   ? "text-foreground font-medium"
                   : "text-muted-foreground hover:text-foreground hover:bg-accent/40"
             }`}
           >
-            {t.icon}
-            {t.label}
+            {tb.icon}
+            {tb.label}
           </button>
         ))}
         <div
@@ -121,11 +120,18 @@ export function HomeContent({ signedIn }: { signedIn: boolean }) {
           <ShortenerForm signedIn={signedIn} />
         ) : tab === "bulk" && signedIn ? (
           <BulkForm />
+        ) : tab === "bulk" && !signedIn ? (
+          <div className="border border-border bg-card py-12 px-6 text-center">
+            <Lock className="h-6 w-6 text-muted-foreground/30 mx-auto mb-3" />
+            <p className="text-xs text-muted-foreground">
+              {t(locale, "bulk.sign_in_required")}
+            </p>
+          </div>
         ) : (
           <div className="border border-border bg-card py-12 px-6 text-center">
             <Lock className="h-6 w-6 text-muted-foreground/30 mx-auto mb-3" />
             <p className="text-xs text-muted-foreground">
-              unshorten is coming soon.
+              {t(locale, "common.coming_soon")}
             </p>
           </div>
         )}
@@ -137,9 +143,11 @@ export function HomeContent({ signedIn }: { signedIn: boolean }) {
 }
 
 function HeroTagline() {
+  const { locale } = useLocale();
+
   return (
     <p className="text-[11px] text-muted-foreground mb-4 tracking-wide text-gradient">
-      Shorten. Claim. Track. Free forever.
+      {t(locale, "app.tagline")}
     </p>
   );
 }

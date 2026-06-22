@@ -47,14 +47,22 @@ export async function POST(request: NextRequest) {
     return jsonError(400, "destination_url is required.");
   }
 
+  let rawUrl = destinationUrl;
+  if (!rawUrl.startsWith("http://") && !rawUrl.startsWith("https://")) {
+    rawUrl = `https://${rawUrl}`;
+  }
+
   let destination: URL;
   try {
-    destination = new URL(destinationUrl);
+    destination = new URL(rawUrl);
   } catch {
     return jsonError(400, "Invalid destination URL.");
   }
   if (destination.protocol !== "http:" && destination.protocol !== "https:") {
     return jsonError(400, "Only http(s) destinations are allowed.");
+  }
+  if (!destination.hostname || destination.hostname === "localhost" || !destination.hostname.includes(".")) {
+    return jsonError(400, "That doesn't look like a valid URL.");
   }
 
   const requestedSlug = normalizeSlug(body.custom_slug ?? "");

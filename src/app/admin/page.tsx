@@ -107,7 +107,7 @@ export default async function AdminPage() {
       <SiteHeader signedIn={true} isAdmin={true} backHref="/links" backLabel="my links" />
       <div className="header-accent-line" />
 
-      <section className="pt-10 pb-4 px-4 sm:px-6">
+      <section className="pt-10 pb-16 px-4 sm:px-6">
         <div className="mx-auto max-w-3xl animate-page-enter">
           <AdminPanel
             initialUsers={users}
@@ -117,10 +117,6 @@ export default async function AdminPage() {
           />
         </div>
       </section>
-
-      <section className="pb-16" />
-
-      <hr className="footer-separator mt-auto" />
       <SiteFooter />
     </main>
   );

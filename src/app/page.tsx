@@ -50,7 +50,7 @@ export default async function HomePage() {
       <SiteHeader signedIn={signedIn} isAdmin={isAdmin} />
       <div className="header-accent-line" />
 
-      <section className="flex-1 flex items-start justify-center px-4 sm:px-6 pt-8 sm:pt-12">
+      <section className="flex-1 flex items-start justify-center px-4 sm:px-6 pt-8 sm:pt-12 pb-16">
         <div className="w-full max-w-xl animate-page-enter">
           <HomeContent signedIn={signedIn} />
 
@@ -70,7 +70,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <hr className="footer-separator mt-auto" />
       <SiteFooter />
     </main>
   );

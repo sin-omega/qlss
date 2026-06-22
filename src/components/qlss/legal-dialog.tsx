@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { X, Mail, Send } from "lucide-react";
+import { X, Send, Check, Loader2 } from "lucide-react";
 
 interface LegalDialogProps {
   page: "privacy" | "tos" | "abuse" | null;
@@ -22,7 +22,7 @@ const TITLES: Record<string, string> = {
 const PRIVACY_SECTIONS: LegalSection[] = [
   {
     heading: "Data Collection",
-    body: "QLSS collects minimal data to provide link shortening services. We store the destination URL, optional custom alias, and creation timestamp for each shortened link. We also collect basic analytics (referring page, browser, device type) when a short link is accessed.",
+    body: "QLSS collects minimal data to provide link shortening services. We store the destination URL, optional custom alias, and creation timestamp for each shortened link. We also collect basic analytics (referring page, browser, device type) when a short link is accessed. We collect approximate geolocation data (country and region) derived from IP addresses when short links are accessed, for analytics purposes. We do not store raw IP addresses longer than necessary for analytics display. Abuse reports submitted through this service are fully anonymous — we do not collect or store reporter identity.",
   },
   {
     heading: "Data Usage",
@@ -41,7 +41,7 @@ const PRIVACY_SECTIONS: LegalSection[] = [
 const TOS_SECTIONS: LegalSection[] = [
   {
     heading: "Acceptable Use",
-    body: "By using QLSS, you agree not to use the service for any unlawful purpose, including but not limited to: spreading malware, phishing, spam, or distributing harmful content. All shortened links must comply with applicable laws.",
+    body: "By using QLSS, you agree not to use the service for any unlawful purpose, including but not limited to: spreading malware, phishing, spam, or distributing harmful content. All shortened links must comply with applicable laws. QLSS reserves the right to remove links that violate these terms and to ban accounts engaged in abuse.",
   },
   {
     heading: "Limitation of Liability",
@@ -58,19 +58,58 @@ const TOS_SECTIONS: LegalSection[] = [
 ];
 
 const ABUSE_CONTENT =
-  "To report abusive, malicious, or otherwise harmful short links, use the form below or email us directly with the full short URL and a brief description of the issue. We review all reports and take appropriate action, which may include removing the link and banning the creator. Response times may vary. For urgent matters involving illegal content, please also consider reporting to relevant law enforcement or hosting providers.";
+  "Reports are fully anonymous — we do not collect your email or identity. Provide a description of the issue below, optionally including the short link slug. All reports are reviewed by administrators and appropriate action is taken, which may include removing the link and banning the creator.";
 
 function AbuseForm() {
-  const [abuseEmail, setAbuseEmail] = useState("");
   const [abuseReason, setAbuseReason] = useState("");
-  const [submitted, setSubmitted] = useState(false);
   const [sending, setSending] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showComingSoon, setShowComingSoon] = useState(false);
 
-  function handleSendReport(e: React.FormEvent) {
+  async function handleSendReport(e: React.FormEvent) {
     e.preventDefault();
-    setShowComingSoon(true);
+    setError(null);
+
+    if (abuseReason.trim().length < 10) {
+      setError("Please describe the issue (at least 10 characters).");
+      return;
+    }
+
+    setSending(true);
+    try {
+      const res = await fetch("/api/abuse", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: abuseReason.trim(), slug: "" }),
+      });
+
+      if (!res.ok) {
+        const data = (await res.json()) as { error?: string };
+        throw new Error(data.error ?? "Failed to submit report.");
+      }
+
+      setSubmitted(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong.");
+    } finally {
+      setSending(false);
+    }
+  }
+
+  if (submitted) {
+    return (
+      <div className="space-y-4">
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          {ABUSE_CONTENT}
+        </p>
+        <div className="border border-border pt-3 mt-3">
+          <div className="px-3 py-3 text-xs text-foreground flex items-center gap-2">
+            <Check className="h-3.5 w-3.5 text-green-500 shrink-0" />
+            <span>Report submitted. Administrators will review it.</span>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -82,49 +121,34 @@ function AbuseForm() {
         <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3 px-0.5">
           send report
         </p>
-        {showComingSoon ? (
-          <div className="px-3 py-3 text-[10px] text-muted-foreground flex items-center justify-between">
-            <span>coming soon — reports will be visible to admins.</span>
-            <button
-              type="button"
-              onClick={() => setShowComingSoon(false)}
-              className="text-muted-foreground hover:text-foreground transition-colors touch-target"
-            >
-              dismiss
-            </button>
-          </div>
-        ) : (
-          <form onSubmit={handleSendReport} className="space-y-2.5">
-            <div className="flex items-stretch border border-border bg-card input-focus-glow">
-              <span className="pl-3 pr-2 text-muted-foreground flex items-center">
-                <Mail className="h-3 w-3" />
-              </span>
-              <input
-                type="email"
-                placeholder="your email (optional)"
-                value={abuseEmail}
-                onChange={(e) => setAbuseEmail(e.target.value)}
-                className="flex-1 bg-transparent border-0 outline-none py-2.5 text-xs placeholder:text-muted-foreground/60"
-                autoComplete="off"
-              />
-            </div>
-            <textarea
-              placeholder="describe the issue — include the short url"
-              value={abuseReason}
-              onChange={(e) => setAbuseReason(e.target.value)}
-              required
-              className="w-full border border-border bg-card px-3 py-2.5 text-xs placeholder:text-muted-foreground/60 resize-none outline-none input-focus-glow"
-              rows={3}
-            />
-            <button
-              type="submit"
-              className="border border-border bg-card text-foreground hover:bg-accent px-4 py-2 text-xs transition-colors btn-press touch-target inline-flex items-center gap-1.5"
-            >
+        <form onSubmit={handleSendReport} className="space-y-2.5">
+          <textarea
+            placeholder="describe the issue — include the short url"
+            value={abuseReason}
+            onChange={(e) => {
+              setAbuseReason(e.target.value);
+              if (error) setError(null);
+            }}
+            required
+            className="w-full border border-border bg-card px-3 py-2.5 text-xs placeholder:text-muted-foreground/60 resize-none outline-none input-focus-glow"
+            rows={3}
+          />
+          {error && (
+            <p className="text-[10px] text-red-400 px-0.5">{error}</p>
+          )}
+          <button
+            type="submit"
+            disabled={sending}
+            className="border border-border bg-card text-foreground hover:bg-accent px-4 py-2 text-xs transition-colors btn-press touch-target inline-flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {sending ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
               <Send className="h-3 w-3" />
-              send report
-            </button>
-          </form>
-        )}
+            )}
+            {sending ? "sending..." : "send report"}
+          </button>
+        </form>
       </div>
     </div>
   );

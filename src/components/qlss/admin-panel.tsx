@@ -168,6 +168,11 @@ export function AdminPanel({
 function UsersTab({ users }: { users: AdminUser[] }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [localUsers, setLocalUsers] = useState(users);
+  const [expandedUser, setExpandedUser] = useState<string | null>(null);
+  const [userLinks, setUserLinks] = useState<{ slug: string; destination_url: string; clicks: number; created_at: string }[]>([]);
+  const [userTotalClicks, setUserTotalClicks] = useState(0);
+  const [userLinksLoading, setUserLinksLoading] = useState(false);
+  const origin = siteOrigin();
 
   async function handleBan(id: string) {
     const reason = prompt("Ban reason (optional):") ?? "";
@@ -214,6 +219,29 @@ function UsersTab({ users }: { users: AdminUser[] }) {
     }
   }
 
+  async function handleViewLinks(userId: string) {
+    if (expandedUser === userId) {
+      setExpandedUser(null);
+      setUserLinks([]);
+      return;
+    }
+    setExpandedUser(userId);
+    setUserLinksLoading(true);
+    setUserLinks([]);
+    try {
+      const res = await fetch(`/api/admin/users/${userId}/stats`);
+      if (res.ok) {
+        const data = await res.json();
+        setUserLinks(data.links ?? []);
+        setUserTotalClicks((data.links ?? []).reduce((s: number, l: { clicks: number }) => s + l.clicks, 0));
+      }
+    } catch {
+      // ignore
+    } finally {
+      setUserLinksLoading(false);
+    }
+  }
+
   if (localUsers.length === 0) {
     return (
       <div className="border border-border bg-card py-12 text-center">
@@ -237,70 +265,131 @@ function UsersTab({ users }: { users: AdminUser[] }) {
         <tbody>
           {localUsers.map((u) => {
             const isBusy = busy === u.id;
+            const isExpanded = expandedUser === u.id;
             return (
-              <tr
-                key={u.id}
-                className={`border-b border-border last:border-0 transition-colors hover:bg-accent/40 ${
-                  u.banned ? "opacity-60" : ""
-                }`}
-              >
-                <td className="px-3 py-2 truncate max-w-[180px]">
-                  <span className={u.banned ? "text-muted-foreground line-through" : ""}>
-                    {u.email || u.id.slice(0, 8)}
-                  </span>
-                </td>
-                <td className="px-3 py-2 text-muted-foreground hidden sm:table-cell">
-                  {formatDate(u.created_at)}
-                </td>
-                <td className="px-3 py-2">
-                  {u.is_admin ? (
-                    <span className="inline-flex items-center gap-1 text-muted-foreground">
-                      <ShieldCheck className="h-3 w-3" />
-                      admin
+              <>
+                <tr
+                  key={u.id}
+                  className={`border-b border-border transition-colors hover:bg-accent/40 ${
+                    u.banned ? "opacity-60" : ""
+                  }`}
+                >
+                  <td className="px-3 py-2 truncate max-w-[180px]">
+                    <span className={u.banned ? "text-muted-foreground line-through" : ""}>
+                      {u.email || u.id.slice(0, 8)}
                     </span>
-                  ) : (
-                    <span className="text-muted-foreground">user</span>
-                  )}
-                </td>
-                <td className="px-3 py-2">
-                  {u.banned ? (
-                    <span className="inline-flex items-center gap-1 text-destructive">
-                      <ShieldX className="h-3 w-3" />
-                      banned
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground">active</span>
-                  )}
-                </td>
-                <td className="px-3 py-2 text-right">
-                  {!u.is_admin && (
-                    isBusy ? (
-                      <Loader2 className="h-3 w-3 animate-spin text-muted-foreground mx-auto" />
-                    ) : u.banned ? (
-                      <button
-                        type="button"
-                        onClick={() => handleUnban(u.id)}
-                        className="text-xs border border-border hover:bg-accent px-2 py-1 transition-colors"
-                      >
-                        unban
-                      </button>
+                  </td>
+                  <td className="px-3 py-2 text-muted-foreground hidden sm:table-cell">
+                    {formatDate(u.created_at)}
+                  </td>
+                  <td className="px-3 py-2">
+                    {u.is_admin ? (
+                      <span className="inline-flex items-center gap-1 text-muted-foreground">
+                        <ShieldCheck className="h-3 w-3" />
+                        admin
+                      </span>
                     ) : (
+                      <span className="text-muted-foreground">user</span>
+                    )}
+                  </td>
+                  <td className="px-3 py-2">
+                    {u.banned ? (
+                      <span className="inline-flex items-center gap-1 text-destructive">
+                        <ShieldX className="h-3 w-3" />
+                        banned
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">active</span>
+                    )}
+                  </td>
+                  <td className="px-3 py-2 text-right">
+                    <div className="inline-flex items-center gap-1">
                       <button
                         type="button"
-                        onClick={() => handleBan(u.id)}
-                        className="text-xs border border-border hover:bg-accent text-destructive px-2 py-1 transition-colors"
+                        onClick={() => handleViewLinks(u.id)}
+                        className="text-xs border border-border hover:bg-accent px-2 py-1 transition-colors inline-flex items-center gap-1"
+                        title={isExpanded ? "Hide links" : "View links"}
                       >
-                        ban
+                        <LinkIcon className="h-2.5 w-2.5" />
+                        <span className="hidden sm:inline">{isExpanded ? "hide" : "links"}</span>
                       </button>
-                    )
-                  )}
-                  {u.banned && u.banned_reason && (
-                    <p className="text-[10px] text-muted-foreground mt-1 text-right truncate" title={u.banned_reason}>
-                      {u.banned_reason}
-                    </p>
-                  )}
-                </td>
-              </tr>
+                      {!u.is_admin && (
+                        isBusy ? (
+                          <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                        ) : u.banned ? (
+                          <button
+                            type="button"
+                            onClick={() => handleUnban(u.id)}
+                            className="text-xs border border-border hover:bg-accent px-2 py-1 transition-colors"
+                          >
+                            unban
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleBan(u.id)}
+                            className="text-xs border border-border hover:bg-accent text-destructive px-2 py-1 transition-colors"
+                          >
+                            ban
+                          </button>
+                        )
+                      )}
+                    </div>
+                    {u.banned && u.banned_reason && (
+                      <p className="text-[10px] text-muted-foreground mt-1 text-right truncate" title={u.banned_reason}>
+                        {u.banned_reason}
+                      </p>
+                    )}
+                  </td>
+                </tr>
+                {isExpanded && (
+                  <tr key={`${u.id}-links`}>
+                    <td colSpan={5} className="px-3 py-2 bg-accent/10">
+                      {userLinksLoading ? (
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground py-2">
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                          loading links...
+                        </div>
+                      ) : userLinks.length === 0 ? (
+                        <p className="text-xs text-muted-foreground py-2">no links for this user</p>
+                      ) : (
+                        <div>
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground mb-1.5">
+                            <span><span className="text-foreground font-medium">{userLinks.length}</span> links</span>
+                            <span><span className="text-foreground font-medium">{userTotalClicks}</span> total clicks</span>
+                          </div>
+                          <div className="border border-border bg-card max-h-40 overflow-y-auto">
+                            <table className="w-full text-[11px]">
+                              <thead className="border-b border-border">
+                                <tr className="text-left text-muted-foreground">
+                                  <th className="px-2 py-1 font-medium">slug</th>
+                                  <th className="px-2 py-1 font-medium hidden md:table-cell">destination</th>
+                                  <th className="px-2 py-1 font-medium">clicks</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {userLinks.map((l) => (
+                                  <tr key={l.slug} className="border-b border-border last:border-0">
+                                    <td className="px-2 py-1 truncate max-w-[100px]">
+                                      <a href={`${origin}/${l.slug}`} target="_blank" rel="noopener noreferrer" className="hover:underline font-medium">
+                                        /{l.slug}
+                                      </a>
+                                    </td>
+                                    <td className="px-2 py-1 text-muted-foreground hidden md:table-cell truncate max-w-[200px]" title={l.destination_url}>
+                                      {l.destination_url}
+                                    </td>
+                                    <td className="px-2 py-1 tabular-nums">{l.clicks}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                )}
+              </>
             );
           })}
         </tbody>
@@ -312,8 +401,10 @@ function UsersTab({ users }: { users: AdminUser[] }) {
 /* ── Links Tab ── */
 function LinksTab({ links, origin }: { links: AdminLink[]; origin: string }) {
   const [search, setSearch] = useState("");
+  const [localLinks, setLocalLinks] = useState(links);
+  const [deletingSlug, setDeletingSlug] = useState<string | null>(null);
 
-  const filtered = links.filter((l) => {
+  const filtered = localLinks.filter((l) => {
     if (!search) return true;
     const q = search.toLowerCase();
     return (
@@ -324,7 +415,22 @@ function LinksTab({ links, origin }: { links: AdminLink[]; origin: string }) {
     );
   });
 
-  const totalClicks = links.reduce((sum, l) => sum + l.clicks, 0);
+  const totalClicks = localLinks.reduce((sum, l) => sum + l.clicks, 0);
+
+  async function handleDeleteLink(slug: string) {
+    if (!confirm(`Delete /${slug}? This cannot be undone.`)) return;
+    setDeletingSlug(slug);
+    try {
+      const res = await fetch(`/api/admin/links/${encodeURIComponent(slug)}`, { method: "DELETE" });
+      if (res.ok) {
+        setLocalLinks((prev) => prev.filter((l) => l.slug !== slug));
+      }
+    } catch {
+      // ignore
+    } finally {
+      setDeletingSlug(null);
+    }
+  }
 
   return (
     <div>
@@ -333,7 +439,7 @@ function LinksTab({ links, origin }: { links: AdminLink[]; origin: string }) {
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <LinkIcon className="h-3 w-3" />
           <span>
-            <span className="text-foreground font-medium">{links.length}</span> links
+            <span className="text-foreground font-medium">{localLinks.length}</span> links
           </span>
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -370,6 +476,7 @@ function LinksTab({ links, origin }: { links: AdminLink[]; origin: string }) {
                 <th className="px-3 py-2 font-medium hidden sm:table-cell">owner</th>
                 <th className="px-3 py-2 font-medium">clicks</th>
                 <th className="px-3 py-2 font-medium hidden sm:table-cell">created</th>
+                <th className="px-3 py-2 font-medium text-right">action</th>
               </tr>
             </thead>
             <tbody>
@@ -405,6 +512,20 @@ function LinksTab({ links, origin }: { links: AdminLink[]; origin: string }) {
                   </td>
                   <td className="px-3 py-2 text-muted-foreground hidden sm:table-cell">
                     {formatDate(l.created_at)}
+                  </td>
+                  <td className="px-3 py-2 text-right">
+                    {deletingSlug === l.slug ? (
+                      <Loader2 className="h-3 w-3 animate-spin text-muted-foreground mx-auto" />
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteLink(l.slug)}
+                        className="text-xs border border-border hover:bg-accent text-destructive px-2 py-1 transition-colors inline-flex items-center gap-1"
+                        title="Delete link"
+                      >
+                        <Trash2 className="h-2.5 w-2.5" />
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -510,14 +631,6 @@ function AbuseTab({ reports }: { reports: AbuseReport[] }) {
                           "no link"
                         )}
                       </span>
-                      {r.reporter_email && (
-                        <>
-                          <span className="text-muted-foreground/30">·</span>
-                          <span className="text-[11px] text-muted-foreground">
-                            {r.reporter_email}
-                          </span>
-                        </>
-                      )}
                       {r.ip_address && (
                         <>
                           <span className="text-muted-foreground/30">·</span>
@@ -589,7 +702,6 @@ function BannerTab({ initialText }: { initialText: string }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text }),
       });
-      const data = await res.json();
       if (res.ok) {
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);

@@ -62,7 +62,7 @@ export default function NotFound() {
         </div>
       )}
 
-      <section className="flex-1 flex items-center justify-center px-4 sm:px-6">
+      <section className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-16">
         <div className="w-full max-w-md animate-page-enter">
           <p className="text-xs text-muted-foreground mb-6 text-center">
             <span className="text-foreground">$</span> resolve requested path
@@ -110,7 +110,6 @@ export default function NotFound() {
         </div>
       </section>
 
-      <hr className="footer-separator" />
       <footer className="mt-auto px-4 sm:px-6 py-4 text-center text-[11px] text-muted-foreground">
         QLSS · short links
       </footer>
