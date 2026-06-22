@@ -4,12 +4,12 @@ import { useState } from "react";
 import { LegalDialog } from "@/components/qlss/legal-dialog";
 
 export function SiteFooter() {
-  const [legalPage, setLegalPage] = useState<string | null>(null);
+  const [legalPage, setLegalPage] = useState<"privacy" | "tos" | "abuse" | null>(null);
 
   const footerLinks = [
-    { label: "privacy policy", page: "privacy" },
-    { label: "terms of service", page: "tos" },
-    { label: "report abuse", page: "abuse" },
+    { label: "privacy policy", page: "privacy" as const },
+    { label: "terms of service", page: "tos" as const },
+    { label: "report abuse", page: "abuse" as const },
   ];
 
   return (
