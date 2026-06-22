@@ -6,13 +6,11 @@ import { ShortenerForm } from "@/components/qlss/shortener-form";
 import { BulkForm } from "@/components/qlss/bulk-form";
 import { LegalDialog } from "@/components/qlss/legal-dialog";
 import { t } from "@/lib/i18n";
-import { useLocale } from "@/components/qlss/providers";
 
 type Tab = "shorten" | "unshorten" | "bulk";
 type LegalPage = "privacy" | "tos" | "abuse" | null;
 
 export function HomeContent({ signedIn }: { signedIn: boolean }) {
-  const { locale } = useLocale();
   const [tab, setTab] = useState<Tab>("shorten");
   const [legalPage, setLegalPage] = useState<LegalPage>(null);
 
@@ -71,9 +69,9 @@ export function HomeContent({ signedIn }: { signedIn: boolean }) {
   }, [tab]);
 
   const tabs: { key: Tab; label: string; icon: React.ReactNode; disabled?: boolean; ref: React.RefObject<HTMLButtonElement | null> }[] = [
-    { key: "shorten", label: t(locale, "home.shorten_tab"), icon: <Link className="h-3.5 w-3.5" />, ref: shortenBtnRef },
-    { key: "bulk", label: t(locale, "home.bulk_tab"), icon: <Layers className="h-3.5 w-3.5" />, disabled: !signedIn, ref: bulkBtnRef },
-    { key: "unshorten", label: t(locale, "home.unshorten_tab"), icon: <Undo2 className="h-3.5 w-3.5" />, disabled: true, ref: unshortenBtnRef },
+    { key: "shorten", label: t("home.shorten_tab"), icon: <Link className="h-3.5 w-3.5" />, ref: shortenBtnRef },
+    { key: "bulk", label: t("home.bulk_tab"), icon: <Layers className="h-3.5 w-3.5" />, disabled: !signedIn, ref: bulkBtnRef },
+    { key: "unshorten", label: t("home.unshorten_tab"), icon: <Undo2 className="h-3.5 w-3.5" />, disabled: true, ref: unshortenBtnRef },
   ];
 
   return (
@@ -124,14 +122,14 @@ export function HomeContent({ signedIn }: { signedIn: boolean }) {
           <div className="border border-border bg-card py-12 px-6 text-center">
             <Lock className="h-6 w-6 text-muted-foreground/30 mx-auto mb-3" />
             <p className="text-xs text-muted-foreground">
-              {t(locale, "bulk.sign_in_required")}
+              {t("bulk.sign_in_required")}
             </p>
           </div>
         ) : (
           <div className="border border-border bg-card py-12 px-6 text-center">
             <Lock className="h-6 w-6 text-muted-foreground/30 mx-auto mb-3" />
             <p className="text-xs text-muted-foreground">
-              {t(locale, "common.coming_soon")}
+              {t("common.coming_soon")}
             </p>
           </div>
         )}
@@ -143,11 +141,9 @@ export function HomeContent({ signedIn }: { signedIn: boolean }) {
 }
 
 function HeroTagline() {
-  const { locale } = useLocale();
-
   return (
     <p className="text-[11px] text-muted-foreground mb-4 tracking-wide text-gradient">
-      {t(locale, "app.tagline")}
+      {t("app.tagline")}
     </p>
   );
 }

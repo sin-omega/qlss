@@ -172,6 +172,7 @@ function UsersTab({ users }: { users: AdminUser[] }) {
   const [userLinks, setUserLinks] = useState<{ slug: string; destination_url: string; clicks: number; created_at: string }[]>([]);
   const [userTotalClicks, setUserTotalClicks] = useState(0);
   const [userLinksLoading, setUserLinksLoading] = useState(false);
+  const [userLinksError, setUserLinksError] = useState<string | null>(null);
   const origin = siteOrigin();
 
   async function handleBan(id: string) {
@@ -223,20 +224,26 @@ function UsersTab({ users }: { users: AdminUser[] }) {
     if (expandedUser === userId) {
       setExpandedUser(null);
       setUserLinks([]);
+      setUserLinksError(null);
       return;
     }
     setExpandedUser(userId);
     setUserLinksLoading(true);
     setUserLinks([]);
+    setUserLinksError(null);
     try {
       const res = await fetch(`/api/admin/users/${userId}/stats`);
-      if (res.ok) {
-        const data = await res.json();
-        setUserLinks(data.links ?? []);
-        setUserTotalClicks((data.links ?? []).reduce((s: number, l: { clicks: number }) => s + l.clicks, 0));
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({ error: "Request failed" }));
+        setUserLinksError(body?.error ?? `HTTP ${res.status}`);
+        return;
       }
-    } catch {
-      // ignore
+      const data = await res.json();
+      const links = Array.isArray(data.links) ? data.links : [];
+      setUserLinks(links);
+      setUserTotalClicks(links.reduce((s: number, l: { clicks?: number }) => s + (l.clicks ?? 0), 0));
+    } catch (err) {
+      setUserLinksError(err instanceof Error ? err.message : "Network error");
     } finally {
       setUserLinksLoading(false);
     }
@@ -348,6 +355,17 @@ function UsersTab({ users }: { users: AdminUser[] }) {
                         <div className="flex items-center gap-2 text-xs text-muted-foreground py-2">
                           <Loader2 className="h-3 w-3 animate-spin" />
                           loading links...
+                        </div>
+                      ) : userLinksError ? (
+                        <div className="py-2">
+                          <p className="text-xs text-destructive">{userLinksError}</p>
+                          <button
+                            type="button"
+                            onClick={() => handleViewLinks(u.id)}
+                            className="text-[11px] text-muted-foreground hover:text-foreground underline mt-1"
+                          >
+                            retry
+                          </button>
                         </div>
                       ) : userLinks.length === 0 ? (
                         <p className="text-xs text-muted-foreground py-2">no links for this user</p>
