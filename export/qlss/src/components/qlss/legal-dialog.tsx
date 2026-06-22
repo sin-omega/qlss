@@ -1,0 +1,250 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { X, Mail, Send } from "lucide-react";
+
+interface LegalDialogProps {
+  page: "privacy" | "tos" | "abuse" | null;
+  onClose: () => void;
+}
+
+interface LegalSection {
+  heading: string;
+  body: string;
+}
+
+const TITLES: Record<string, string> = {
+  privacy: "Privacy Policy",
+  tos: "Terms of Service",
+  abuse: "Report Abuse",
+};
+
+const PRIVACY_SECTIONS: LegalSection[] = [
+  {
+    heading: "Data Collection",
+    body: "QLSS collects minimal data to provide link shortening services. We store the destination URL, optional custom alias, and creation timestamp for each shortened link. We also collect basic analytics (referring page, browser, device type) when a short link is accessed.",
+  },
+  {
+    heading: "Data Usage",
+    body: "Your data is used solely to operate the link shortening service — resolving redirects, displaying statistics, and maintaining service quality. We do not sell, share, or otherwise distribute your personal information to third parties.",
+  },
+  {
+    heading: "Short Link Visibility",
+    body: "Short links are public by nature — anyone with the link can access the destination. Do not use short links for sensitive or private content unless combined with a pincode.",
+  },
+  {
+    heading: "Your Rights",
+    body: "You may request deletion of your data and associated links at any time by contacting us. We comply with reasonable data removal requests within 30 days.",
+  },
+];
+
+const TOS_SECTIONS: LegalSection[] = [
+  {
+    heading: "Acceptable Use",
+    body: "By using QLSS, you agree not to use the service for any unlawful purpose, including but not limited to: spreading malware, phishing, spam, or distributing harmful content. All shortened links must comply with applicable laws.",
+  },
+  {
+    heading: "Limitation of Liability",
+    body: "The service is provided \"as is\" without warranty of any kind. We are not responsible for the content of external sites that shortened links point to. QLSS reserves the right to remove any shortened link at any time without notice.",
+  },
+  {
+    heading: "Abuse Consequences",
+    body: "Abuse of the service may result in IP or account restrictions, immediate link removal, and permanent bans. We cooperate with law enforcement when required.",
+  },
+  {
+    heading: "Changes",
+    body: "We may update these terms from time to time. Continued use of the service after changes constitutes acceptance of the updated terms. Major changes will be noted with an updated revision date.",
+  },
+];
+
+const ABUSE_CONTENT =
+  "To report abusive, malicious, or otherwise harmful short links, use the form below or email us directly with the full short URL and a brief description of the issue. We review all reports and take appropriate action, which may include removing the link and banning the creator. Response times may vary. For urgent matters involving illegal content, please also consider reporting to relevant law enforcement or hosting providers.";
+
+function AbuseForm() {
+  const [abuseEmail, setAbuseEmail] = useState("");
+  const [abuseReason, setAbuseReason] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showComingSoon, setShowComingSoon] = useState(false);
+
+  function handleSendReport(e: React.FormEvent) {
+    e.preventDefault();
+    setShowComingSoon(true);
+  }
+
+  return (
+    <div className="space-y-4">
+      <p className="text-xs text-muted-foreground leading-relaxed">
+        {ABUSE_CONTENT}
+      </p>
+      <div className="border border-border pt-3 mt-3">
+        <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3 px-0.5">
+          send report
+        </p>
+        {showComingSoon ? (
+          <div className="px-3 py-3 text-[10px] text-muted-foreground flex items-center justify-between">
+            <span>coming soon — reports will be visible to admins.</span>
+            <button
+              type="button"
+              onClick={() => setShowComingSoon(false)}
+              className="text-muted-foreground hover:text-foreground transition-colors touch-target"
+            >
+              dismiss
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleSendReport} className="space-y-2.5">
+            <div className="flex items-stretch border border-border bg-card input-focus-glow">
+              <span className="pl-3 pr-2 text-muted-foreground flex items-center">
+                <Mail className="h-3 w-3" />
+              </span>
+              <input
+                type="email"
+                placeholder="your email (optional)"
+                value={abuseEmail}
+                onChange={(e) => setAbuseEmail(e.target.value)}
+                className="flex-1 bg-transparent border-0 outline-none py-2.5 text-xs placeholder:text-muted-foreground/60"
+                autoComplete="off"
+              />
+            </div>
+            <textarea
+              placeholder="describe the issue — include the short url"
+              value={abuseReason}
+              onChange={(e) => setAbuseReason(e.target.value)}
+              required
+              className="w-full border border-border bg-card px-3 py-2.5 text-xs placeholder:text-muted-foreground/60 resize-none outline-none input-focus-glow"
+              rows={3}
+            />
+            <button
+              type="submit"
+              className="border border-border bg-card text-foreground hover:bg-accent px-4 py-2 text-xs transition-colors btn-press touch-target inline-flex items-center gap-1.5"
+            >
+              <Send className="h-3 w-3" />
+              send report
+            </button>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function LegalDialog({ page, onClose }: LegalDialogProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  // Close on Escape
+  useEffect(() => {
+    if (!page) return;
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [page, onClose]);
+
+  // Trap focus
+  useEffect(() => {
+    if (!page) return;
+    dialogRef.current?.focus();
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [page]);
+
+  if (!page) return null;
+
+  const title = TITLES[page] ?? "";
+
+  function renderContent() {
+    switch (page) {
+      case "privacy":
+        return (
+          <div className="space-y-4">
+            {PRIVACY_SECTIONS.map((section) => (
+              <div key={section.heading}>
+                <h3 className="text-[10px] uppercase tracking-widest text-foreground font-medium mb-1.5">
+                  {section.heading}
+                </h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {section.body}
+                </p>
+              </div>
+            ))}
+          </div>
+        );
+      case "tos":
+        return (
+          <div className="space-y-4">
+            {TOS_SECTIONS.map((section) => (
+              <div key={section.heading}>
+                <h3 className="text-[10px] uppercase tracking-widest text-foreground font-medium mb-1.5">
+                  {section.heading}
+                </h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {section.body}
+                </p>
+              </div>
+            ))}
+          </div>
+        );
+      case "abuse":
+        // Key on page so form state resets when switching tabs
+        return <AbuseForm key={page} />;
+      default:
+        return null;
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center px-4"
+      onClick={onClose}
+    >
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-background/60 dialog-backdrop" />
+
+      {/* Modal */}
+      <div
+        ref={dialogRef}
+        tabIndex={-1}
+        className="relative w-full max-w-md border border-border bg-card animate-scale-in"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+          <h2 className="text-xs font-medium uppercase tracking-widest">
+            {title}
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-muted-foreground hover:text-foreground transition-colors p-1 touch-target btn-press"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="px-4 py-4 max-h-[60vh] overflow-y-auto">
+          {renderContent()}
+        </div>
+
+        {/* Footer */}
+        <div className="px-4 py-2.5 border-t border-border flex items-center justify-between">
+          <span className="text-[9px] text-muted-foreground/50">
+            last updated: june 2025
+          </span>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-[10px] text-muted-foreground hover:text-foreground transition-colors btn-press touch-target"
+          >
+            close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
