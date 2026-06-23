@@ -1,13 +1,19 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { isSupabaseConfigured } from "@/lib/env";
 import { SiteHeader } from "@/components/qlss/site-header";
 import { SiteFooter } from "@/components/qlss/site-footer";
 import { AdminPanel } from "@/components/qlss/admin-panel";
+import { NotConfiguredPage } from "@/components/qlss/not-configured";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
+  if (!isSupabaseConfigured()) {
+    return <NotConfiguredPage variant="admin" signedIn={false} />;
+  }
+
   const supabase = await createClient();
   const {
     data: { user },

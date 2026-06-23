@@ -1,8 +1,21 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
-import { Check, Copy, ChevronDown, Loader2, Link, ClipboardPaste } from "lucide-react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import {
+  Check,
+  Copy,
+  ChevronDown,
+  Loader2,
+  Link,
+  ClipboardPaste,
+  Upload,
+  FileText,
+  FileJson,
+  FileSpreadsheet,
+  X,
+} from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { t } from "@/lib/i18n";
 
 interface BulkResult {
   destination_url: string;
@@ -61,14 +74,212 @@ function parseUrls(input: string): string[] {
   return unique.filter(looksLikeUrl);
 }
 
+// ─── File parsing helpers ────────────────────────────────────────────────
+
+function parseTxt(content: string): string[] {
+  return content
+    .split(/[\r\n]+/)
+    .flatMap((line) => line.trim().split(/[\s,]+/))
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+}
+
+/** Minimal RFC-4180-ish CSV parser that supports quoted fields with embedded
+ * commas, double-quote escaping, and either comma or semicolon separators. */
+function parseCsvRow(line: string, delimiter: string): string[] {
+  const out: string[] = [];
+  let cur = "";
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inQuotes) {
+      if (ch === '"') {
+        if (line[i + 1] === '"') {
+          cur += '"';
+          i++;
+        } else {
+          inQuotes = false;
+        }
+      } else {
+        cur += ch;
+      }
+    } else {
+      if (ch === '"') {
+        inQuotes = true;
+      } else if (ch === delimiter) {
+        out.push(cur);
+        cur = "";
+      } else {
+        cur += ch;
+      }
+    }
+  }
+  out.push(cur);
+  return out;
+}
+
+function parseCsv(content: string): string[] {
+  const text = content.replace(/\r\n?/g, "\n").trim();
+  if (!text) return [];
+  // Detect delimiter (comma vs semicolon) by counting occurrences in the first line
+  const firstLine = text.split("\n")[0] ?? "";
+  const commaCount = (firstLine.match(/,/g) ?? []).length;
+  const semiCount = (firstLine.match(/;/g) ?? []).length;
+  const delimiter = semiCount > commaCount ? ";" : ",";
+  const rows = text.split("\n").map((line) => parseCsvRow(line, delimiter));
+  if (rows.length === 0) return [];
+
+  // Look for a column header named url/URL/link/href/destination
+  const header = rows[0].map((h) => h.trim().toLowerCase());
+  const urlHeaderIdx = header.findIndex((h) =>
+    ["url", "link", "href", "destination", "destination_url"].includes(h)
+  );
+
+  let urlColIdx = -1;
+  if (urlHeaderIdx >= 0) {
+    urlColIdx = urlHeaderIdx;
+    // Skip header row
+    rows.shift();
+  } else {
+    // Find the first column where row sample looks URL-like
+    for (let c = 0; c < (rows[0]?.length ?? 0); c++) {
+      const sample = rows.slice(0, 5).map((r) => r[c] ?? "");
+      if (sample.some((s) => looksLikeUrl(s))) {
+        urlColIdx = c;
+        break;
+      }
+    }
+    if (urlColIdx < 0) urlColIdx = 0; // default to first column
+  }
+
+  return rows
+    .map((r) => (r[urlColIdx] ?? "").trim())
+    .filter((s) => s.length > 0);
+}
+
+function findUrlInObject(obj: unknown): string | null {
+  if (!obj || typeof obj !== "object") return null;
+  const rec = obj as Record<string, unknown>;
+  for (const key of ["url", "link", "destination", "href", "destination_url"]) {
+    const v = rec[key];
+    if (typeof v === "string" && v.trim().length > 0) return v.trim();
+  }
+  return null;
+}
+
+function parseJson(content: string): string[] {
+  const data = JSON.parse(content);
+  if (Array.isArray(data)) {
+    return data
+      .map((item) => {
+        if (typeof item === "string") return item.trim();
+        if (typeof item === "object" && item !== null) return findUrlInObject(item);
+        return null;
+      })
+      .filter((s): s is string => !!s && s.length > 0);
+  }
+  // Object with `urls` array
+  if (data && typeof data === "object") {
+    const maybeUrls = (data as Record<string, unknown>).urls;
+    if (Array.isArray(maybeUrls)) {
+      return maybeUrls
+        .map((item) =>
+          typeof item === "string" ? item.trim() : findUrlInObject(item)
+        )
+        .filter((s): s is string => !!s && typeof s === "string" && s.length > 0);
+    }
+    // Single object with url field
+    const single = findUrlInObject(data);
+    if (single) return [single];
+  }
+  return [];
+}
+
+async function parseFile(file: File): Promise<string[]> {
+  const text = await file.text();
+  const lower = file.name.toLowerCase();
+  if (lower.endsWith(".json")) return parseJson(text);
+  if (lower.endsWith(".csv")) return parseCsv(text);
+  // .txt or anything else — treat as plain text
+  return parseTxt(text);
+}
+
 export function BulkForm() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [results, setResults] = useState<BulkResult[]>([]);
   const [copyMenuOpen, setCopyMenuOpen] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const copyMenuRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const validUrls = useMemo(() => parseUrls(input), [input]);
+
+  const handleFiles = useCallback(
+    async (files: FileList | File[]) => {
+      const arr = Array.from(files);
+      if (arr.length === 0) return;
+      const allUrls: string[] = [];
+      for (const file of arr) {
+        try {
+          const urls = await parseFile(file);
+          allUrls.push(...urls);
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          toast({
+            title: "import failed",
+            description: t("bulk.import_error").replace("{{message}}", msg),
+            duration: 4000,
+          });
+        }
+      }
+      if (allUrls.length === 0) return;
+      // Append to existing input, dedupe + filter via parseUrls
+      const combined = (input.trim() ? input.trim() + "\n" : "") + allUrls.join("\n");
+      const deduped = parseUrls(combined);
+      setInput(deduped.join("\n"));
+      toast({
+        title: "imported",
+        description: t("bulk.imported").replace("{{count}}", String(deduped.length)),
+        duration: 2500,
+      });
+    },
+    [input]
+  );
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent<HTMLLabelElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragging(false);
+      if (busy) return;
+      const files = e.dataTransfer?.files;
+      if (files && files.length > 0) void handleFiles(files);
+    },
+    [busy, handleFiles]
+  );
+
+  const handleDragOver = useCallback((e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  }, []);
+
+  const handleFileInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = e.target.files;
+      if (files && files.length > 0) void handleFiles(files);
+      // Reset so selecting the same file again re-triggers
+      e.target.value = "";
+    },
+    [handleFiles]
+  );
 
   // Close copy menu on outside click
   useEffect(() => {
@@ -157,6 +368,24 @@ export function BulkForm() {
           };
           return next;
         });
+
+        // Dispatch a localStorage-history event so LocalHistory can pick it up
+        if (typeof window !== "undefined" && json.slug && json.short_url) {
+          try {
+            window.dispatchEvent(
+              new CustomEvent("qlss:local-history-add", {
+                detail: {
+                  slug: json.slug,
+                  short_url: json.short_url,
+                  destination_url: normalized,
+                  created_at: Date.now(),
+                },
+              })
+            );
+          } catch {
+            // ignore dispatch errors
+          }
+        }
       } catch {
         setResults((prev) => {
           const next = [...prev];
@@ -206,6 +435,73 @@ export function BulkForm() {
 
   return (
     <form onSubmit={handleSubmit} className="w-full space-y-2">
+      {/* Drag-and-drop zone */}
+      <div className="flex items-center gap-2">
+        <label
+          htmlFor="bulk-file-input"
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          onDragEnter={handleDragOver}
+          onDragLeave={handleDragLeave}
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              fileInputRef.current?.click();
+            }
+          }}
+          className={`group flex-1 flex items-center gap-2.5 border border-dashed border-border bg-card/40 px-3 py-2.5 text-xs cursor-pointer transition-colors outline-none focus-visible:border-foreground hover:border-foreground/70 ${
+            isDragging ? "border-foreground bg-accent/20" : ""
+          }`}
+        >
+          {isDragging ? (
+            <Upload className="h-4 w-4 shrink-0 text-foreground" aria-hidden="true" />
+          ) : (
+            <Upload className="h-4 w-4 shrink-0 text-muted-foreground group-hover:text-foreground transition-colors" aria-hidden="true" />
+          )}
+          <span className="flex items-center gap-1.5 text-muted-foreground group-hover:text-foreground transition-colors min-w-0">
+            {isDragging ? (
+              <span className="text-foreground font-medium truncate">{t("bulk.drop_zone_active")}</span>
+            ) : (
+              <>
+                <FileText className="h-3 w-3 shrink-0" aria-hidden="true" />
+                <FileJson className="h-3 w-3 shrink-0" aria-hidden="true" />
+                <FileSpreadsheet className="h-3 w-3 shrink-0" aria-hidden="true" />
+                <span className="truncate">{t("bulk.drop_zone")}</span>
+                <span className="text-[10px] text-muted-foreground/60 shrink-0 hidden sm:inline">
+                  · {t("bulk.files_supported")}
+                </span>
+              </>
+            )}
+          </span>
+          <input
+            id="bulk-file-input"
+            ref={fileInputRef}
+            type="file"
+            accept=".csv,.json,.txt,text/csv,application/json,text/plain"
+            multiple
+            onChange={handleFileInputChange}
+            className="sr-only"
+            disabled={busy}
+          />
+        </label>
+        {input.trim().length > 0 && (
+          <button
+            type="button"
+            onClick={() => {
+              setInput("");
+              setResults([]);
+            }}
+            disabled={busy}
+            className="shrink-0 inline-flex items-center gap-1 border border-border bg-background px-2.5 py-2.5 text-[11px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors disabled:opacity-50 touch-target"
+            title={t("bulk.clear_all")}
+          >
+            <X className="h-3 w-3" />
+            <span className="hidden sm:inline">{t("bulk.clear_all")}</span>
+          </button>
+        )}
+      </div>
+
       <div className="flex items-stretch">
         <textarea
           value={input}

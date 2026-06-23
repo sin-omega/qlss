@@ -5,6 +5,7 @@ import { isSupabaseConfigured, siteOrigin } from "@/lib/env";
 import { LinkList } from "@/components/qlss/link-list";
 import { SiteHeader } from "@/components/qlss/site-header";
 import { SiteFooter } from "@/components/qlss/site-footer";
+import { NotConfiguredPage } from "@/components/qlss/not-configured";
 import Link from "next/link";
 import { LinkIcon, BarChart3 } from "lucide-react";
 
@@ -20,30 +21,14 @@ interface LinkRow {
 }
 
 export default async function LinksPage() {
+  if (!isSupabaseConfigured()) {
+    return <NotConfiguredPage />;
+  }
+
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  const signedIn = !!user;
-
-  if (!isSupabaseConfigured()) {
-    return (
-      <main className="cli-grid relative min-h-screen w-full flex flex-col">
-        <SiteHeader signedIn={signedIn} isAdmin={false} backHref="/" backLabel="home" />
-        <div className="header-accent-line" />
-        <section className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-16">
-          <div className="text-center max-w-md">
-            <h1 className="text-lg font-bold tracking-tight">Almost ready.</h1>
-            <p className="mt-3 text-xs text-muted-foreground leading-relaxed">
-              Add Supabase env vars to manage your links.
-            </p>
-          </div>
-        </section>
-        <SiteFooter />
-      </main>
-    );
-  }
 
   if (!user) redirect("/auth");
 

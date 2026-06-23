@@ -552,3 +552,2351 @@
 .border-gradient {
   border-image: linear-gradient(135deg, var(--border) 0%, var(--muted-foreground) 50%, var(--border) 100%) 1;
 }
+
+/* ============================================================================
+   Mobile UX improvements (item 9) + markdown preview + copy buttons
+   ============================================================================ */
+
+/* ── Touch targets: ensure ≥44px on small screens ── */
+@media (max-width: 640px) {
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  button.touch-target,
+  a.touch-target {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* ── Tabs container: horizontal scroll on very small screens ── */
+.tabs-container {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.tabs-container::-webkit-scrollbar {
+  display: none;
+}
+@media (max-width: 380px) {
+  .tabs-container .tab-label {
+    font-size: 0.65rem;
+  }
+}
+
+/* ── Responsive spacing for main sections ── */
+@media (max-width: 640px) {
+  .cli-grid {
+    background-size: 18px 18px;
+  }
+  main section {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* ── Better mobile footer ── */
+@media (max-width: 480px) {
+  footer.fixed {
+    padding-top: 0.6rem;
+    padding-bottom: 0.6rem;
+    font-size: 0.625rem;
+  }
+  footer.fixed select {
+    font-size: 0.625rem;
+  }
+}
+
+/* ── Markdown preview (client-side, used in markdown-form & editor) ── */
+.md-preview {
+  font-family: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color: var(--foreground);
+  line-height: 1.7;
+  word-break: break-word;
+}
+.md-preview h1,
+.md-preview h2,
+.md-preview h3,
+.md-preview h4 {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 1.4rem 0 0.6rem;
+  line-height: 1.3;
+}
+.md-preview h1 { font-size: 1.25rem; }
+.md-preview h2 {
+  font-size: 1.1rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.25rem;
+}
+.md-preview h3 { font-size: 1rem; }
+.md-preview p { margin: 0.7rem 0; }
+.md-preview a {
+  color: var(--accent, #6a5acd);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.md-preview ul,
+.md-preview ol {
+  margin: 0.7rem 0;
+  padding-left: 1.3rem;
+}
+.md-preview li { margin: 0.25rem 0; }
+.md-preview blockquote {
+  border-left: 3px solid var(--border);
+  padding-left: 0.85rem;
+  color: var(--muted-foreground);
+  margin: 0.8rem 0;
+}
+.md-preview code {
+  background: var(--hover);
+  padding: 0.1rem 0.3rem;
+  border-radius: 2px;
+  font-size: 0.85em;
+}
+.md-preview pre {
+  margin: 0.8rem 0;
+  border: 1px solid var(--border);
+  background: var(--card);
+  overflow-x: auto;
+  padding: 0.75rem 0.9rem;
+  position: relative;
+}
+.md-preview pre code {
+  background: transparent;
+  padding: 0;
+  font-size: 0.8em;
+}
+.md-preview hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1.4rem 0;
+}
+.md-preview table {
+  border-collapse: collapse;
+  margin: 0.8rem 0;
+  width: 100%;
+  font-size: 0.78rem;
+}
+.md-preview th,
+.md-preview td {
+  border: 1px solid var(--border);
+  padding: 0.35rem 0.55rem;
+  text-align: left;
+}
+.md-preview th { background: var(--hover); }
+.md-preview img {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--border);
+}
+
+/* ── Copy button injected into code blocks ── */
+.md-copy-btn {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.4rem;
+  font-family: inherit;
+  font-size: 0.6rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 0.15rem 0.4rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  z-index: 1;
+}
+.md-copy-btn:hover {
+  background: var(--hover);
+  color: var(--foreground);
+}
+
+/* ── Language switcher select ── */
+footer select {
+  background-image: none;
+  cursor: pointer;
+}
+footer select:focus {
+  outline: 1px solid var(--foreground);
+  outline-offset: 1px;
+}
+
+/* ── Reduce motion preference ── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Mobile safe-area footer padding ── */
+@supports (padding: max(0px)) {
+  footer.fixed {
+    padding-bottom: max(0.6rem, env(safe-area-inset-bottom));
+  }
+}
+
+/* ============================================================================
+   Round-2 styling polish — focus rings, card hover, micro-interactions
+   ============================================================================ */
+
+/* ── Universal focus-visible ring for keyboard navigation ── */
+*:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 1px;
+  border-radius: 1px;
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[role="tab"]:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
+}
+
+/* ── Card hover lift ── */
+.card-hover {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.card-hover:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(12, 12, 10, 0.06);
+  border-color: var(--muted-foreground);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .card-hover:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* ── Button press feedback (3D) ── */
+.btn-press {
+  transition: transform 0.08s ease, background 0.15s ease, color 0.15s ease;
+}
+.btn-press:active {
+  transform: scale(0.97);
+}
+
+/* ── Input focus glow ── */
+.input-focus-glow {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.input-focus-glow:focus-within {
+  box-shadow: 0 0 0 1px var(--foreground), 0 0 12px rgba(12, 12, 10, 0.04);
+}
+
+/* ── Tab indicator smooth transition ── */
+.tab-indicator {
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Gradient text for hero tagline ── */
+.text-gradient {
+  background: linear-gradient(135deg, var(--foreground) 0%, var(--muted-foreground) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* ── Subtle entrance for page content ── */
+.animate-page-enter {
+  animation: page-enter 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Footer link underline animation ── */
+.footer-link {
+  position: relative;
+}
+.footer-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 0;
+  height: 1px;
+  background: var(--foreground);
+  transition: width 0.2s ease;
+}
+.footer-link:hover::after {
+  width: 100%;
+}
+
+/* ── Code styling for env var hints ── */
+code {
+  font-family: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85em;
+  background: var(--accent);
+  padding: 0.1rem 0.3rem;
+  border-radius: 2px;
+  border: 1px solid var(--border);
+}
+
+/* ── Scrollbar styling for overflow areas ── */
+.overflow-y-auto,
+.overflow-auto,
+.max-h-96,
+.max-h-40 {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.overflow-y-auto::-webkit-scrollbar,
+.overflow-auto::-webkit-scrollbar,
+.max-h-96::-webkit-scrollbar,
+.max-h-40::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.overflow-y-auto::-webkit-scrollbar-thumb,
+.overflow-auto::-webkit-scrollbar-thumb,
+.max-h-96::-webkit-scrollbar-thumb,
+.max-h-40::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+.overflow-y-auto::-webkit-scrollbar-thumb:hover,
+.overflow-auto::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+
+/* ── Keyboard help overlay button pulse ── */
+@keyframes help-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}
+.fixed.bottom-12.right-4 {
+  animation: help-pulse 3s ease-in-out infinite;
+}
+.fixed.bottom-12.right-4:hover {
+  animation: none;
+  opacity: 1;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   ROUND 3 — Hero mesh, feature cards, mobile action bar, micro-interactions
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* ── Animated gradient mesh for the hero region ──
+   A soft, slowly-drifting radial gradient field that adds depth without
+   distracting. Two layered blobs in foreground/muted tones. */
+.hero-mesh {
+  z-index: 0;
+}
+.hero-mesh::before,
+.hero-mesh::after {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(40% 40% at 20% 30%, rgba(12, 12, 10, 0.06), transparent 70%),
+    radial-gradient(35% 35% at 80% 20%, rgba(106, 106, 100, 0.08), transparent 70%);
+  filter: blur(40px);
+  animation: mesh-drift 22s ease-in-out infinite alternate;
+}
+.hero-mesh::after {
+  inset: -10%;
+  background:
+    radial-gradient(30% 30% at 70% 60%, rgba(176, 138, 62, 0.05), transparent 70%),
+    radial-gradient(25% 25% at 30% 80%, rgba(44, 110, 73, 0.04), transparent 70%);
+  animation-duration: 28s;
+  animation-direction: alternate-reverse;
+}
+.dark .hero-mesh::before {
+  background:
+    radial-gradient(40% 40% at 20% 30%, rgba(232, 230, 223, 0.05), transparent 70%),
+    radial-gradient(35% 35% at 80% 20%, rgba(138, 136, 128, 0.07), transparent 70%);
+}
+.dark .hero-mesh::after {
+  background:
+    radial-gradient(30% 30% at 70% 60%, rgba(224, 85, 69, 0.05), transparent 70%),
+    radial-gradient(25% 25% at 30% 80%, rgba(176, 138, 62, 0.04), transparent 70%);
+}
+@keyframes mesh-drift {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  50%  { transform: translate3d(2%, -1%, 0) scale(1.05); }
+  100% { transform: translate3d(-2%, 1%, 0) scale(1); }
+}
+
+/* ── Soft pulse for the header brand dot ── */
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.5; transform: scale(0.85); }
+}
+.animate-pulse-soft {
+  animation: pulse-soft 2.4s ease-in-out infinite;
+}
+
+/* ── Hero badge hover lift ── */
+.hero-badge {
+  transition: transform 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+.hero-badge:hover {
+  transform: translateY(-1px);
+  border-color: var(--foreground);
+  color: var(--foreground);
+}
+
+/* ── Feature card enhanced styling ── */
+.feature-card {
+  position: relative;
+  transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+}
+.feature-card:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 1px 0 var(--border),
+    0 4px 12px -2px rgba(12, 12, 10, 0.08),
+    0 2px 4px -1px rgba(12, 12, 10, 0.04);
+}
+.dark .feature-card:hover {
+  box-shadow:
+    0 1px 0 var(--border),
+    0 4px 12px -2px rgba(0, 0, 0, 0.4),
+    0 2px 4px -1px rgba(0, 0, 0, 0.2);
+}
+
+/* Feature icon container — brighten on card hover */
+.feature-icon-container {
+  transition: filter 0.22s ease, background-color 0.22s ease;
+}
+.feature-card:hover .feature-icon-container {
+  filter: brightness(1.25);
+}
+
+/* Feature section decorative gradient divider */
+.feature-divider {
+  background: linear-gradient(90deg, transparent, var(--muted-foreground), transparent);
+  opacity: 0.4;
+}
+
+/* ── Feature card staggered entrance animations ── */
+@keyframes feature-stagger-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.stagger-1  { opacity: 0; animation: feature-stagger-in 0.35s ease-out 0.05s forwards; }
+.stagger-2  { opacity: 0; animation: feature-stagger-in 0.35s ease-out 0.10s forwards; }
+.stagger-3  { opacity: 0; animation: feature-stagger-in 0.35s ease-out 0.15s forwards; }
+.stagger-4  { opacity: 0; animation: feature-stagger-in 0.35s ease-out 0.20s forwards; }
+.stagger-5  { opacity: 0; animation: feature-stagger-in 0.35s ease-out 0.25s forwards; }
+.stagger-6  { opacity: 0; animation: feature-stagger-in 0.35s ease-out 0.30s forwards; }
+.stagger-7  { opacity: 0; animation: feature-stagger-in 0.35s ease-out 0.35s forwards; }
+.stagger-8  { opacity: 0; animation: feature-stagger-in 0.35s ease-out 0.40s forwards; }
+.stagger-9  { opacity: 0; animation: feature-stagger-in 0.35s ease-out 0.45s forwards; }
+.stagger-10 { opacity: 0; animation: feature-stagger-in 0.35s ease-out 0.50s forwards; }
+
+/* ── Mobile action bar — slide up on mount ── */
+@keyframes mobile-bar-enter {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+.mobile-action-bar {
+  animation: mobile-bar-enter 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.mobile-action-bar a,
+.mobile-action-bar button {
+  position: relative;
+}
+.mobile-action-bar a::after,
+.mobile-action-bar button::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 2px;
+  background: var(--foreground);
+  transition: width 0.2s ease;
+}
+.mobile-action-bar a:hover::after,
+.mobile-action-bar button:hover::after {
+  width: 24px;
+}
+
+/* ── Mobile FAB — gentle pop-in ── */
+.mobile-fab {
+  animation: fab-pop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes fab-pop {
+  from { transform: scale(0.8) translateY(8px); opacity: 0; }
+  to   { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+/* ── Improved focus-visible rings for accessibility ── */
+*:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+button:focus-visible,
+a:focus-visible {
+  outline-offset: 3px;
+}
+
+/* ── Card hover lift — generic, for cards that opt in via .card-hover ── */
+.card-hover {
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.card-hover:hover {
+  transform: translateY(-1px);
+  border-color: var(--foreground);
+  box-shadow: 0 2px 8px -2px rgba(12, 12, 10, 0.06);
+}
+.dark .card-hover:hover {
+  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.3);
+}
+
+/* ── Tab indicator smoother transition ── */
+.tab-indicator {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Button press feedback — scale down slightly on active ── */
+.btn-press {
+  transition: transform 0.1s ease, background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.btn-press:active {
+  transform: scale(0.97);
+}
+
+/* ── Input focus glow — soft inner halo ── */
+.input-focus-glow:focus-within {
+  border-color: var(--foreground);
+  box-shadow: 0 0 0 1px var(--foreground), 0 0 12px -4px rgba(12, 12, 10, 0.15);
+}
+.dark .input-focus-glow:focus-within {
+  box-shadow: 0 0 0 1px var(--foreground), 0 0 12px -4px rgba(232, 230, 223, 0.2);
+}
+
+/* ── Reduced motion — disable all non-essential animations ── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .hero-mesh::before,
+  .hero-mesh::after {
+    animation: none;
+  }
+  .animate-pulse-soft,
+  .mobile-action-bar,
+  .mobile-fab {
+    animation: none;
+  }
+}
+
+/* ── Mobile: hide footer language switcher duplicate when action bar visible ──
+   The mobile action bar already provides quick nav; keep the footer
+   language switcher accessible but tighten the footer on small screens. */
+@media (max-width: 639px) {
+  footer {
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  }
+  /* Add bottom padding so content isn't hidden behind the mobile action bar */
+  main {
+    padding-bottom: 4rem;
+  }
+}
+
+/* ── Improved kbd styling ── */
+kbd {
+  font-family: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85em;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  padding: 0.05rem 0.3rem;
+  border-radius: 2px;
+  color: var(--foreground);
+}
+
+/* ── Mark element styling — for highlighted text in markdown ── */
+mark {
+  background: rgba(176, 138, 62, 0.25);
+  color: inherit;
+  padding: 0 0.2em;
+  border-radius: 2px;
+}
+
+/* ── Better blockquote styling ── */
+blockquote {
+  border-left: 3px solid var(--foreground);
+  padding-left: 1rem;
+  margin: 0.75rem 0;
+  color: var(--muted-foreground);
+  font-style: italic;
+}
+
+/* ── Selection refinement ── */
+::selection {
+  background: var(--foreground);
+  color: var(--background);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   ROUND 4 — Additional styling polish
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* ── Slow pulse animation (for warning icons etc.) ── */
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.animate-pulse-slow {
+  animation: pulse-slow 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ── Slide-up entrance (for cookie consent, toasts) ── */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-slide-up {
+  animation: slide-up 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── FAQ item styling ── */
+.faq-item {
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+.faq-item:hover {
+  border-color: var(--foreground);
+}
+.faq-item-open {
+  border-color: var(--foreground) !important;
+  background: var(--card);
+}
+.faq-item-open button {
+  background: rgba(0, 0, 0, 0.02);
+}
+.dark .faq-item-open button {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* ── Stats counter styling ── */
+.stats-counter {
+  position: relative;
+  overflow: hidden;
+}
+.stats-counter::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(176, 138, 62, 0.06) 50%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  animation: shimmer-x 6s ease-in-out infinite;
+  pointer-events: none;
+}
+.dark .stats-counter::before {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.04) 50%,
+    transparent 100%
+  );
+}
+@keyframes shimmer-x {
+  0%, 100% { transform: translateX(-100%); }
+  50% { transform: translateX(100%); }
+}
+
+/* ── Cookie consent styling ── */
+.cookie-consent {
+  animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.cookie-consent > div {
+  position: relative;
+  overflow: hidden;
+}
+.cookie-consent > div::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--foreground) 50%,
+    transparent 100%
+  );
+  opacity: 0.4;
+}
+
+/* ── Hero badge shimmer ── */
+.hero-badge {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+.hero-badge::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.18) 50%,
+    transparent 70%
+  );
+  transform: translateX(-100%);
+  transition: transform 0s;
+  pointer-events: none;
+}
+.hero-badge:hover::after {
+  transform: translateX(100%);
+  transition: transform 0.8s ease;
+}
+.dark .hero-badge::after {
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.06) 50%,
+    transparent 70%
+  );
+}
+
+/* ── Feature card hover (enhanced) — left-border accent + lift ── */
+.feature-card {
+  transform-style: preserve-3d;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+.feature-card:hover {
+  transform: translateY(-1px);
+}
+
+/* ── Inspector tab content ── */
+.input-focus-glow {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* ── Btn press feedback (existing .btn-press, refine) ── */
+.btn-press {
+  transition: transform 0.08s ease, background-color 0.15s ease, color 0.15s ease,
+              border-color 0.15s ease, opacity 0.15s ease;
+}
+.btn-press:active {
+  transform: scale(0.97);
+}
+.btn-press:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* ── Not-configured card glow on hover ── */
+.not-configured-card {
+  position: relative;
+  overflow: hidden;
+}
+.not-configured-card::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--foreground), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.not-configured-card:hover::before {
+  opacity: 0.6;
+}
+
+/* ── Touch target minimum sizing for mobile ── */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* ── Refined tab indicator (smoother spring) ── */
+.tab-indicator {
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+              width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ── Tab content fade-in ── */
+.tab-content-enter {
+  animation: fade-in-up 0.3s ease-out;
+}
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Page enter (existing class, refined) ── */
+.animate-page-enter {
+  animation: fade-in-up 0.4s ease-out;
+}
+
+/* ── Skeleton loader (for future async content) ── */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--card) 0%,
+    var(--accent) 50%,
+    var(--card) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+  border-radius: 2px;
+}
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Glow ring around the active tab ── */
+.tabs-container {
+  position: relative;
+}
+.tabs-container::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  transition: box-shadow 0.4s ease;
+  pointer-events: none;
+}
+.tabs-container:focus-within::after {
+  box-shadow: 0 0 0 2px var(--foreground);
+  opacity: 0.15;
+}
+
+/* ── Animated counter digits ── */
+.stats-counter [class*="font-bold"] {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  transition: color 0.2s ease;
+}
+
+/* ── Subtle dot pulse for live indicator ── */
+@keyframes live-dot {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 0.7;
+  }
+}
+
+/* ── Mobile action bar refinement ── */
+.mobile-bar-enter {
+  animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Back-to-top FAB pop-in ── */
+@keyframes fab-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+.fab-pop {
+  animation: fab-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ── Reduce motion preferences ── */
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse-slow,
+  .animate-slide-up,
+  .tab-content-enter,
+  .animate-page-enter,
+  .fab-pop,
+  .mobile-bar-enter,
+  .stats-counter::before,
+  .hero-badge::after,
+  .skeleton,
+  .stagger-1,
+  .stagger-2,
+  .stagger-3,
+  .stagger-4,
+  .stagger-5,
+  .stagger-6,
+  .stagger-7,
+  .stagger-8,
+  .stagger-9,
+  .stagger-10 {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+  }
+  .feature-card:hover {
+    transform: none;
+  }
+}
+
+/* ── Round 5 additions ── */
+
+/* Error banner — animated accent line + icon pulse */
+.home-error-banner {
+  position: relative;
+  overflow: hidden;
+}
+.home-error-banner::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.06) 50%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  animation: home-error-shimmer 3.5s ease-in-out infinite;
+}
+@keyframes home-error-shimmer {
+  0%, 100% { transform: translateX(-100%); }
+  50% { transform: translateX(100%); }
+}
+.home-error-banner-accent {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: currentColor;
+  opacity: 0.8;
+}
+
+/* Trending links widget — see new component */
+.trending-link {
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s ease, transform 0.2s ease, background-color 0.2s ease;
+}
+.trending-link::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--accent, hsl(var(--primary)));
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.trending-link:hover {
+  transform: translateX(2px);
+  border-color: hsl(var(--foreground));
+}
+.trending-link:hover::before {
+  transform: scaleY(1);
+  transform-origin: top;
+}
+.trending-rank {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  letter-spacing: -0.02em;
+}
+
+/* Activity pulse dot — used by the recent activity ticker */
+.activity-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: hsl(var(--primary));
+  box-shadow: 0 0 0 0 hsl(var(--primary) / 0.7);
+  animation: activity-pulse 2s infinite;
+}
+@keyframes activity-pulse {
+  0% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.7); }
+  70% { box-shadow: 0 0 0 8px hsl(var(--primary) / 0); }
+  100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0); }
+}
+
+/* Marquee / ticker — horizontal scrolling text strip */
+.marquee {
+  display: flex;
+  overflow: hidden;
+  user-select: none;
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    #000 8%,
+    #000 92%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    #000 8%,
+    #000 92%,
+    transparent 100%
+  );
+}
+.marquee-track {
+  display: flex;
+  flex-shrink: 0;
+  gap: 1.5rem;
+  padding-right: 1.5rem;
+  animation: marquee-scroll 35s linear infinite;
+  min-width: 100%;
+}
+.marquee:hover .marquee-track {
+  animation-play-state: paused;
+}
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track { animation: none; }
+  .home-error-banner::after { animation: none; }
+  .activity-dot { animation: none; }
+}
+
+/* Quick-action chips — keyboard shortcut hints */
+.kbd-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.05rem 0.35rem;
+  font-size: 0.65rem;
+  font-family: inherit;
+  background: hsl(var(--muted) / 0.15);
+  border: 1px solid hsl(var(--border));
+  border-radius: 3px;
+  line-height: 1.4;
+  letter-spacing: 0;
+  box-shadow: 0 1px 0 hsl(var(--border));
+}
+
+/* Subtle scanline texture for the hero mesh — adds depth without distraction */
+.hero-mesh::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 2px,
+    hsl(var(--foreground) / 0.012) 2px,
+    hsl(var(--foreground) / 0.012) 3px
+  );
+  pointer-events: none;
+}
+
+/* Better focus ring for the language switcher select */
+select:focus-visible {
+  outline: 2px solid hsl(var(--foreground));
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* Improved scrollbar for vertical lists (used by link-list, admin-panel) */
+.scroll-area-fancy {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--border)) transparent;
+}
+.scroll-area-fancy::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scroll-area-fancy::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scroll-area-fancy::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 3px;
+}
+.scroll-area-fancy::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* Glass card — frosted glass effect for floating elements */
+.glass-card {
+  background: hsl(var(--card) / 0.7);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid hsl(var(--border) / 0.6);
+}
+.dark .glass-card {
+  background: hsl(var(--card) / 0.5);
+}
+
+/* Glow ring on hover — used by primary CTA buttons */
+.glow-ring {
+  position: relative;
+}
+.glow-ring::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: radial-gradient(
+    circle at center,
+    hsl(var(--primary) / 0.35) 0%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: -1;
+}
+.glow-ring:hover::after,
+.glow-ring:focus-visible::after {
+  opacity: 1;
+}
+
+/* Text gradient — for hero / brand emphasis */
+.text-gradient {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--foreground)) 0%,
+    hsl(var(--muted-foreground)) 50%,
+    hsl(var(--foreground)) 100%
+  );
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: text-gradient-shift 6s ease-in-out infinite;
+}
+@keyframes text-gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .text-gradient { animation: none; }
+}
+
+/* Number ticker — for the stats counter, smooth digit transitions */
+.number-ticker-digit {
+  display: inline-block;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   ROUND 6 — Enhanced visual styling utilities
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. Animated gradient border effect ──
+   Rotating conic-gradient border using a pseudo-element technique.
+   The element needs `position: relative` and should have its own
+   background set to `var(--card)` or `var(--background)`. */
+@keyframes gradient-rotate {
+  0%   { --gradient-angle: 0deg; }
+  100% { --gradient-angle: 360deg; }
+}
+@property --gradient-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+.gradient-border {
+  position: relative;
+  isolation: isolate;
+}
+.gradient-border::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--gradient-angle),
+    var(--border) 0%,
+    var(--foreground) 15%,
+    var(--border) 30%,
+    transparent 50%,
+    var(--border) 70%,
+    var(--muted-foreground) 85%,
+    var(--border) 100%
+  );
+  animation: gradient-rotate 4s linear infinite;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+.gradient-border:hover::before {
+  opacity: 0.6;
+}
+.dark .gradient-border::before {
+  background: conic-gradient(
+    from var(--gradient-angle),
+    var(--border) 0%,
+    var(--foreground) 12%,
+    var(--border) 25%,
+    transparent 50%,
+    var(--border) 75%,
+    var(--muted-foreground) 88%,
+    var(--border) 100%
+  );
+}
+@media (prefers-reduced-motion: reduce) {
+  .gradient-border::before {
+    animation: none;
+    opacity: 0.3;
+  }
+}
+
+/* ── 2. Glassmorphism card effect (enhanced) ──
+   Extends the existing .glass-card with border-glow on hover. */
+.glass-card {
+  position: relative;
+  background: hsl(var(--card) / 0.7);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid hsl(var(--border) / 0.5);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.glass-card::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--foreground) / 0.08) 0%,
+    transparent 50%,
+    hsl(var(--foreground) / 0.04) 100%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: -1;
+}
+.glass-card:hover {
+  border-color: hsl(var(--foreground) / 0.15);
+  box-shadow: 0 0 20px -4px hsl(var(--foreground) / 0.08);
+}
+.glass-card:hover::after {
+  opacity: 1;
+}
+.dark .glass-card {
+  background: hsl(var(--card) / 0.5);
+  border-color: hsl(var(--border) / 0.4);
+}
+.dark .glass-card:hover {
+  border-color: hsl(var(--foreground) / 0.12);
+  box-shadow: 0 0 24px -4px hsl(var(--foreground) / 0.06);
+}
+
+/* ── 3. Enhanced hover states ── */
+/* Lift on hover — subtle vertical translate + shadow */
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px -2px hsl(var(--foreground) / 0.08),
+              0 2px 4px -1px hsl(var(--foreground) / 0.04);
+}
+.dark .hover-lift:hover {
+  box-shadow: 0 4px 12px -2px hsl(var(--foreground) / 0.12),
+              0 2px 4px -1px hsl(var(--foreground) / 0.06);
+}
+
+/* Glow on hover — soft radiating glow */
+.hover-glow {
+  transition: box-shadow 0.3s ease;
+}
+.hover-glow:hover {
+  box-shadow: 0 0 16px -2px hsl(var(--foreground) / 0.1),
+              0 0 4px 0px hsl(var(--foreground) / 0.06);
+}
+.dark .hover-glow:hover {
+  box-shadow: 0 0 20px -2px hsl(var(--foreground) / 0.08),
+              0 0 6px 0px hsl(var(--foreground) / 0.05);
+}
+
+/* ── 4. Noise texture overlay ──
+   Subtle grain using an inline SVG data URI pattern.
+   Pseudo-element overlay with pointer-events: none. */
+.noise-bg {
+  position: relative;
+  isolation: isolate;
+}
+.noise-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.025;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 180px 180px;
+}
+.dark .noise-bg::before {
+  opacity: 0.03;
+}
+
+/* ── 5. Custom thin scrollbar ──
+   For `.custom-scroll` containers — 6px width, rounded, hover effect. */
+.custom-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--border)) transparent;
+}
+.custom-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.6);
+}
+
+/* ── 6. Enhanced button press effect ──
+   Improves the existing .btn-press with a more pronounced scale animation
+   and a brief "settling" spring feel. */
+.btn-press {
+  transition: transform 0.1s cubic-bezier(0.2, 0, 0, 1),
+              background-color 0.15s ease,
+              color 0.15s ease,
+              border-color 0.15s ease,
+              box-shadow 0.15s ease;
+}
+.btn-press:active {
+  transform: scale(0.96);
+  transition: transform 0.06s cubic-bezier(0.2, 0, 0, 1);
+}
+.btn-press:not(:active) {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background-color 0.15s ease,
+              color 0.15s ease,
+              border-color 0.15s ease,
+              box-shadow 0.15s ease;
+}
+
+/* ── 7. Staggered animation delays ──
+   Apply to child elements for cascading entrance effects. */
+.stagger-1 { animation-delay: 0ms; }
+.stagger-2 { animation-delay: 50ms; }
+.stagger-3 { animation-delay: 100ms; }
+.stagger-4 { animation-delay: 150ms; }
+.stagger-5 { animation-delay: 200ms; }
+.stagger-6 { animation-delay: 250ms; }
+
+/* ── 8. Shimmer loading effect ──
+   A moving gradient sweep for skeleton loading states. */
+.shimmer {
+  position: relative;
+  overflow: hidden;
+  background: var(--card);
+}
+.shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    hsl(var(--foreground) / 0.04) 45%,
+    hsl(var(--foreground) / 0.08) 50%,
+    hsl(var(--foreground) / 0.04) 55%,
+    transparent 70%
+  );
+  background-size: 200% 100%;
+  animation: shimmer-sweep 1.8s ease-in-out infinite;
+  pointer-events: none;
+}
+.dark .shimmer::after {
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    hsl(var(--foreground) / 0.03) 45%,
+    hsl(var(--foreground) / 0.06) 50%,
+    hsl(var(--foreground) / 0.03) 55%,
+    transparent 70%
+  );
+  background-size: 200% 100%;
+}
+@keyframes shimmer-sweep {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shimmer::after {
+    animation: none;
+  }
+}
+
+/* ── 9. Enhanced tooltip utility ──
+   Smooth fade-in with slight scale for tooltip-like popovers.
+   Applied via JS: add `.tooltip` when the tooltip becomes visible. */
+.tooltip {
+  animation: tooltip-fade-in 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  pointer-events: none;
+}
+@keyframes tooltip-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.tooltip-exit {
+  animation: tooltip-fade-out 0.12s ease-in forwards;
+}
+@keyframes tooltip-fade-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+/* ── 10. Pulse ring animation ──
+   Expanding ring effect (sonar ping). Apply to an element
+   that has a visible dot or icon as its content. */
+.pulse-ring {
+  position: relative;
+}
+.pulse-ring::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1.5px solid var(--foreground);
+  animation: pulse-ring-expand 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  pointer-events: none;
+}
+@keyframes pulse-ring-expand {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.7;
+  }
+  80%, 100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+.dark .pulse-ring::after {
+  border-color: var(--foreground);
+}
+@media (prefers-reduced-motion: reduce) {
+  .pulse-ring::after {
+    animation: none;
+  }
+}
+
+/* ── 11. Gradient text effect (enhanced) ──
+   More vivid moving gradient with three color stops for depth.
+   Overrides the existing .text-gradient with a richer palette. */
+.text-gradient {
+  background: linear-gradient(
+    135deg,
+    var(--foreground) 0%,
+    var(--muted-foreground) 30%,
+    var(--foreground) 60%,
+    var(--muted-foreground) 100%
+  );
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: text-gradient-vivid 4s ease-in-out infinite;
+}
+@keyframes text-gradient-vivid {
+  0%   { background-position: 0% 50%; }
+  25%  { background-position: 100% 0%; }
+  50%  { background-position: 100% 100%; }
+  75%  { background-position: 0% 100%; }
+  100% { background-position: 0% 50%; }
+}
+.dark .text-gradient {
+  background: linear-gradient(
+    135deg,
+    var(--foreground) 0%,
+    hsl(var(--foreground) / 0.6) 30%,
+    var(--foreground) 60%,
+    hsl(var(--foreground) / 0.7) 100%
+  );
+  background-size: 300% 300%;
+}
+@media (prefers-reduced-motion: reduce) {
+  .text-gradient {
+    animation: none;
+    background-size: 100% 100%;
+  }
+}
+
+/* ── 12. Card spotlight effect ──
+   Mouse-following radial gradient spotlight inside cards.
+   Requires JS to set `--mouse-x` and `--mouse-y` CSS custom
+   properties on the element (percentage values 0–100). */
+.spotlight-card {
+  --mouse-x: 50%;
+  --mouse-y: 50%;
+  position: relative;
+  overflow: hidden;
+}
+.spotlight-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    400px circle at var(--mouse-x) var(--mouse-y),
+    hsl(var(--foreground) / 0.05),
+    transparent 60%
+  );
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+.spotlight-card:hover::before {
+  opacity: 1;
+}
+.dark .spotlight-card::before {
+  background: radial-gradient(
+    400px circle at var(--mouse-x) var(--mouse-y),
+    hsl(var(--foreground) / 0.04),
+    transparent 60%
+  );
+}
+/* Border highlight following the mouse */
+.spotlight-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    300px circle at var(--mouse-x) var(--mouse-y),
+    hsl(var(--foreground) / 0.12),
+    transparent 60%
+  );
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  padding: 1px;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+.spotlight-card:hover::after {
+  opacity: 1;
+}
+.dark .spotlight-card::after {
+  background: radial-gradient(
+    300px circle at var(--mouse-x) var(--mouse-y),
+    hsl(var(--foreground) / 0.08),
+    transparent 60%
+  );
+}
+
+/* ── 13. Enhanced toast styling ──
+   Sonner toast overrides matching the terminal aesthetic.
+   Monospace font, sharp corners, subtle border + backdrop blur. */
+.qlss-toast {
+  font-family: var(--font-mono), ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-feature-settings: "liga" 0;
+  font-variant-ligatures: none;
+  border-radius: 0 !important;
+  border: 1px solid hsl(var(--border)) !important;
+  background: hsl(var(--card) / 0.92) !important;
+  backdrop-filter: blur(12px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(150%) !important;
+  box-shadow: 0 4px 16px -4px hsl(var(--foreground) / 0.08) !important;
+  color: var(--foreground) !important;
+}
+.qlss-toast[data-type="success"] {
+  border-left: 3px solid #2c6e49 !important;
+}
+.qlss-toast[data-type="error"] {
+  border-left: 3px solid var(--destructive) !important;
+}
+.qlss-toast[data-type="warning"] {
+  border-left: 3px solid #b08a3e !important;
+}
+.dark .qlss-toast[data-type="success"] {
+  border-left-color: #5cb880 !important;
+}
+.dark .qlss-toast[data-type="warning"] {
+  border-left-color: #d4aa50 !important;
+}
+.qlss-toast-title {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  font-size: 0.8rem;
+}
+.qlss-toast-description {
+  color: var(--muted-foreground);
+  font-size: 0.7rem;
+  line-height: 1.5;
+}
+
+/* ── 14. Footer accent line ──
+   Subtle gradient line above the fixed footer,
+   adding visual separation with a fading glow. */
+.footer-accent-line {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(var(--muted-foreground) / 0.2) 20%,
+    hsl(var(--foreground) / 0.35) 50%,
+    hsl(var(--muted-foreground) / 0.2) 80%,
+    transparent 100%
+  );
+  position: relative;
+}
+.footer-accent-line::after {
+  content: "";
+  position: absolute;
+  inset: -2px 10% -2px 10%;
+  height: 5px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(var(--foreground) / 0.06) 30%,
+    hsl(var(--foreground) / 0.1) 50%,
+    hsl(var(--foreground) / 0.06) 70%,
+    transparent 100%
+  );
+  filter: blur(2px);
+  pointer-events: none;
+}
+.dark .footer-accent-line {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(var(--muted-foreground) / 0.15) 20%,
+    hsl(var(--foreground) / 0.25) 50%,
+    hsl(var(--muted-foreground) / 0.15) 80%,
+    transparent 100%
+  );
+}
+.dark .footer-accent-line::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(var(--foreground) / 0.04) 30%,
+    hsl(var(--foreground) / 0.07) 50%,
+    hsl(var(--foreground) / 0.04) 70%,
+    transparent 100%
+  );
+}
+
+/* ── Round 6: Reduced motion overrides for new utilities ── */
+@media (prefers-reduced-motion: reduce) {
+  .gradient-border::before {
+    animation: none;
+    opacity: 0.3;
+  }
+  .shimmer::after {
+    animation: none;
+  }
+  .pulse-ring::after {
+    animation: none;
+  }
+  .text-gradient {
+    animation: none;
+    background-size: 100% 100%;
+  }
+  .tooltip {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .tooltip-exit {
+    animation: none;
+    opacity: 0;
+  }
+  .text-gradient-pulse {
+    animation: none;
+    background-size: 100% 100%;
+  }
+  .live-dot-ping {
+    animation: none;
+  }
+  .sign-in-link:hover {
+    transform: none;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   ROUND 7b — Enhanced hero & header styling
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Tagline gradient with subtle pulse ──
+   Animated gradient background that shifts + pulses in opacity for a breathing effect. */
+.text-gradient-pulse {
+  background: linear-gradient(
+    135deg,
+    var(--foreground) 0%,
+    var(--muted-foreground) 25%,
+    var(--foreground) 50%,
+    var(--muted-foreground) 75%,
+    var(--foreground) 100%
+  );
+  background-size: 400% 400%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: gradient-pulse 5s ease-in-out infinite;
+}
+@keyframes gradient-pulse {
+  0%   { background-position: 0% 50%; opacity: 1; }
+  25%  { background-position: 100% 0%; opacity: 0.85; }
+  50%  { background-position: 100% 100%; opacity: 1; }
+  75%  { background-position: 0% 100%; opacity: 0.85; }
+  100% { background-position: 0% 50%; opacity: 1; }
+}
+.dark .text-gradient-pulse {
+  background: linear-gradient(
+    135deg,
+    var(--foreground) 0%,
+    hsl(var(--foreground) / 0.6) 25%,
+    var(--foreground) 50%,
+    hsl(var(--foreground) / 0.7) 75%,
+    var(--foreground) 100%
+  );
+  background-size: 400% 400%;
+}
+
+/* ── Hero badge enhanced hover ──
+   Adds scale(1.05) to existing hover lift. */
+.hero-badge:hover {
+  transform: translateY(-1px) scale(1.05);
+  border-color: var(--foreground);
+  color: var(--foreground);
+}
+
+/* ── Site header glass effect ──
+   Enhanced frosted glass with subtle shadow and blur. */
+.site-header {
+  box-shadow: 0 1px 8px -2px rgba(0, 0, 0, 0.06);
+}
+.dark .site-header {
+  box-shadow: 0 1px 8px -2px rgba(0, 0, 0, 0.3);
+}
+
+/* ── Logo gradient on hover ──
+   QLSS text gets a subtle color sweep on hover. */
+.site-logo {
+  transition: opacity 0.2s ease, background-size 0.4s ease;
+}
+.site-logo:hover {
+  opacity: 1;
+  background: linear-gradient(
+    135deg,
+    var(--foreground) 0%,
+    var(--muted-foreground) 50%,
+    var(--foreground) 100%
+  );
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: logo-gradient-sweep 2s ease-in-out infinite;
+}
+@keyframes logo-gradient-sweep {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+
+/* ── Sign-in link micro-animation ──
+   Slight scale-up + color shift on hover. */
+.sign-in-link {
+  display: inline-flex;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+.sign-in-link:hover {
+  color: var(--foreground);
+  transform: scale(1.06);
+}
+
+/* ── Stats counter gradient background ──
+   Subtle gradient backdrop for the counter strip. */
+.stats-counter-gradient {
+  position: relative;
+  background:
+    linear-gradient(
+      135deg,
+      var(--card) 0%,
+      hsl(var(--muted) / 0.8) 50%,
+      var(--card) 100%
+    );
+  backdrop-filter: blur(8px);
+}
+.dark .stats-counter-gradient {
+  background:
+    linear-gradient(
+      135deg,
+      var(--card) 0%,
+      hsl(var(--muted) / 0.6) 50%,
+      var(--card) 100%
+    );
+}
+
+/* ── Live indicator dot with enhanced pulse ──
+   Smooth pulse with a glow ring effect. */
+.live-dot-ping {
+  animation: live-ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+@keyframes live-ping {
+  0% {
+    transform: scale(1);
+    opacity: 0.75;
+  }
+  50% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+.live-dot-core {
+  animation: live-core-pulse 2s ease-in-out infinite;
+}
+@keyframes live-core-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+  50%      { transform: scale(1.1); box-shadow: 0 0 4px 1px rgba(16, 185, 129, 0.2); }
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   ROUND 7 — Floating orbs hero, skeleton loaders, button ripples, scan lines,
+   animated grid, enhanced micro-interactions
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. Floating orbs hero background ──
+   Three layered, slowly-drifting radial gradient orbs with subtle scale
+   breathing. More visible than the base .hero-mesh but still soft. */
+.hero-orbs {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+.hero-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(60px);
+  opacity: 0.5;
+  will-change: transform, opacity;
+}
+.hero-orb-1 {
+  width: 28rem;
+  height: 28rem;
+  top: -8rem;
+  left: -6rem;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.18), transparent 70%);
+  animation: orb-drift-1 24s ease-in-out infinite;
+}
+.hero-orb-2 {
+  width: 22rem;
+  height: 22rem;
+  top: -4rem;
+  right: -4rem;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.16), transparent 70%);
+  animation: orb-drift-2 28s ease-in-out infinite;
+}
+.hero-orb-3 {
+  width: 18rem;
+  height: 18rem;
+  top: 6rem;
+  left: 40%;
+  background: radial-gradient(circle, rgba(244, 63, 94, 0.12), transparent 70%);
+  animation: orb-drift-3 32s ease-in-out infinite;
+}
+.dark .hero-orb-1 { opacity: 0.35; }
+.dark .hero-orb-2 { opacity: 0.30; }
+.dark .hero-orb-3 { opacity: 0.25; }
+
+@keyframes orb-drift-1 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  33%      { transform: translate3d(2rem, 1.5rem, 0) scale(1.08); }
+  66%      { transform: translate3d(-1rem, 2rem, 0) scale(0.96); }
+}
+@keyframes orb-drift-2 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%      { transform: translate3d(-2.5rem, 1.5rem, 0) scale(1.1); }
+}
+@keyframes orb-drift-3 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  40%      { transform: translate3d(1.5rem, -1rem, 0) scale(1.05); }
+  80%      { transform: translate3d(-1rem, 1rem, 0) scale(0.95); }
+}
+
+/* ── 2. Animated grid background ──
+   Subtle moving grid pattern that gives a "terminal" feel. */
+.grid-bg {
+  background-image:
+    linear-gradient(to right, var(--border) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-position: -1px -1px;
+  opacity: 0.3;
+  mask-image: radial-gradient(ellipse at top, black 30%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse at top, black 30%, transparent 70%);
+}
+
+/* ── 3. Skeleton feed rows (shimmer) ──
+   Reusable skeleton rows for trending/recent feeds while loading. */
+.skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.skeleton-bar {
+  background: linear-gradient(
+    90deg,
+    var(--muted) 0%,
+    var(--muted-foreground) 50%,
+    var(--muted) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+  border-radius: 0.25rem;
+  opacity: 0.25;
+}
+.dark .skeleton-bar {
+  background: linear-gradient(
+    90deg,
+    hsl(0 0% 22%) 0%,
+    hsl(0 0% 32%) 50%,
+    hsl(0 0% 22%) 100%
+  );
+  background-size: 200% 100%;
+  opacity: 0.4;
+}
+@keyframes skeleton-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── 4. Button ripple effect ──
+   Material-style ripple on click for primary buttons. */
+.btn-ripple {
+  position: relative;
+  overflow: hidden;
+}
+.btn-ripple::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at var(--ripple-x, 50%) var(--ripple-y, 50%), rgba(255, 255, 255, 0.35) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+.btn-ripple.is-rippling::after {
+  opacity: 1;
+  transition: opacity 0s;
+  animation: ripple-fade 0.6s ease-out;
+}
+@keyframes ripple-fade {
+  0%   { transform: scale(0.5); opacity: 0.6; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+
+/* ── 5. Scan line effect on cards ──
+   A thin horizontal line that sweeps down the card on hover. */
+.scan-card {
+  position: relative;
+  overflow: hidden;
+}
+.scan-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--foreground), transparent);
+  opacity: 0;
+  transform: translateY(0);
+  pointer-events: none;
+  z-index: 1;
+}
+.scan-card:hover::before {
+  opacity: 0.5;
+  animation: scan-sweep 1.4s ease-out;
+}
+@keyframes scan-sweep {
+  0%   { transform: translateY(0); opacity: 0; }
+  20%  { opacity: 0.6; }
+  100% { transform: translateY(var(--scan-h, 200px)); opacity: 0; }
+}
+
+/* ── 6. Glow ring on focus for inputs ── */
+.input-glow:focus,
+.input-glow:focus-visible {
+  outline: none;
+  border-color: var(--foreground);
+  box-shadow:
+    0 0 0 1px var(--foreground),
+    0 0 12px -2px var(--foreground);
+  transition: border-color 0.15s ease, box-shadow 0.2s ease;
+}
+
+/* ── 7. Number ticker (tabular) for stats counters ── */
+.tabular-ticker {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* ── 8. Floating action button entrance ──
+   Smooth pop-in with overshoot for FABs. */
+.fab-pop {
+  animation: fab-pop-in 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes fab-pop-in {
+  0%   { transform: scale(0) translateY(8px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+/* ── 9. Section title accent bar ──
+   A small accent bar to the left of section titles. */
+.title-accent {
+  position: relative;
+  padding-left: 0.75rem;
+}
+.title-accent::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 70%;
+  background: var(--foreground);
+  border-radius: 2px;
+  opacity: 0.7;
+}
+
+/* ── 10. Animated underline on hover (for links/buttons) ── */
+.link-underline-anim {
+  position: relative;
+}
+.link-underline-anim::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.3s ease;
+}
+.link-underline-anim:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* ── 11. Card border-glow on hover ── */
+.border-glow-hover {
+  transition: border-color 0.2s ease, box-shadow 0.25s ease;
+}
+.border-glow-hover:hover {
+  border-color: var(--foreground);
+  box-shadow:
+    0 0 0 1px var(--foreground),
+    0 0 16px -4px var(--foreground);
+}
+
+/* ── 12. Code block terminal styling ── */
+.code-block {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  position: relative;
+  overflow-x: auto;
+}
+.code-block::before {
+  content: "$";
+  color: var(--muted-foreground);
+  margin-right: 0.5rem;
+  user-select: none;
+}
+
+/* ── 13. Reduced motion overrides for Round 7 ── */
+@media (prefers-reduced-motion: reduce) {
+  .hero-orb-1, .hero-orb-2, .hero-orb-3 {
+    animation: none !important;
+  }
+  .skeleton-bar {
+    animation: none !important;
+    opacity: 0.2;
+  }
+  .btn-ripple::after,
+  .scan-card::before {
+    display: none !important;
+  }
+  .fab-pop {
+    animation: none !important;
+  }
+}
+
+/* ── 14. Mobile: hide orbs on very small screens for perf ── */
+@media (max-width: 380px) {
+  .hero-orb-3 { display: none; }
+  .hero-orb-1, .hero-orb-2 {
+    filter: blur(40px);
+  }
+}
+
+/* ── 15. Status badge pulse for live indicators ── */
+.live-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+.live-badge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: rgb(16, 185, 129);
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
+  animation: live-badge-pulse 1.8s ease-out infinite;
+}
+@keyframes live-badge-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+  70%  { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+/* ── 16. Subtle dotted divider ── */
+.dotted-divider {
+  border: none;
+  border-top: 1px dashed var(--border);
+  margin: 1rem 0;
+}
+
+/* ── 17. Hover lift for cards (enhanced with translate + shadow) ── */
+.lift-on-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.lift-on-hover:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 1px 0 var(--border),
+    0 8px 24px -8px rgba(12, 12, 10, 0.12),
+    0 4px 8px -4px rgba(12, 12, 10, 0.06);
+}
+.dark .lift-on-hover:hover {
+  box-shadow:
+    0 1px 0 var(--border),
+    0 8px 24px -8px rgba(0, 0, 0, 0.5),
+    0 4px 8px -4px rgba(0, 0, 0, 0.3);
+}
+
+/* ─── R10: Top progress bar + inspect polish ─────────────────────────────── */
+
+.top-progress-bar {
+  background: linear-gradient(
+    90deg,
+    var(--foreground) 0%,
+    var(--foreground) 60%,
+    color-mix(in srgb, var(--foreground) 70%, transparent) 100%
+  );
+  box-shadow: 0 0 8px color-mix(in srgb, var(--foreground) 40%, transparent);
+}
+
+/* Inspect result: subtle scan-line sweep on the status banner */
+.inspect-status-banner {
+  position: relative;
+  overflow: hidden;
+}
+.inspect-status-banner::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--foreground) 8%, transparent) 50%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  pointer-events: none;
+}
+.inspect-status-banner:hover::after {
+  animation: inspect-scan 1.2s ease-out;
+}
+@keyframes inspect-scan {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* Inspect result cards: lift on hover */
+.inspect-card {
+  transition:
+    transform 0.18s ease-out,
+    border-color 0.18s ease-out,
+    box-shadow 0.18s ease-out;
+}
+.inspect-card:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--foreground) 25%, var(--border));
+  box-shadow: 0 4px 12px -6px rgba(12, 12, 10, 0.1);
+}
+.dark .inspect-card:hover {
+  box-shadow: 0 4px 12px -6px rgba(0, 0, 0, 0.4);
+}
+
+/* Empty state for inspect (before any URL entered) */
+.inspect-empty {
+  border: 1px dashed var(--border);
+  background: color-mix(in srgb, var(--card) 50%, transparent);
+}
+
+/* Inspect history chips */
+.inspect-chip {
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+.inspect-chip:hover {
+  transform: translateY(-1px);
+}
+
+/* Stats counter: subtle shimmer on the numbers while loading */
+.stats-num-loading {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--foreground) 30%, transparent) 25%,
+    color-mix(in srgb, var(--foreground) 60%, transparent) 50%,
+    color-mix(in srgb, var(--foreground) 30%, transparent) 75%
+  );
+  background-size: 200% 100%;
+  animation: stats-shimmer 1.4s ease-in-out infinite;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+@keyframes stats-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* /info page stat card: icon tint background */
+.stat-icon-tint {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Focus-visible ring polish for keyboard users */
+*:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 1px;
+  border-radius: 1px;
+}
+button:focus-visible,
+a:focus-visible,
+[role="tab"]:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
+}
+
+/* Reduced motion: disable inspect scan + chip lift */
+@media (prefers-reduced-motion: reduce) {
+  .inspect-status-banner:hover::after {
+    animation: none;
+  }
+  .inspect-card:hover,
+  .inspect-chip:hover {
+    transform: none;
+  }
+  .stats-num-loading {
+    animation: none;
+    background: none;
+    color: var(--foreground);
+    -webkit-background-clip: unset;
+    background-clip: unset;
+  }
+}

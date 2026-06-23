@@ -16,6 +16,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { t } from "@/lib/i18n";
 
 interface ResolvedUrl {
   resolved_url: string;
@@ -96,11 +97,11 @@ export function UnshortenerForm() {
 
   // Loading skeleton — show for 300ms on mount
   useEffect(() => {
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       setMounted(true);
       setHistory(loadHistory());
     }, 300);
-    return () => clearTimeout(t);
+    return () => clearTimeout(timer);
   }, []);
 
   // Auto-resize textarea
@@ -166,8 +167,8 @@ export function UnshortenerForm() {
       }
     } catch {
       toast({
-        title: "clipboard error",
-        description: "could not read clipboard — check permissions",
+        title: t("home.clipboard_error"),
+        description: t("home.clipboard_error_desc"),
         duration: 2000,
       });
     }
@@ -175,13 +176,13 @@ export function UnshortenerForm() {
 
   async function resolveSingleUrl(targetUrl: string): Promise<ResolvedUrl> {
     const normalized = normalizeUrl(targetUrl);
-    const res = await fetch("/api/unshorten", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url: normalized }),
+    const token = process.env.NEXT_PUBLIC_UNSHORTEN_API_TOKEN ?? "";
+    const res = await fetch(`/api/unshorten?url=${encodeURIComponent(normalized)}`, {
+      method: "GET",
+      headers: { Authorization: `Token ${token}` },
     });
     const json = await res.json();
-    if (!res.ok) throw new Error(json?.error ?? "Could not resolve the URL.");
+    if (!res.ok) throw new Error(json?.error ?? t("api_errors.resolve_failed"));
     return json as ResolvedUrl;
   }
 
@@ -221,7 +222,7 @@ export function UnshortenerForm() {
         );
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Network error. Try again.");
+      setError(err instanceof Error ? err.message : t("home.network_error"));
     } finally {
       setBusy(false);
     }
@@ -231,8 +232,8 @@ export function UnshortenerForm() {
     navigator.clipboard.writeText(text).then(() => {
       setCopied(true);
       toast({
-        title: "copied",
-        description: "copied to clipboard",
+        title: t("common.copied"),
+        description: t("common.copied_to_clipboard"),
         duration: 1500,
       });
       setTimeout(() => setCopied(false), 2000);
@@ -274,19 +275,19 @@ export function UnshortenerForm() {
             ) : (
               <ShieldAlert className="h-3 w-3" style={{ color: "#b08a3e" }} />
             )}
-            resolved
+            {t("unshorten.resolved")}
           </span>
           <div className="flex items-center gap-2">
             {/* Safety badge */}
             {isSafe ? (
               <span className="flex items-center gap-1 text-[9px] px-1.5 py-0.5 border" style={{ color: "#2c6e49", borderColor: "#2c6e49" }}>
                 <Check className="h-2.5 w-2.5" />
-                safe destination
+                {t("unshorten.safe_destination")}
               </span>
             ) : (
               <span className="flex items-center gap-1 text-[9px] px-1.5 py-0.5 border" style={{ color: "#b08a3e", borderColor: "#b08a3e" }}>
                 <AlertTriangle className="h-2.5 w-2.5" />
-                may redirect further
+                {t("unshorten.may_redirect_further")}
               </span>
             )}
             {index === undefined && (
@@ -295,7 +296,7 @@ export function UnshortenerForm() {
                 onClick={handleReset}
                 className="text-muted-foreground hover:text-foreground transition-colors touch-target"
               >
-                + new
+                {t("home.new_link")}
               </button>
             )}
           </div>
@@ -304,7 +305,7 @@ export function UnshortenerForm() {
         <div className="px-4 py-4 flex flex-col gap-3">
           {/* Input */}
           <div className="min-w-0">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">input</p>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">{t("unshorten.input_label")}</p>
             <p className="text-xs text-muted-foreground break-all">{result.url}</p>
           </div>
 
@@ -325,7 +326,7 @@ export function UnshortenerForm() {
 
           {/* Destination */}
           <div className="min-w-0">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">destination</p>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">{t("unshorten.destination")}</p>
             <div className="flex items-start gap-1.5">
               <a
                 href={result.resolved_url}
@@ -340,7 +341,7 @@ export function UnshortenerForm() {
                 type="button"
                 onClick={() => handleCopy(result.resolved_url)}
                 className="shrink-0 text-muted-foreground hover:text-foreground transition-colors p-1 touch-target btn-press"
-                title="Copy resolved URL"
+                title={t("unshorten.copy_resolved_url")}
               >
                 {copied ? (
                   <Check className="h-3.5 w-3.5" style={{ color: "#2c6e49" }} />
@@ -399,14 +400,14 @@ export function UnshortenerForm() {
         <div className="px-4 py-2 text-[10px] uppercase tracking-widest text-muted-foreground flex items-center justify-between">
           <span className="flex items-center gap-2">
             <Check className="h-3 w-3" style={{ color: "#2c6e49" }} />
-            resolved {multiResults.length} url{multiResults.length > 1 ? "s" : ""}
+            {t("unshorten.resolved_count").replace("{n}", String(multiResults.length))}
           </span>
           <button
             type="button"
             onClick={handleReset}
             className="text-muted-foreground hover:text-foreground transition-colors touch-target"
           >
-            + new
+            {t("home.new_link")}
           </button>
         </div>
         {multiResults.map((r, i) => (
@@ -435,7 +436,7 @@ export function UnshortenerForm() {
               onChange={(e) => setUrl(e.target.value)}
               onFocus={() => setFocused(true)}
               onBlur={() => setFocused(false)}
-              placeholder="paste a short url to resolve"
+              placeholder={t("unshorten.input_placeholder")}
               className="w-full bg-transparent border-0 outline-none py-3 text-sm placeholder:text-muted-foreground/60 resize-none overflow-hidden"
               disabled={busy}
               autoComplete="off"
@@ -458,7 +459,7 @@ export function UnshortenerForm() {
             )}
             {isMultiUrl && focused && (
               <span className="absolute right-2 top-3 text-[9px] text-muted-foreground/60 validation-indicator validation-indicator-enter">
-                {parseMultipleUrls(url).length} urls
+                {parseMultipleUrls(url).length} {t("common.urls")}
               </span>
             )}
           </div>
@@ -467,7 +468,7 @@ export function UnshortenerForm() {
               type="button"
               onClick={handlePaste}
               className="border-l border-border text-muted-foreground hover:text-foreground hover:bg-accent px-3 text-sm transition-colors touch-target btn-press"
-              title="Paste from clipboard"
+              title={t("home.paste_from_clipboard")}
             >
               <ClipboardPaste className="h-4 w-4" />
             </button>
@@ -480,7 +481,7 @@ export function UnshortenerForm() {
             {busy ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              "resolve"
+              t("unshorten.resolve_btn")
             )}
           </button>
         </div>
@@ -490,15 +491,15 @@ export function UnshortenerForm() {
           <span className="text-[10px] text-muted-foreground/60">
             <span className="flex items-center gap-1">
               <kbd className="border border-border px-1 text-[9px]">/</kbd>
-              <span className="text-[9px]">or</span>
+              <span className="text-[9px]">{t("home.or")}</span>
               <kbd className="border border-border px-1 text-[9px]">Ctrl+K</kbd>
-              <span className="text-[9px]">to focus</span>
+              <span className="text-[9px]">{t("home.to_focus")}</span>
             </span>
           </span>
           {url.length > 0 && (
             <span className="text-[10px] text-muted-foreground/60">
               <kbd className="border border-border px-1 text-[9px]">Esc</kbd>
-              <span className="text-[9px] ml-0.5">to clear</span>
+              <span className="text-[9px] ml-0.5">{t("home.to_clear")}</span>
             </span>
           )}
         </div>
@@ -521,7 +522,7 @@ export function UnshortenerForm() {
             className="flex items-center gap-1.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors px-1"
           >
             <Clock className="h-3 w-3" />
-            recent ({history.length})
+            {t("home.recent")} ({history.length})
             <span className="text-[9px]">{showHistory ? "▾" : "▸"}</span>
           </button>
           {showHistory && (
@@ -548,7 +549,7 @@ export function UnshortenerForm() {
                     type="button"
                     onClick={() => handleCopy(entry.resolved)}
                     className="shrink-0 text-muted-foreground hover:text-foreground transition-colors p-0.5"
-                    title="Copy"
+                    title={t("common.copy")}
                   >
                     <Copy className="h-2.5 w-2.5" />
                   </button>
@@ -560,7 +561,7 @@ export function UnshortenerForm() {
                 className="flex items-center gap-1 text-[9px] text-muted-foreground/40 hover:text-destructive transition-colors px-3 pt-1"
               >
                 <X className="h-2.5 w-2.5" />
-                clear history
+                {t("unshorten.clear_history")}
               </button>
             </div>
           )}

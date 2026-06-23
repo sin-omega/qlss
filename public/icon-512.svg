@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <!-- QLSS app icon — 512x512 — dark terminal aesthetic -->
+  <rect width="512" height="512" rx="74" fill="#0a0a09"/>
+  <rect x="0.5" y="0.5" width="511" height="511" rx="73.5" stroke="#1f1f1c" stroke-width="1"/>
+  <!-- "Q" letter -->
+  <text x="118" y="330" font-family="'Roboto Mono', ui-monospace, monospace" font-weight="700" font-size="256" fill="#fbfbf9">Q</text>
+  <!-- Link bars (representing a shortened link list) -->
+  <line x1="320" y1="160" x2="395" y2="160" stroke="#fbfbf9" stroke-width="24" stroke-linecap="round"/>
+  <line x1="320" y1="224" x2="352" y2="224" stroke="#fbfbf9" stroke-width="24" stroke-linecap="round"/>
+  <line x1="320" y1="288" x2="416" y2="288" stroke="#fbfbf9" stroke-width="24" stroke-linecap="round"/>
+  <line x1="320" y1="352" x2="368" y2="352" stroke="#fbfbf9" stroke-width="24" stroke-linecap="round"/>
+</svg>

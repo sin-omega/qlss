@@ -69,11 +69,25 @@ export async function PATCH(
   let body: {
     title?: string | null;
     description?: string | null;
+    markdown_content?: string | null;
+    og_title?: string | null;
+    og_description?: string | null;
+    og_image?: string | null;
+    pincode?: string | null;
+    expires_at?: string | null;
+    max_uses?: number | null;
   };
   try {
     body = (await request.json()) as {
       title?: string | null;
       description?: string | null;
+      markdown_content?: string | null;
+      og_title?: string | null;
+      og_description?: string | null;
+      og_image?: string | null;
+      pincode?: string | null;
+      expires_at?: string | null;
+      max_uses?: number | null;
     };
   } catch {
     return jsonError(400, "Send a JSON body.");
@@ -91,17 +105,37 @@ export async function PATCH(
   const update: Record<string, unknown> = {};
   if (body.title !== undefined) {
     const title = (body.title ?? "").trim();
-    if (title.length > 140) {
-      return jsonError(400, "Title must be 140 chars or fewer.");
-    }
+    if (title.length > 140) return jsonError(400, "Title must be 140 chars or fewer.");
     update.title = title || null;
   }
   if (body.description !== undefined) {
     const description = (body.description ?? "").trim();
-    if (description.length > 500) {
-      return jsonError(400, "Description must be 500 chars or fewer.");
-    }
+    if (description.length > 500) return jsonError(400, "Description must be 500 chars or fewer.");
     update.description = description || null;
+  }
+  if (body.markdown_content !== undefined) {
+    const md = (body.markdown_content ?? "");
+    if (md.length > 100_000) return jsonError(400, "markdown_content too long.");
+    update.markdown_content = md;
+  }
+  if (body.og_title !== undefined) update.og_title = (body.og_title ?? "").trim().slice(0, 140) || null;
+  if (body.og_description !== undefined) update.og_description = (body.og_description ?? "").trim().slice(0, 500) || null;
+  if (body.og_image !== undefined) update.og_image = (body.og_image ?? "").trim().slice(0, 2000) || null;
+  if (body.pincode !== undefined) update.pincode = (body.pincode ?? "").trim().slice(0, 32) || null;
+  if (body.expires_at !== undefined) {
+    const ea = body.expires_at;
+    if (ea === null || ea === "") update.expires_at = null;
+    else {
+      const d = new Date(ea);
+      if (Number.isNaN(d.getTime())) return jsonError(400, "Invalid expires_at.");
+      update.expires_at = d.toISOString();
+    }
+  }
+  if (body.max_uses !== undefined) {
+    const mu = body.max_uses;
+    if (mu === null) update.max_uses = null;
+    else if (typeof mu === "number" && Number.isInteger(mu) && mu > 0) update.max_uses = mu;
+    else return jsonError(400, "max_uses must be a positive integer or null.");
   }
 
   if (Object.keys(update).length === 0) {

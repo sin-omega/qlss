@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   ShieldX,
   Eye,
+  BarChart3,
 } from "lucide-react";
 import { siteOrigin } from "@/lib/env";
 
@@ -249,6 +250,21 @@ function UsersTab({ users }: { users: AdminUser[] }) {
     }
   }
 
+  async function handleDeleteUserLink(slug: string) {
+    if (!confirm(`Delete /${slug}? This cannot be undone.`)) return;
+    try {
+      const res = await fetch(`/api/admin/links/${encodeURIComponent(slug)}`, { method: "DELETE" });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({ error: "Request failed" }));
+        alert(body?.error ?? `HTTP ${res.status}`);
+        return;
+      }
+      setUserLinks((prev) => prev.filter((l) => l.slug !== slug));
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Network error");
+    }
+  }
+
   if (localUsers.length === 0) {
     return (
       <div className="border border-border bg-card py-12 text-center">
@@ -382,6 +398,7 @@ function UsersTab({ users }: { users: AdminUser[] }) {
                                   <th className="px-2 py-1 font-medium">slug</th>
                                   <th className="px-2 py-1 font-medium hidden md:table-cell">destination</th>
                                   <th className="px-2 py-1 font-medium">clicks</th>
+                                  <th className="px-2 py-1 font-medium text-right">action</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -396,6 +413,27 @@ function UsersTab({ users }: { users: AdminUser[] }) {
                                       {l.destination_url}
                                     </td>
                                     <td className="px-2 py-1 tabular-nums">{l.clicks}</td>
+                                    <td className="px-2 py-1 text-right">
+                                      <div className="inline-flex items-center gap-1">
+                                        <a
+                                          href={`/stats/${l.slug}?admin=1`}
+                                          className="text-[10px] border border-border hover:bg-accent px-1.5 py-0.5 transition-colors inline-flex items-center gap-1"
+                                          title="View stats"
+                                        >
+                                          <BarChart3 className="h-2.5 w-2.5" />
+                                          <span className="hidden sm:inline">stats</span>
+                                        </a>
+                                        <button
+                                          type="button"
+                                          onClick={() => handleDeleteUserLink(l.slug)}
+                                          className="text-[10px] border border-border hover:bg-accent text-destructive px-1.5 py-0.5 transition-colors inline-flex items-center gap-1"
+                                          title="Delete link"
+                                        >
+                                          <Trash2 className="h-2.5 w-2.5" />
+                                          <span className="hidden sm:inline">delete</span>
+                                        </button>
+                                      </div>
+                                    </td>
                                   </tr>
                                 ))}
                               </tbody>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
   Check,
   Copy,
@@ -9,10 +9,8 @@ import {
   Lock,
   QrCode,
   X,
-  Clock,
   Ban,
   ClipboardPaste,
-  Download,
   Share2,
   KeyRound,
   Timer,
@@ -20,23 +18,23 @@ import {
   FileText,
   Code,
   Braces,
+  Layers,
+  Sparkles,
+  Loader2,
+  Globe,
 } from "lucide-react";
 import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
 import { toast } from "@/hooks/use-toast";
+import { BulkForm } from "@/components/qlss/bulk-form";
+import { QrCodeModal } from "@/components/qlss/qr-code-modal";
+import { t, getLanguage } from "@/lib/i18n";
 
 interface CreatedLink {
   slug: string;
   short_url: string;
   destination_url: string;
   owner: boolean;
-}
-
-interface RecentLink {
-  slug: string;
-  short_url: string;
-  destination_url: string;
-  created_at: string;
 }
 
 interface UTMParams {
@@ -47,74 +45,14 @@ interface UTMParams {
   content: string;
 }
 
-const EXPIRY_OPTIONS: { label: string; seconds: number | null }[] = [
-  { label: "never", seconds: null },
-  { label: "1 hour", seconds: 3600 },
-  { label: "24 hours", seconds: 86400 },
-  { label: "7 days", seconds: 604800 },
-  { label: "30 days", seconds: 2592000 },
-  { label: "90 days", seconds: 7776000 },
+const EXPIRY_OPTIONS: { key: string; seconds: number | null }[] = [
+  { key: "expiry.never", seconds: null },
+  { key: "expiry.1_hour", seconds: 3600 },
+  { key: "expiry.24_hours", seconds: 86400 },
+  { key: "expiry.7_days", seconds: 604800 },
+  { key: "expiry.30_days", seconds: 2592000 },
+  { key: "expiry.90_days", seconds: 7776000 },
 ];
-
-const MAX_RECENT = 5;
-const RECENT_KEY = "qlss:recent_links";
-const COUNTER_KEY = "qlss:total_shortened";
-
-function getRecentLinks(): RecentLink[] {
-  try {
-    return JSON.parse(localStorage.getItem(RECENT_KEY) ?? "[]") as RecentLink[];
-  } catch {
-    return [];
-  }
-}
-
-function saveRecentLink(link: RecentLink) {
-  try {
-    const existing = getRecentLinks();
-    const filtered = existing.filter((l) => l.slug !== link.slug);
-    filtered.unshift(link);
-    localStorage.setItem(RECENT_KEY, JSON.stringify(filtered.slice(0, MAX_RECENT)));
-  } catch {
-    // ignore
-  }
-}
-
-function getTotalShortened(): number {
-  try {
-    return parseInt(localStorage.getItem(COUNTER_KEY) ?? "0", 10);
-  } catch {
-    return 0;
-  }
-}
-
-function incrementTotalShortened() {
-  try {
-    const current = getTotalShortened();
-    localStorage.setItem(COUNTER_KEY, String(current + 1));
-  } catch {
-    // ignore
-  }
-}
-
-function formatRelativeTime(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  if (diff < 60000) return "just now";
-  if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
-  if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
-  return `${Math.floor(diff / 86400000)}d ago`;
-}
-
-function getLinkAge(iso: string): "new" | "today" | "old" {
-  const diff = Date.now() - new Date(iso).getTime();
-  if (diff < 3600000) return "new";
-  if (diff < 86400000) return "today";
-  return "old";
-}
-
-function truncateUrl(url: string, max: number = 45): string {
-  if (url.length <= max) return url;
-  return url.slice(0, max - 3) + "...";
-}
 
 function isValidUrl(str: string): boolean {
   try {
@@ -169,8 +107,14 @@ function hasAnyUtm(utm: UTMParams): boolean {
 
 function formatExpiryDate(seconds: number): string {
   const d = new Date(Date.now() + seconds * 1000);
-  const months = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
-  return `expires ${months[d.getMonth()]} ${d.getDate()} ${d.getFullYear()}`;
+  const lang = getLanguage();
+  const locale = lang === "en" ? "en-US" : "pl-PL";
+  const dateStr = new Intl.DateTimeFormat(locale, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  }).format(d);
+  return `${t("home.expires_prefix")}${dateStr}`;
 }
 
 function getDestinationTitle(url: string): string {
@@ -212,10 +156,9 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
   const [error, setError] = useState<string | null>(null);
   const [errorShake, setErrorShake] = useState(false);
   const [created, setCreated] = useState<CreatedLink | null>(null);
-  const [copied, setCopied] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [showQR, setShowQR] = useState(false);
-  const [recentLinks, setRecentLinks] = useState<RecentLink[]>([]);
+  const [qrModalOpen, setQrModalOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [focused, setFocused] = useState(false);
   const [typedUrl, setTypedUrl] = useState("");
@@ -227,9 +170,26 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
   const [expiryOpen, setExpiryOpen] = useState(false);
   const [expiryIndex, setExpiryIndex] = useState(0); // index into EXPIRY_OPTIONS, default "never"
   const [copyMenuOpen, setCopyMenuOpen] = useState(false);
+  // New: max uses, OG meta, bulk mode
+  const [maxUses, setMaxUses] = useState<string>("");
+  const [ogTitle, setOgTitle] = useState("");
+  const [ogDescription, setOgDescription] = useState("");
+  const [ogImage, setOgImage] = useState("");
+  const [bulkMode, setBulkMode] = useState(false);
+  const [slugChecking, setSlugChecking] = useState(false);
+  const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null);
+  // URL metadata preview
+  const [previewData, setPreviewData] = useState<{
+    title: string;
+    description: string;
+    favicon: string;
+    domain: string;
+  } | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewError, setPreviewError] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const qrRef = useRef<HTMLDivElement>(null);
   const copyMenuRef = useRef<HTMLDivElement>(null);
+  const previewAbortRef = useRef<AbortController | null>(null);
 
   // Web Share API support
   const canShare = typeof navigator !== "undefined" && "share" in navigator;
@@ -240,11 +200,98 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
     return () => clearTimeout(t);
   }, []);
 
+  // Debounced slug availability checker
+  useEffect(() => {
+    if (!alias || !signedIn) {
+      setSlugAvailable(null);
+      setSlugChecking(false);
+      return;
+    }
+
+    setSlugChecking(true);
+    setSlugAvailable(null);
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/${alias}`, { method: "HEAD" });
+        // 404 = slug available (no existing link), 200 = taken
+        setSlugAvailable(res.status === 404);
+      } catch {
+        // Network error — don't show a definitive result
+        setSlugAvailable(null);
+      } finally {
+        setSlugChecking(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [alias, signedIn]);
+
   // URL validation state
   const urlValidation = useMemo(() => {
     if (url.length < 3) return null;
     return looksLikeUrl(url) ? "valid" : "invalid";
   }, [url]);
+
+  // Debounced URL metadata preview fetcher
+  const fetchPreview = useCallback(async (targetUrl: string) => {
+    // Cancel any in-flight request
+    previewAbortRef.current?.abort();
+    const ac = new AbortController();
+    previewAbortRef.current = ac;
+
+    setPreviewLoading(true);
+    setPreviewError(false);
+    setPreviewData(null);
+
+    try {
+      const res = await fetch(
+        `/api/preview?url=${encodeURIComponent(targetUrl)}`,
+        { signal: ac.signal },
+      );
+      if (ac.signal.aborted) return;
+      const json = await res.json();
+      if (json.ok) {
+        setPreviewData({
+          title: json.title || "",
+          description: json.description || "",
+          favicon: json.favicon || "",
+          domain: json.domain || "",
+        });
+      } else {
+        setPreviewError(true);
+      }
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
+      setPreviewError(true);
+    } finally {
+      if (!ac.signal.aborted) {
+        setPreviewLoading(false);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    // Only fetch when URL is valid
+    if (!url || urlValidation !== "valid") {
+      setPreviewData(null);
+      setPreviewLoading(false);
+      setPreviewError(false);
+      previewAbortRef.current?.abort();
+      return;
+    }
+
+    const normalized = normalizeUrl(url);
+
+    const timer = setTimeout(() => {
+      fetchPreview(normalized);
+    }, 800);
+
+    return () => {
+      clearTimeout(timer);
+      previewAbortRef.current?.abort();
+    };
+  }, [url, urlValidation, fetchPreview]);
 
   // Full URL with UTM params (for preview and API)
   const fullUrlWithUtm = useMemo(() => {
@@ -322,17 +369,6 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
     return () => document.removeEventListener("mousedown", handleClick);
   }, [copyMenuOpen]);
 
-  const refreshRecent = useCallback(() => {
-    setRecentLinks(getRecentLinks());
-  }, []);
-
-  useEffect(() => {
-    refreshRecent();
-    const handler = () => refreshRecent();
-    window.addEventListener("storage", handler);
-    return () => window.removeEventListener("storage", handler);
-  }, [refreshRecent]);
-
   // Keyboard shortcuts
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -368,8 +404,8 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
       }
     } catch {
       toast({
-        title: "clipboard error",
-        description: "could not read clipboard — check permissions",
+        title: t("home.clipboard_error"),
+        description: t("home.clipboard_error_desc"),
         duration: 2000,
       });
     }
@@ -392,6 +428,13 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
       if (expiryOption.seconds !== null) {
         body.expires_in = expiryOption.seconds;
       }
+      const mu = parseInt(maxUses, 10);
+      if (Number.isFinite(mu) && mu > 0) {
+        body.max_uses = mu;
+      }
+      if (ogTitle.trim()) body.og_title = ogTitle.trim();
+      if (ogDescription.trim()) body.og_description = ogDescription.trim();
+      if (ogImage.trim()) body.og_image = ogImage.trim();
 
       const res = await fetch("/api/shorten", {
         method: "POST",
@@ -401,7 +444,7 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
 
       const json = await res.json();
       if (!res.ok) {
-        setError(json?.error ?? "Could not create the link.");
+        setError(json?.error ?? t("home.create_failed"));
         return;
       }
 
@@ -414,14 +457,29 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
       setExpiryIndex(0);
       setUtmOpen(false);
       setExpiryOpen(false);
+      setMaxUses("");
+      setOgTitle("");
+      setOgDescription("");
+      setOgImage("");
 
-      saveRecentLink({
-        slug: linkData.slug,
-        short_url: linkData.short_url,
-        destination_url: linkData.destination_url,
-        created_at: new Date().toISOString(),
-      });
-      refreshRecent();
+      // Dispatch a custom event so the LocalHistory component (decoupled) can
+      // pick up this newly-created link and prepend it to its localStorage list.
+      if (typeof window !== "undefined" && linkData.slug && linkData.short_url) {
+        try {
+          window.dispatchEvent(
+            new CustomEvent("qlss:local-history-add", {
+              detail: {
+                slug: linkData.slug,
+                short_url: linkData.short_url,
+                destination_url: linkData.destination_url,
+                created_at: Date.now(),
+              },
+            })
+          );
+        } catch {
+          // ignore dispatch errors
+        }
+      }
 
       if (!linkData.owner && linkData.slug) {
         try {
@@ -436,7 +494,7 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
         }
       }
     } catch {
-      setError("Network error. Try again.");
+      setError(t("home.network_error"));
     } finally {
       setBusy(false);
     }
@@ -445,7 +503,7 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
   function handleCopyText(text: string, label: string) {
     navigator.clipboard.writeText(text).then(() => {
       toast({
-        title: "copied",
+        title: t("common.copied"),
         description: label,
         duration: 2000,
       });
@@ -456,54 +514,30 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
   }
 
   function handleCopyToast(shortUrl: string) {
-    handleCopyText(shortUrl, "link copied to clipboard");
+    handleCopyText(shortUrl, t("home.link_copied"));
   }
 
   async function handleShare(shortUrl: string) {
-    try {
-      await navigator.share({
-        title: "Short link",
-        url: shortUrl,
-      });
-    } catch {
-      // user cancelled or share failed
-    }
-  }
-
-  function downloadQR(shortUrl: string) {
-    const svgEl = qrRef.current?.querySelector("svg");
-    if (!svgEl) return;
-
-    const svgData = new XMLSerializer().serializeToString(svgEl);
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    const img = new Image();
-
-    img.onload = () => {
-      const size = 300;
-      canvas.width = size;
-      canvas.height = size;
-      if (ctx) {
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, size, size);
+    if (canShare) {
+      try {
+        await navigator.share({
+          title: t("home.short_link"),
+          url: shortUrl,
+        });
+      } catch {
+        // user cancelled or share failed
       }
-      ctx?.drawImage(img, 0, 0, size, size);
-
-      const pngUrl = canvas.toDataURL("image/png");
-      const a = document.createElement("a");
-      a.href = pngUrl;
-      a.download = `qr-${shortUrl.split("/").pop() ?? "link"}.png`;
-      a.click();
-    };
-
-    img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
+    } else {
+      // Fallback: copy to clipboard
+      handleCopyText(shortUrl, t("home.link_copied"));
+    }
   }
 
   function handleReset() {
     setCreated(null);
     setError(null);
-    setCopied(false);
     setShowQR(false);
+    setQrModalOpen(false);
     setTypedUrl("");
     setShowConfetti(false);
     setShowCheckmark(false);
@@ -513,6 +547,9 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
     setUtmOpen(false);
     setExpiryOpen(false);
     setCopyMenuOpen(false);
+    setPreviewData(null);
+    setPreviewLoading(false);
+    setPreviewError(false);
   }
 
   // ---------------------------------------------------------------------
@@ -581,14 +618,14 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
                   <Check className="h-3 w-3" style={{ color: "#2c6e49" }} />
                 </span>
               )}
-              result
+              {t("home.result")}
             </span>
             <button
               type="button"
               onClick={handleReset}
               className="text-muted-foreground hover:text-foreground transition-colors touch-target"
             >
-              + new
+              {t("home.new_link")}
             </button>
           </div>
           <div className="px-4 py-4 flex items-center justify-between gap-4">
@@ -607,7 +644,9 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
               {/* URL length savings */}
               {charsSaved > 0 && (
                 <p className="mt-1 text-[10px] text-muted-foreground">
-                  saved {charsSaved} chars ({percentShorter}% shorter)
+                  {t("home.saved_chars")
+                    .replace("{n}", String(charsSaved))
+                    .replace("{p}", String(percentShorter))}
                 </p>
               )}
             </div>
@@ -616,7 +655,7 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
                 type="button"
                 onClick={() => setShowQR((q) => !q)}
                 className="text-muted-foreground hover:text-foreground transition-colors p-1.5 border border-border bg-background hover:bg-accent touch-target"
-                title="Show QR code"
+                title={t("home.show_qr_code")}
               >
                 <QrCode className="h-3.5 w-3.5" />
               </button>
@@ -628,13 +667,13 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
                     onClick={() => handleCopyToast(created.short_url)}
                     className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1.5 border border-border bg-background hover:bg-accent touch-target rounded-none rounded-l-sm"
                   >
-                    <Copy className="h-3 w-3" /> copy
+                    <Copy className="h-3 w-3" /> {t("home.copy")}
                   </button>
                   <button
                     type="button"
                     onClick={() => setCopyMenuOpen((o) => !o)}
                     className="text-muted-foreground hover:text-foreground transition-colors px-1.5 py-1.5 border border-l-0 border-border bg-background hover:bg-accent touch-target rounded-none rounded-r-sm"
-                    title="Copy format options"
+                    title={t("home.copy_format_options")}
                   >
                     <ChevronDown className="h-3 w-3" />
                   </button>
@@ -645,12 +684,12 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
                     <button
                       type="button"
                       onClick={() =>
-                        handleCopyText(created.short_url, "url copied to clipboard")
+                        handleCopyText(created.short_url, t("home.url_copied"))
                       }
                       className="w-full text-left px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex items-center gap-2 touch-target"
                     >
                       <Copy className="h-3 w-3 shrink-0" />
-                      copy url
+                      {t("home.copy_url")}
                     </button>
                     <hr className="hr-dashed border-0" />
                     <button
@@ -658,13 +697,13 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
                       onClick={() =>
                         handleCopyText(
                           `[${destTitle}](${created.short_url})`,
-                          "markdown copied to clipboard"
+                          t("home.markdown_copied")
                         )
                       }
                       className="w-full text-left px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex items-center gap-2 touch-target"
                     >
                       <FileText className="h-3 w-3 shrink-0" />
-                      copy markdown
+                      {t("home.copy_markdown")}
                     </button>
                     <hr className="hr-dashed border-0" />
                     <button
@@ -672,13 +711,13 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
                       onClick={() =>
                         handleCopyText(
                           `<a href="${created.short_url}">${destTitle}</a>`,
-                          "html copied to clipboard"
+                          t("home.html_copied")
                         )
                       }
                       className="w-full text-left px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex items-center gap-2 touch-target"
                     >
                       <Code className="h-3 w-3 shrink-0" />
-                      copy html
+                      {t("home.copy_html")}
                     </button>
                     <hr className="hr-dashed border-0" />
                     <button
@@ -690,72 +729,83 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
                             null,
                             2
                           ),
-                          "json copied to clipboard"
+                          t("home.json_copied")
                         )
                       }
                       className="w-full text-left px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex items-center gap-2 touch-target"
                     >
                       <Braces className="h-3 w-3 shrink-0" />
-                      copy json
+                      {t("home.copy_json")}
                     </button>
                   </div>
                 )}
               </div>
-              {canShare && (
-                <button
-                  type="button"
-                  onClick={() => handleShare(created.short_url)}
-                  className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1.5 border border-border bg-background hover:bg-accent touch-target"
-                  title="Share"
-                >
-                  <Share2 className="h-3 w-3" />
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => handleShare(created.short_url)}
+                className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1.5 border border-border bg-background hover:bg-accent touch-target"
+                title={t("home.share")}
+              >
+                <Share2 className="h-3 w-3" />
+              </button>
             </div>
           </div>
         </div>
 
-        {/* QR Code overlay */}
+        {/* QR Code overlay — compact inline preview + customize / download via modal */}
         {showQR && (
           <div className="border border-border bg-card p-4 flex flex-col items-center gap-3">
-            <div ref={qrRef} className="p-3 bg-white border border-border">
+            <button
+              type="button"
+              onClick={() => setQrModalOpen(true)}
+              title={t("qr_modal.open_modal")}
+              className="group block p-2 bg-white border border-border hover:border-foreground/40 transition-colors btn-press cursor-pointer"
+            >
               <QRCodeSVG
                 value={created.short_url}
-                size={120}
+                size={64}
                 level="M"
                 bgColor="#ffffff"
                 fgColor="#0c0c0a"
               />
-            </div>
+            </button>
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
-              scan to visit
+              {t("home.scan_to_visit")}
             </p>
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                onClick={() => downloadQR(created.short_url)}
+                onClick={() => setQrModalOpen(true)}
                 className="text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1 text-xs touch-target btn-press"
+                title={t("qr_modal.open_modal")}
               >
-                <Download className="h-3 w-3" /> download png
+                <QrCode className="h-3 w-3" /> {t("qr_modal.customize")}
               </button>
               <button
                 type="button"
                 onClick={() => setShowQR(false)}
                 className="text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1 text-xs touch-target"
               >
-                <X className="h-3 w-3" /> hide
+                <X className="h-3 w-3" /> {t("home.hide")}
               </button>
             </div>
           </div>
         )}
 
+        {/* Full QR customization modal */}
+        <QrCodeModal
+          open={qrModalOpen}
+          onOpenChange={setQrModalOpen}
+          url={created.short_url}
+        />
+
         {!created.owner && (
           <p className="text-[11px] text-muted-foreground leading-relaxed text-center">
-            unclaimed —{" "}
+            {t("home.unclaimed")} —{" "}
             <Link href="/auth" className="underline hover:text-foreground">
-              sign in
-            </Link>{" "}
-            to save &amp; track
+              {t("header.sign_in")}
+            </Link>
+            {t("home.to_save_track")}
           </p>
         )}
       </div>
@@ -767,6 +817,19 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
   // ---------------------------------------------------------------------
   return (
     <div className="w-full space-y-3 animate-fade-in">
+      {signedIn && (
+        <button
+          type="button"
+          onClick={() => setBulkMode((b) => !b)}
+          className={`flex items-center gap-1.5 text-[11px] border border-border bg-card px-3 py-1.5 transition-colors hover:bg-accent btn-press touch-target ${bulkMode ? "text-foreground" : "text-muted-foreground"}`}
+        >
+          <Layers className="h-3 w-3" />
+          {bulkMode ? t("home.shorten_tab") : t("home.bulk_toggle")}
+        </button>
+      )}
+      {bulkMode && signedIn ? (
+        <BulkForm />
+      ) : (
       <form onSubmit={handleSubmit} className="w-full space-y-2">
         <div className="flex items-stretch border border-border bg-card focus-within:border-foreground transition-colors input-focus-glow">
           <span className="pl-4 pr-2 text-muted-foreground select-none text-sm flex items-center">
@@ -782,7 +845,7 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
               onChange={(e) => setUrl(e.target.value)}
               onFocus={() => setFocused(true)}
               onBlur={() => setFocused(false)}
-              placeholder="paste a long url"
+              placeholder={t("home.paste_url")}
               className="w-full bg-transparent border-0 outline-none py-3 text-sm placeholder:text-muted-foreground/60"
               disabled={busy}
               autoComplete="off"
@@ -804,17 +867,17 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
               type="button"
               onClick={handlePaste}
               className="border-l border-border text-muted-foreground hover:text-foreground hover:bg-accent px-3 text-sm transition-colors touch-target btn-press"
-              title="Paste from clipboard"
+              title={t("home.paste_from_clipboard")}
             >
               <ClipboardPaste className="h-4 w-4" />
             </button>
           )}
           <button
             type="submit"
-            className="border-l border-border bg-card text-foreground hover:bg-accent px-5 sm:px-6 text-sm transition-colors disabled:opacity-50 btn-press touch-target"
+            className="border-l border-border bg-card text-foreground hover:bg-accent px-5 sm:px-6 text-sm transition-colors disabled:opacity-50 btn-press btn-ripple touch-target"
             disabled={busy || !url}
           >
-            {busy ? "..." : "shorten"}
+            {busy ? "..." : t("home.shorten_btn")}
           </button>
         </div>
 
@@ -823,16 +886,85 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
           <div className="px-1 flex items-center gap-2 text-[10px] text-muted-foreground">
             <span>{urlPreview.domain}</span>
             <span className="text-muted-foreground/40">·</span>
-            <span className="tabular-nums">{urlPreview.length} chars</span>
+            <span className="tabular-nums">
+              {t("home.chars_count").replace("{n}", String(urlPreview.length))}
+            </span>
             {urlPreview.hasUtm && (
               <>
                 <span className="text-muted-foreground/40">·</span>
                 <span className="flex items-center gap-0.5">
                   <Tag className="h-2.5 w-2.5" />
-                  utm params appended
+                  {t("home.utm_appended")}
                 </span>
               </>
             )}
+          </div>
+        )}
+
+        {/* URL Metadata Preview Card */}
+        {previewLoading && urlValidation === "valid" && (
+          <div className="border border-border bg-card rounded-md p-3 animate-fade-in">
+            <div className="flex items-center gap-2">
+              <div className="skeleton-shimmer h-4 w-4 rounded-sm shrink-0" />
+              <div className="flex-1 min-w-0 space-y-1.5">
+                <div className="skeleton-shimmer h-3 w-3/4 rounded-sm" />
+                <div className="skeleton-shimmer h-2.5 w-1/2 rounded-sm" />
+              </div>
+            </div>
+            <div className="mt-2 skeleton-shimmer h-2.5 w-full rounded-sm" />
+          </div>
+        )}
+        {!previewLoading && previewData && urlValidation === "valid" && (
+          <div className="border border-border bg-card rounded-md p-3 animate-fade-in">
+            <div className="flex items-start gap-2.5">
+              {/* Favicon */}
+              <div className="shrink-0 mt-0.5">
+                {previewData.favicon ? (
+                  <img
+                    src={previewData.favicon}
+                    alt=""
+                    width={16}
+                    height={16}
+                    className="h-4 w-4 rounded-sm object-contain"
+                    onError={(e) => {
+                      // Replace with Globe icon on error
+                      const target = e.currentTarget;
+                      target.style.display = "none";
+                      const fallback = target.nextElementSibling as HTMLElement;
+                      if (fallback) fallback.style.display = "block";
+                    }}
+                  />
+                ) : null}
+                <Globe
+                  className="h-4 w-4 text-muted-foreground"
+                  style={{ display: previewData.favicon ? "none" : "block" }}
+                />
+              </div>
+              {/* Title & domain */}
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium truncate leading-tight">
+                  {previewData.title || previewData.domain}
+                </p>
+                <p className="text-[10px] text-muted-foreground truncate mt-0.5">
+                  {previewData.domain}
+                </p>
+                {previewData.description && (
+                  <p className="text-[10px] text-muted-foreground/70 mt-1 line-clamp-2 leading-relaxed">
+                    {previewData.description.length > 120
+                      ? previewData.description.slice(0, 120) + "..."
+                      : previewData.description}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+        {!previewLoading && previewError && urlValidation === "valid" && (
+          <div className="border border-border bg-card rounded-md p-3 animate-fade-in">
+            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+              <Globe className="h-3.5 w-3.5" />
+              <span>{t("shortener.preview_no_data")}</span>
+            </div>
           </div>
         )}
 
@@ -840,20 +972,22 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
         <div className="flex items-center justify-between px-1">
           <span className="text-[10px] text-muted-foreground/60">
             {url.length > 60 ? (
-              <span className="tabular-nums">{url.length} chars</span>
+              <span className="tabular-nums">
+                {t("home.chars_count").replace("{n}", String(url.length))}
+              </span>
             ) : (
               <span className="flex items-center gap-1">
                 <kbd className="border border-border px-1 text-[9px]">/</kbd>
-                <span className="text-[9px]">or</span>
+                <span className="text-[9px]">{t("home.or")}</span>
                 <kbd className="border border-border px-1 text-[9px]">Ctrl+K</kbd>
-                <span className="text-[9px]">to focus</span>
+                <span className="text-[9px]">{t("home.to_focus")}</span>
               </span>
             )}
           </span>
           {url.length > 0 && (
             <span className="text-[10px] text-muted-foreground/60">
               <kbd className="border border-border px-1 text-[9px]">Esc</kbd>
-              <span className="text-[9px] ml-0.5">to clear</span>
+              <span className="text-[9px] ml-0.5">{t("home.to_clear")}</span>
             </span>
           )}
         </div>
@@ -870,7 +1004,7 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
             ) : (
               <ChevronRight className="h-3 w-3" />
             )}
-            advanced options
+            {t("home.advanced_options")}
             {!signedIn && <Lock className="h-3 w-3" />}
           </button>
         </div>
@@ -878,31 +1012,51 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
         {advancedOpen && (
           <div className="space-y-2 animate-fade-in">
             {signedIn ? (
-              <div className="flex items-stretch border border-border bg-background focus-within:border-foreground transition-colors input-focus-glow">
-                <span className="pl-3 pr-2 text-muted-foreground select-none text-xs flex items-center">
-                  /
-                </span>
-                <input
-                  type="text"
-                  value={alias}
-                  onChange={(e) => setAlias(e.target.value.toLowerCase())}
-                  placeholder="custom alias (optional)"
-                  className="flex-1 bg-transparent border-0 outline-none py-2 text-sm placeholder:text-muted-foreground/60"
-                  disabled={busy}
-                  autoComplete="off"
-                  spellCheck={false}
-                  maxLength={32}
-                />
-                {alias && (
-                  <button
-                    type="button"
-                    onClick={() => setAlias("")}
-                    className="px-3 text-xs text-muted-foreground hover:text-foreground transition-colors touch-target"
-                  >
-                    clear
-                  </button>
+              <>
+                <div className="flex items-stretch border border-border bg-background focus-within:border-foreground transition-colors input-focus-glow">
+                  <span className="pl-3 pr-2 text-muted-foreground select-none text-xs flex items-center">
+                    /
+                  </span>
+                  <input
+                    type="text"
+                    value={alias}
+                    onChange={(e) => setAlias(e.target.value.toLowerCase())}
+                    placeholder={t("home.custom_alias")}
+                    className="flex-1 bg-transparent border-0 outline-none py-2 text-sm placeholder:text-muted-foreground/60"
+                    disabled={busy}
+                    autoComplete="off"
+                    spellCheck={false}
+                    maxLength={32}
+                  />
+                  {alias && (
+                    <button
+                      type="button"
+                      onClick={() => setAlias("")}
+                      className="px-3 text-xs text-muted-foreground hover:text-foreground transition-colors touch-target"
+                    >
+                      {t("common.clear")}
+                    </button>
+                  )}
+                </div>
+                {alias && slugChecking && (
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    {t("shortener.slug_checking")}
+                  </div>
                 )}
-              </div>
+                {alias && !slugChecking && slugAvailable === true && (
+                  <div className="flex items-center gap-1.5 text-xs text-emerald-500 mt-1">
+                    <Check className="h-3 w-3" />
+                    {t("shortener.slug_available")}
+                  </div>
+                )}
+                {alias && !slugChecking && slugAvailable === false && (
+                  <div className="flex items-center gap-1.5 text-xs text-destructive mt-1">
+                    <X className="h-3 w-3" />
+                    {t("shortener.slug_taken")}
+                  </div>
+                )}
+              </>
             ) : (
               <div className="flex items-stretch border border-border bg-background">
                 <span className="pl-3 pr-2 text-muted-foreground select-none text-xs flex items-center">
@@ -910,7 +1064,7 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
                 </span>
                 <input
                   type="text"
-                  placeholder="custom alias"
+                  placeholder={t("home.custom_alias_locked")}
                   className="flex-1 bg-transparent border-0 outline-none py-2 text-sm placeholder:text-muted-foreground/40 text-muted-foreground/60"
                   disabled
                   readOnly
@@ -928,7 +1082,7 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
                 type="text"
                 value={pincode}
                 onChange={(e) => setPincode(e.target.value)}
-                placeholder="pincode (optional — visitors must enter it to access)"
+                placeholder={t("home.pincode")}
                 className="flex-1 bg-transparent border-0 outline-none py-2 text-sm placeholder:text-muted-foreground/60"
                 disabled={busy}
                 autoComplete="off"
@@ -941,7 +1095,7 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
                   onClick={() => setPincode("")}
                   className="px-3 text-xs text-muted-foreground hover:text-foreground transition-colors touch-target"
                 >
-                  clear
+                  {t("common.clear")}
                 </button>
               )}
             </div>
@@ -955,10 +1109,10 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
               >
                 <span className="flex items-center gap-1.5">
                   <Tag className="h-3 w-3" />
-                  utm params
+                  {t("home.utm_params")}
                   {hasAnyUtm(utm) && (
                     <span className="text-[9px] bg-accent px-1 py-px border border-border">
-                      active
+                      {t("home.utm_active")}
                     </span>
                   )}
                 </span>
@@ -999,7 +1153,7 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
                       }
                       className="text-[10px] text-muted-foreground hover:text-foreground transition-colors touch-target"
                     >
-                      clear all utm
+                      {t("home.clear_utm")}
                     </button>
                   )}
                 </div>
@@ -1015,10 +1169,10 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
               >
                 <span className="flex items-center gap-1.5">
                   <Timer className="h-3 w-3" />
-                  expires
+                  {t("home.expires")}
                   {expiryOption.seconds !== null && (
                     <span className="text-[9px] bg-accent px-1 py-px border border-border">
-                      {expiryOption.label}
+                      {t(expiryOption.key)}
                     </span>
                   )}
                 </span>
@@ -1038,7 +1192,7 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
                   >
                     {EXPIRY_OPTIONS.map((opt, i) => (
                       <option key={i} value={i}>
-                        {opt.label}
+                        {t(opt.key)}
                       </option>
                     ))}
                   </select>
@@ -1051,17 +1205,78 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
               )}
             </div>
 
+            {/* Max uses */}
+            <div className="flex items-stretch border border-border bg-background focus-within:border-foreground transition-colors input-focus-glow">
+              <span className="pl-3 pr-2 text-muted-foreground select-none text-xs flex items-center">
+                <Timer className="h-3 w-3" />
+              </span>
+              <input
+                type="number"
+                min={1}
+                value={maxUses}
+                onChange={(e) => setMaxUses(e.target.value)}
+                placeholder={t("expiry.max_uses")}
+                className="flex-1 bg-transparent border-0 outline-none py-2 text-sm placeholder:text-muted-foreground/60"
+                disabled={busy}
+                autoComplete="off"
+              />
+              {maxUses && (
+                <button
+                  type="button"
+                  onClick={() => setMaxUses("")}
+                  className="px-3 text-xs text-muted-foreground hover:text-foreground transition-colors touch-target"
+                >
+                  {t("common.clear")}
+                </button>
+              )}
+            </div>
+
+            {/* OG meta / social preview */}
+            <div className="border border-border bg-background">
+              <div className="px-3 py-1.5 border-b border-border text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+                <Sparkles className="h-3 w-3" />
+                {t("og.section")}
+              </div>
+              <div className="p-2 space-y-2">
+                <input
+                  type="text"
+                  value={ogTitle}
+                  onChange={(e) => setOgTitle(e.target.value)}
+                  placeholder={t("og.og_title_placeholder")}
+                  className="w-full bg-background border border-border px-2 py-1.5 text-xs outline-none placeholder:text-muted-foreground/50 input-focus-glow"
+                  disabled={busy}
+                />
+                <input
+                  type="text"
+                  value={ogDescription}
+                  onChange={(e) => setOgDescription(e.target.value)}
+                  placeholder={t("og.og_description_placeholder")}
+                  className="w-full bg-background border border-border px-2 py-1.5 text-xs outline-none placeholder:text-muted-foreground/50 input-focus-glow"
+                  disabled={busy}
+                />
+                <input
+                  type="url"
+                  value={ogImage}
+                  onChange={(e) => setOgImage(e.target.value)}
+                  placeholder={t("og.og_image_placeholder")}
+                  className="w-full bg-background border border-border px-2 py-1.5 text-xs outline-none placeholder:text-muted-foreground/50 input-focus-glow"
+                  disabled={busy}
+                />
+              </div>
+            </div>
+
             {!signedIn && (
               <p className="text-[11px] text-muted-foreground leading-relaxed">
                 <Link href="/auth" className="underline hover:text-foreground">
-                  sign in
-                </Link>{" "}
-                to use custom aliases and manage your links.
+                  {t("header.sign_in")}
+                </Link>
+                {t("home.sign_in_for_alias_suffix")}
               </p>
             )}
           </div>
         )}
       </form>
+      )}
 
       {error && (
         <div className={`border border-destructive/20 bg-destructive/5 px-4 py-2.5 ${errorShake ? "animate-error-shake" : ""}`}>
@@ -1071,31 +1286,5 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
         </div>
       )}
     </div>
-  );
-}
-
-function AgeBadge({ iso }: { iso: string }) {
-  const age = getLinkAge(iso);
-
-  if (age === "new") {
-    return (
-      <span className="badge-new text-[9px] uppercase tracking-widest border px-1 py-px leading-none">
-        new
-      </span>
-    );
-  }
-
-  if (age === "today") {
-    return (
-      <span className="badge-today text-[9px] uppercase tracking-widest border px-1 py-px leading-none">
-        today
-      </span>
-    );
-  }
-
-  return (
-    <span className="text-[10px] text-muted-foreground">
-      {formatRelativeTime(iso)}
-    </span>
   );
 }

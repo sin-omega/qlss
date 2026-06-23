@@ -1,11 +1,14 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { createClient } from "@/lib/supabase/server";
+import { apiSupabaseGuard } from "@/lib/supabase/guard";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  const _guard = apiSupabaseGuard();
+  if (_guard) return _guard;
   const service = createServiceClient();
   const { data } = await service
     .from("site_config")
@@ -17,6 +20,8 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const _guard = apiSupabaseGuard();
+  if (_guard) return _guard;
   const supabase = await createClient();
   const {
     data: { user },

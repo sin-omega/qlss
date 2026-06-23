@@ -2,67 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { X, Send, Check, Loader2 } from "lucide-react";
+import { t } from "@/lib/i18n";
 
 interface LegalDialogProps {
   page: "privacy" | "tos" | "abuse" | null;
   onClose: () => void;
 }
-
-interface LegalSection {
-  heading: string;
-  body: string;
-}
-
-const TITLES: Record<string, string> = {
-  privacy: "Privacy Policy",
-  tos: "Terms of Service",
-  abuse: "Report Bug/Abuse",
-};
-
-const PRIVACY_SECTIONS: LegalSection[] = [
-  {
-    heading: "Data Collection",
-    body: "QLSS collects minimal data to provide link shortening services. We store the destination URL, optional custom alias, and creation timestamp for each shortened link. We also collect basic analytics (IP adress, referring page, browser, device type) when a short link is accessed. We collect approximate geolocation data (country and region) derived from IP addresses when short links are accessed, for analytics purposes. We do not store raw IP addresses longer than necessary for analytics display. Abuse reports submitted through this service are fully anonymous — we do not collect or store reporter identity.",
-  },
-  {
-    heading: "Data Usage",
-    body: "Your data is used solely to operate the link shortening service — resolving redirects, displaying statistics, and maintaining service quality. We do not sell, share, or otherwise distribute your personal information to third parties.",
-  },
-  {
-    heading: "Short Link Visibility",
-    body: "Short links are public by nature — anyone with the link can access the destination. Do not use short links for sensitive or private content unless combined with a pincode.",
-  },
-  {
-    heading: "Your Rights",
-    body: "You may request deletion of your data and associated links at any time by contacting us. We comply with reasonable data removal requests within 30 days.",
-  },
-];
-
-const TOS_SECTIONS: LegalSection[] = [
-  {
-    heading: "Acceptable Use",
-    body: "By using QLSS, you agree not to use the service for any unlawful purpose, including but not limited to: spreading malware, phishing, spam, or distributing harmful content. All shortened links must comply with applicable laws. QLSS reserves the right to remove links that violate these terms and to ban accounts engaged in abuse.",
-  },
-  {
-    heading: "Limitation of Liability",
-    body: "The service is provided \"as is\" without warranty of any kind. We are not responsible for the content of external sites that shortened links point to. QLSS reserves the right to remove any shortened link at any time without notice.",
-  },
-  {
-    heading: "Abuse Consequences",
-    body: "Abuse of the service may result in IP or account restrictions, immediate link removal, and permanent bans. We cooperate with law enforcement when required.",
-  },
-  {
-    heading: "Changes",
-    body: "We may update these terms from time to time. Continued use of the service after changes constitutes acceptance of the updated terms. Major changes will be noted with an updated revision date.",
-  },
-  {
-    heading: "Stability and shutdown",
-    body: "We will try to keep the service running, but we do not guarantee uptime. In the event of a shutdown, we will provide notice and allow users to export their data where feasible.",
-  }
-];
-
-const ABUSE_CONTENT =
-  "Reports are fully anonymous — we do not collect your email or identity. Provide a description of the issue below, optionally including the short link slug. All reports are reviewed by administrators and appropriate action is taken, which may include removing the link and banning the creator.";
 
 function AbuseForm() {
   const [abuseReason, setAbuseReason] = useState("");
@@ -75,7 +20,7 @@ function AbuseForm() {
     setError(null);
 
     if (abuseReason.trim().length < 10) {
-      setError("Please describe the issue (at least 10 characters).");
+      setError(t("legal_dialog.report_min_length_error"));
       return;
     }
 
@@ -89,12 +34,12 @@ function AbuseForm() {
 
       if (!res.ok) {
         const data = (await res.json()) as { error?: string };
-        throw new Error(data.error ?? "Failed to submit report.");
+        throw new Error(data.error ?? t("legal_dialog.report_submit_failed"));
       }
 
       setSubmitted(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
+      setError(err instanceof Error ? err.message : t("common.something_went_wrong"));
     } finally {
       setSending(false);
     }
@@ -104,12 +49,12 @@ function AbuseForm() {
     return (
       <div className="space-y-4">
         <p className="text-xs text-muted-foreground leading-relaxed">
-          {ABUSE_CONTENT}
+          {t("legal_dialog.abuse_anonymous_note")}
         </p>
         <div className="border border-border pt-3 mt-3">
           <div className="px-3 py-3 text-xs text-foreground flex items-center gap-2">
-            <Check className="h-3.5 w-3.5 text-green-500 shrink-0" />
-            <span>Report submitted. Administrators will review it.</span>
+            <Check className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+            <span>{t("legal_dialog.report_submitted")}</span>
           </div>
         </div>
       </div>
@@ -119,15 +64,15 @@ function AbuseForm() {
   return (
     <div className="space-y-4">
       <p className="text-xs text-muted-foreground leading-relaxed">
-        {ABUSE_CONTENT}
+        {t("legal_dialog.abuse_anonymous_note")}
       </p>
       <div className="border border-border pt-3 mt-3">
         <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3 px-0.5">
-          send report
+          {t("legal_dialog.send_report")}
         </p>
         <form onSubmit={handleSendReport} className="space-y-2.5">
           <textarea
-            placeholder="describe the issue — include the short url"
+            placeholder={t("legal_dialog.report_placeholder")}
             value={abuseReason}
             onChange={(e) => {
               setAbuseReason(e.target.value);
@@ -138,7 +83,7 @@ function AbuseForm() {
             rows={3}
           />
           {error && (
-            <p className="text-[10px] text-red-400 px-0.5">{error}</p>
+            <p className="text-[10px] text-destructive px-0.5">{error}</p>
           )}
           <button
             type="submit"
@@ -150,13 +95,28 @@ function AbuseForm() {
             ) : (
               <Send className="h-3 w-3" />
             )}
-            {sending ? "sending..." : "send report"}
+            {sending ? t("common.sending") : t("legal_dialog.send_report")}
           </button>
         </form>
       </div>
     </div>
   );
 }
+
+const PRIVACY_SECTIONS = [
+  { titleKey: "legal_dialog.privacy_data_collection_title", bodyKey: "legal_dialog.privacy_data_collection_text" },
+  { titleKey: "legal_dialog.privacy_data_usage_title", bodyKey: "legal_dialog.privacy_data_usage_text" },
+  { titleKey: "legal_dialog.privacy_visibility_title", bodyKey: "legal_dialog.privacy_visibility_text" },
+  { titleKey: "legal_dialog.privacy_dialog_rights_title", bodyKey: "legal_dialog.privacy_dialog_rights_text" },
+] as const;
+
+const TOS_SECTIONS = [
+  { titleKey: "legal_dialog.tos_acceptable_use_title", bodyKey: "legal_dialog.tos_acceptable_use_text" },
+  { titleKey: "legal_dialog.tos_limitation_title", bodyKey: "legal_dialog.tos_limitation_text" },
+  { titleKey: "legal_dialog.tos_consequences_title", bodyKey: "legal_dialog.tos_consequences_text" },
+  { titleKey: "legal_dialog.tos_dialog_changes_title", bodyKey: "legal_dialog.tos_dialog_changes_text" },
+  { titleKey: "legal_dialog.tos_shutdown_title", bodyKey: "legal_dialog.tos_shutdown_text" },
+] as const;
 
 export function LegalDialog({ page, onClose }: LegalDialogProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -183,7 +143,12 @@ export function LegalDialog({ page, onClose }: LegalDialogProps) {
 
   if (!page) return null;
 
-  const title = TITLES[page] ?? "";
+  const title =
+    page === "privacy"
+      ? t("legal.privacy")
+      : page === "tos"
+        ? t("legal.tos")
+        : t("legal.abuse");
 
   function renderContent() {
     switch (page) {
@@ -191,12 +156,12 @@ export function LegalDialog({ page, onClose }: LegalDialogProps) {
         return (
           <div className="space-y-4">
             {PRIVACY_SECTIONS.map((section) => (
-              <div key={section.heading}>
+              <div key={section.titleKey}>
                 <h3 className="text-[10px] uppercase tracking-widest text-foreground font-medium mb-1.5">
-                  {section.heading}
+                  {t(section.titleKey)}
                 </h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  {section.body}
+                  {t(section.bodyKey)}
                 </p>
               </div>
             ))}
@@ -206,12 +171,12 @@ export function LegalDialog({ page, onClose }: LegalDialogProps) {
         return (
           <div className="space-y-4">
             {TOS_SECTIONS.map((section) => (
-              <div key={section.heading}>
+              <div key={section.titleKey}>
                 <h3 className="text-[10px] uppercase tracking-widest text-foreground font-medium mb-1.5">
-                  {section.heading}
+                  {t(section.titleKey)}
                 </h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  {section.body}
+                  {t(section.bodyKey)}
                 </p>
               </div>
             ))}
@@ -249,6 +214,7 @@ export function LegalDialog({ page, onClose }: LegalDialogProps) {
             type="button"
             onClick={onClose}
             className="text-muted-foreground hover:text-foreground transition-colors p-1 touch-target btn-press"
+            aria-label={t("common.close")}
           >
             <X className="h-3.5 w-3.5" />
           </button>
@@ -262,14 +228,14 @@ export function LegalDialog({ page, onClose }: LegalDialogProps) {
         {/* Footer */}
         <div className="px-4 py-2.5 border-t border-border flex items-center justify-between">
           <span className="text-[9px] text-muted-foreground/50">
-            last updated: June 2026
+            {t("legal.last_updated")}
           </span>
           <button
             type="button"
             onClick={onClose}
             className="text-[10px] text-muted-foreground hover:text-foreground transition-colors btn-press touch-target"
           >
-            close
+            {t("common.close")}
           </button>
         </div>
       </div>

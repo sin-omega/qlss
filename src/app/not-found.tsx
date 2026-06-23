@@ -1,31 +1,32 @@
 "use client";
 
-import { useState, useEffect, useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { ArrowLeft, Search } from "lucide-react";
+import { t, getLanguage, type Lang } from "@/lib/i18n";
 
-const ERROR_MESSAGES = [
-  "not found",
-  "no such link",
-  "404 — link deleted or never existed",
-  "path does not resolve",
-  "dead link",
-  "link not found",
-  "this page is missing",
-  "idk what you were looking for",
-  "four oh four",
-  "the link you requested is not available",
-  "chcialobysie frajerku ten link nie istnieje",
-  "404 - thats my body count",
-];
-
-function getServerSnapshot() { return ""; }
+function getServerSnapshot() {
+  return "";
+}
 
 export default function NotFound() {
-  const [message] = useState(() => {
-    const idx = Math.floor(Math.random() * ERROR_MESSAGES.length);
-    return ERROR_MESSAGES[idx];
-  });
+  // Track the active language so the random message re-rolls when the user
+  // switches language (Providers remounts on lang change, but we also listen
+  // for the qlss-lang-change event for safety).
+  const [lang, setLang] = useState<Lang>(getLanguage());
+  useEffect(() => {
+    const handler = (e: Event) => setLang((e as CustomEvent<Lang>).detail);
+    window.addEventListener("qlss-lang-change", handler);
+    return () => window.removeEventListener("qlss-lang-change", handler);
+  }, []);
+
+  // Pick a random i18n'd message; re-rolls when lang changes.
+  const message = useMemo(() => {
+    const messages = t("not_found.messages").split("|");
+    const idx = Math.floor(Math.random() * messages.length);
+    return messages[idx] ?? t("not_found.title");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang]);
 
   const time = useSyncExternalStore(
     (cb) => {
@@ -39,7 +40,7 @@ export default function NotFound() {
       const s = String(now.getSeconds()).padStart(2, "0");
       return `${h}:${m}:${s}`;
     },
-    getServerSnapshot
+    getServerSnapshot,
   );
 
   return (
@@ -49,7 +50,8 @@ export default function NotFound() {
           href="/"
           className="font-bold tracking-tight wordmark-glow inline-flex items-center gap-2"
         >
-          <span className="text-base">Q</span><span>LSS</span>
+          <span className="text-base">Q</span>
+          <span>LSS</span>
           <span className="status-dot-online" />
         </Link>
         <Link
@@ -57,22 +59,21 @@ export default function NotFound() {
           className="text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1.5 footer-link"
         >
           <ArrowLeft className="h-3 w-3" />
-          home
+          {t("common.home")}
         </Link>
       </header>
       <div className="header-accent-line" />
 
-      {/* Timestamp */}
       {time && (
         <div className="absolute top-2 right-4 text-[10px] text-muted-foreground/40 font-mono tabular-nums">
           timestamp: {time}
         </div>
       )}
 
-      <section className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-16">
+      <section className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-24">
         <div className="w-full max-w-md animate-page-enter">
           <p className="text-xs text-muted-foreground mb-6 text-center">
-            <span className="text-foreground">$</span> resolve requested path
+            <span className="text-foreground">$</span> {t("not_found.resolve_prompt")}
             <span className="cli-cursor" />
           </p>
 
@@ -85,7 +86,7 @@ export default function NotFound() {
               <span className="text-destructive">!</span> {message}
             </p>
             <p className="text-xs text-muted-foreground leading-relaxed mt-1">
-              this page doesn&apos;t exist, or the short link was never created.
+              {t("not_found.subtitle")}
             </p>
             <div className="mt-3 pt-2.5 border-t border-border">
               <Link
@@ -93,7 +94,7 @@ export default function NotFound() {
                 className="text-[10px] text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1.5"
               >
                 <Search className="h-3 w-3" />
-                try unshortening the original url →
+                {t("not_found.try_unshorten")}
               </Link>
             </div>
           </div>
@@ -104,21 +105,21 @@ export default function NotFound() {
               className="bg-foreground text-background hover:bg-foreground/90 px-4 py-2.5 transition-colors inline-flex items-center gap-1.5 btn-press"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
-              go home
+              {t("not_found.go_home")}
             </Link>
             <button
               type="button"
               onClick={() => window.history.back()}
               className="border border-border bg-card hover:bg-accent px-4 py-2.5 transition-colors btn-press"
             >
-              go back
+              {t("not_found.go_back")}
             </button>
           </div>
         </div>
       </section>
 
       <footer className="mt-auto px-4 sm:px-6 py-4 text-center text-[11px] text-muted-foreground">
-        QLSS · short links
+        {t("footer.copyright")}
       </footer>
     </main>
   );
