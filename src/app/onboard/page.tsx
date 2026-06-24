@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { isSupabaseConfigured } from "@/lib/env";
-import { SiteFooter } from "@/components/qlss/site-footer";
 import { OnboardForm } from "@/components/qlss/onboard-form";
 import { t } from "@/lib/i18n";
 
@@ -62,8 +61,6 @@ export default async function OnboardPage() {
           <OnboardForm email={email} />
         </div>
       </section>
-
-      <SiteFooter />
     </main>
   );
 }

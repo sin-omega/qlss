@@ -2,7 +2,6 @@
 
 import { AlertTriangle } from "lucide-react";
 import { SiteHeader } from "@/components/qlss/site-header";
-import { SiteFooter } from "@/components/qlss/site-footer";
 import { t } from "@/lib/i18n";
 
 /**
@@ -80,8 +79,6 @@ export function NotConfiguredPage({
           </div>
         </div>
       </section>
-
-      <SiteFooter />
     </main>
   );
 }

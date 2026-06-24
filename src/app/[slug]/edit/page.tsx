@@ -4,7 +4,6 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { isSupabaseConfigured, siteOrigin } from "@/lib/env";
 import { normalizeSlug, isReservedSlug } from "@/lib/slug";
 import { SiteHeader } from "@/components/qlss/site-header";
-import { SiteFooter } from "@/components/qlss/site-footer";
 import { MarkdownEditor } from "@/components/qlss/markdown-editor";
 import { t } from "@/lib/i18n";
 
@@ -81,8 +80,6 @@ export default async function EditMarkdownPage({
           />
         </div>
       </section>
-
-      <SiteFooter />
     </main>
   );
 }

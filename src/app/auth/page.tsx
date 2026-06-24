@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { siteOrigin } from "@/lib/env";
 import { SiteHeader } from "@/components/qlss/site-header";
-import { SiteFooter } from "@/components/qlss/site-footer";
 import { ArrowLeft, Loader2, Mail } from "lucide-react";
 
 export default function AuthPage() {
@@ -234,8 +233,6 @@ export default function AuthPage() {
           )}
         </div>
       </section>
-
-      <SiteFooter />
     </main>
   );
 }

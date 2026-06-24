@@ -1,14 +1,11 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { createServiceClient } from "@/lib/supabase/service";
 import { isSupabaseConfigured, siteOrigin } from "@/lib/env";
 import { normalizeSlug, isReservedSlug } from "@/lib/slug";
 import { AnalyticsFeed } from "@/components/qlss/analytics-feed";
-import { StatsCharts } from "@/components/qlss/stats-charts";
 import { DeleteLinkButton } from "@/components/qlss/delete-link-button";
 import { CollapsibleSection } from "@/components/qlss/collapsible-section";
 import { SiteHeader } from "@/components/qlss/site-header";
-import { SiteFooter } from "@/components/qlss/site-footer";
 import { ExternalLink } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -65,15 +62,6 @@ export default async function StatsPage({
   } = await supabase.auth.getUser();
 
   if (!user) redirect("/auth");
-
-  // Check admin status
-  const service = createServiceClient();
-  const { data: adminProfile } = await service
-    .from("profiles")
-    .select("is_admin")
-    .eq("id", user.id)
-    .maybeSingle();
-  const isAdmin = adminProfile?.is_admin ?? false;
 
   const { data: linkRow } = await supabase
     .from("links")
@@ -141,23 +129,6 @@ export default async function StatsPage({
         </div>
       </section>
 
-      {rows.length > 0 && (
-        <section className="px-4 sm:px-6 pb-3">
-          <div className="mx-auto max-w-2xl">
-            <CollapsibleSection
-              title="charts"
-              accentColor="#b08a3e"
-              summary="14 days"
-              defaultOpen={false}
-            >
-              <div className="pt-3">
-                <StatsCharts rows={rows} />
-              </div>
-            </CollapsibleSection>
-          </div>
-        </section>
-      )}
-
       <section className="px-4 sm:px-6 pb-16">
         <div className="mx-auto max-w-2xl">
           <CollapsibleSection
@@ -178,8 +149,6 @@ export default async function StatsPage({
           </CollapsibleSection>
         </div>
       </section>
-
-      <SiteFooter />
     </main>
   );
 }

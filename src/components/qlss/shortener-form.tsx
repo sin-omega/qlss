@@ -816,15 +816,6 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
   // ---------------------------------------------------------------------
   return (
     <div className="w-full space-y-3 animate-fade-in">
-      {signedIn && (
-        <button
-          type="button"
-          onClick={() => setBulkMode((b) => !b)}
-          className={`text-[10px] transition-colors hover:text-foreground ${bulkMode ? "text-foreground" : "text-muted-foreground"}`}
-        >
-          {bulkMode ? "single" : "bulk"}
-        </button>
-      )}
       {bulkMode && signedIn ? (
         <BulkForm />
       ) : (
@@ -1262,6 +1253,16 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
                 />
               </div>
             </div>
+
+            {signedIn && (
+              <button
+                type="button"
+                onClick={() => setBulkMode((b) => !b)}
+                className="text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {bulkMode ? "switch to single" : "bulk mode"}
+              </button>
+            )}
 
             {!signedIn && (
               <p className="text-[11px] text-muted-foreground leading-relaxed">

@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { isSupabaseConfigured, siteOrigin } from "@/lib/env";
-import { SiteFooter } from "@/components/qlss/site-footer";
 import { ProfileLinks } from "@/components/qlss/profile-links";
 
 export const dynamic = "force-dynamic";
@@ -107,7 +106,6 @@ export default async function ProfilePage() {
         </div>
       </section>
 
-      <SiteFooter />
     </main>
   );
 }

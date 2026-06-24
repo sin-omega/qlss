@@ -90,7 +90,6 @@ export function HomeContent({ signedIn }: { signedIn: boolean }) {
   const legalLinks = [
     { label: "privacy", page: "privacy" as const },
     { label: "terms", page: "tos" as const },
-    { label: "report", page: "abuse" as const },
   ];
 
   return (
