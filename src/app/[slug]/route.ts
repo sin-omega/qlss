@@ -736,7 +736,12 @@ ${link.allow_comments ? `
         s = s.replace(/__(.+?)__/g, '<strong>$1</strong>');
         s = s.replace(/\*(.+?)\*/g, '<em>$1</em>');
         s = s.replace(/_(.+?)_/g, '<em>$1</em>');
-        s = s.replace(/\x60([^\x60]+)\x60/g, '<code>$1</code>');
+        var bt = String.fromCharCode(96);
+        var parts = s.split(bt);
+        for (var i = 1; i < parts.length; i += 2) {
+          parts[i] = '<code>' + parts[i] + '</code>';
+        }
+        s = parts.join('');
         s = s.replace(/\n/g, '<br>');
         return s;
       }
