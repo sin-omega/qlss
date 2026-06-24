@@ -12,7 +12,6 @@ import {
 import {
   Search,
   Link as LinkIcon,
-  FileText,
   Home,
   List,
   Shield,
@@ -107,15 +106,6 @@ export function CommandPalette() {
         shortcut: "S",
         keywords: "shorten url link create new",
         run: () => switchTab("shorten"),
-      },
-      {
-        id: "tab:create",
-        group: "actions",
-        label: "create",
-        icon: <FileText className="h-3.5 w-3.5 shrink-0" />,
-        shortcut: "C",
-        keywords: "create markdown md publish post page",
-        run: () => switchTab("create"),
       },
       {
         id: "tab:inspect",

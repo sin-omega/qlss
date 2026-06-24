@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "@/hooks/use-toast";
 import { t } from "@/lib/i18n";
-import { LegalDialog } from "@/components/qlss/legal-dialog";
 
 const USERNAME_RE = /^[A-Za-z0-9_]{3,30}$/;
 
@@ -16,8 +15,6 @@ export function OnboardForm({ email }: { email: string }) {
   const [tosAccepted, setTosAccepted] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [legalPage, setLegalPage] = useState<"privacy" | "tos" | "abuse" | null>(null);
-
   const valid = USERNAME_RE.test(username.trim());
 
   async function handleSubmit(e: React.FormEvent) {
@@ -104,21 +101,13 @@ export function OnboardForm({ email }: { email: string }) {
           />
           <span className="text-muted-foreground">
             {t("onboard.tos_label")}{" "}
-            <button
-              type="button"
-              onClick={() => setLegalPage("tos")}
-              className="text-foreground underline hover:opacity-70"
-            >
+            <a href="/legal/tos" className="text-foreground underline hover:opacity-70" target="_blank" rel="noopener noreferrer">
               {t("onboard.tos_link_text")}
-            </button>{" "}
+            </a>{" "}
             {t("onboard.and")}{" "}
-            <button
-              type="button"
-              onClick={() => setLegalPage("privacy")}
-              className="text-foreground underline hover:opacity-70"
-            >
+            <a href="/legal/privacy" className="text-foreground underline hover:opacity-70" target="_blank" rel="noopener noreferrer">
               {t("onboard.privacy_link_text")}
-            </button>
+            </a>
             .
           </span>
         </label>
@@ -159,8 +148,6 @@ export function OnboardForm({ email }: { email: string }) {
           </Link>
         </div>
       </form>
-
-      <LegalDialog page={legalPage} onClose={() => setLegalPage(null)} />
     </>
   );
 }
