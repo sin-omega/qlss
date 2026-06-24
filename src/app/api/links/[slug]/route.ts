@@ -36,9 +36,9 @@ export async function DELETE(
   if (!link) return jsonError(404, "Link not found.");
   if (link.user_id !== user.id) return jsonError(403, "Not your link.");
 
-  const { error } = await supabase.from("links").delete().eq("id", link.id);
+  const { error } = await supabase.from("links").update({ deleted: true }).eq("id", link.id);
   if (error) {
-    console.warn("[links] delete failed:", error.message);
+    console.warn("[links] soft-delete failed:", error.message);
     return jsonError(500, "Could not delete the link. Try again.");
   }
 

@@ -29,6 +29,7 @@ interface LinkRow {
   og_image: string | null;
   title: string | null;
   description: string | null;
+  deleted: boolean;
 }
 
 interface OgMeta {
@@ -54,6 +55,11 @@ export async function GET(
   const link = await resolveLink(slug);
   if (!link) {
     return runWithLang(lang, () => notFoundResponse(url.origin));
+  }
+
+  // ── Deleted check ─────────────────────────────────────────────────────
+  if (link.deleted) {
+    return runWithLang(lang, () => deletedResponse(url.origin, slug));
   }
 
   // ── Expiry check ──────────────────────────────────────────────────────
@@ -132,7 +138,7 @@ async function resolveLink(slug: string): Promise<LinkRow | null> {
   const { data, error } = await serviceClient
     .from("links")
     .select(
-      "id, destination_url, pincode, expires_at, max_uses, use_count, link_type, markdown_content, og_title, og_description, og_image, title, description",
+      "id, destination_url, pincode, expires_at, max_uses, use_count, link_type, markdown_content, og_title, og_description, og_image, title, description, deleted",
     )
     .eq("slug", slug)
     .maybeSingle();
@@ -469,6 +475,45 @@ function expiredResponse(origin: string, slug: string, reason?: "time" | "uses")
   <div class="prompt"><span>$</span> qlss --resolve /${escapeHtml(slug)}</div>
   <h1>${escapeHtml(message)}</h1>
   <p class="sub">${escapeHtml(sub)}</p>
+  <a class="btn-link" href="${escapeHtml(origin)}">${escapeHtml(back)}</a>
+</div>
+<div class="footer">${escapeHtml(footer)}</div>
+<script>
+  try {
+    function getCookie(name) { var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)')); return match ? match[2] : null; }
+    var theme = getCookie('theme') || localStorage.getItem('theme') || 'system';
+    if (theme === 'dark' || theme === 'light') { document.documentElement.setAttribute('data-theme', theme); }
+  } catch(e) {}
+</script>
+</body>
+</html>`;
+  return new NextResponse(html, {
+    status: 410,
+    headers: { "Content-Type": "text/html; charset=utf-8" },
+  });
+}
+
+function deletedResponse(origin: string, slug: string): NextResponse {
+  const css = sharedPageCSS() + ` h1 { font-size: 1.5rem; } @media (max-width: 480px) { h1 { font-size: 1.25rem; } }`;
+  const back = t("standalone.back_to_qlss");
+  const footer = t("standalone.footer");
+  const wordmark = t("standalone.wordmark");
+
+  const html = `<!doctype html>
+<html lang="${getLangAttr()}">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>QLSS — link was deleted</title>
+<style>${css}</style>
+</head>
+<body>
+<div class="wordmark">${escapeHtml(wordmark)}</div>
+<div class="wrap">
+  <div class="prompt"><span>$</span> qlss --resolve /${escapeHtml(slug)}</div>
+  <h1>this link was removed</h1>
+  <p class="sub">The creator deleted this link. It is no longer accessible.</p>
   <a class="btn-link" href="${escapeHtml(origin)}">${escapeHtml(back)}</a>
 </div>
 <div class="footer">${escapeHtml(footer)}</div>

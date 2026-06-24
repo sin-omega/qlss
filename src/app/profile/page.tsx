@@ -44,6 +44,7 @@ export default async function ProfilePage() {
     .from("links")
     .select("id, slug, destination_url, created_at, link_type, title, description")
     .eq("user_id", user.id)
+    .eq("deleted", false)
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -82,9 +83,14 @@ export default async function ProfilePage() {
     <main className="cli-grid relative min-h-screen w-full flex flex-col">
       <div className="px-4 sm:px-6 py-4 flex items-center justify-between text-xs border-b border-border">
         <span className="text-muted-foreground">@{profile.username}</span>
-        <a href="/" className="text-muted-foreground hover:text-foreground transition-colors">
-          home
-        </a>
+        <div className="flex items-center gap-3">
+          <a href="/account" className="text-muted-foreground hover:text-foreground transition-colors">
+            account
+          </a>
+          <a href="/" className="text-muted-foreground hover:text-foreground transition-colors">
+            home
+          </a>
+        </div>
       </div>
 
       <section className="flex-1 px-4 sm:px-6 pt-6 pb-16">
