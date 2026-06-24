@@ -14,7 +14,7 @@ import {
   Bold,
   Italic,
   Heading,
-  Link,
+  Link as LinkIcon,
   Code,
   List,
   Timer,
@@ -89,7 +89,7 @@ export function MarkdownForm({ signedIn }: { signedIn: boolean }) {
     { icon: Bold, label: "Bold", action: () => insertMarkdown("**", "**") },
     { icon: Italic, label: "Italic", action: () => insertMarkdown("*", "*") },
     { icon: Heading, label: "Heading", action: () => insertMarkdown("## ", "") },
-    { icon: Link, label: "Link", action: () => insertMarkdown("[", "](url)") },
+    { icon: LinkIcon, label: "Link", action: () => insertMarkdown("[", "](url)") },
     { icon: Code, label: "Code", action: () => insertMarkdown("`", "`") },
     { icon: List, label: "List", action: () => insertMarkdown("- ", "") },
   ];
