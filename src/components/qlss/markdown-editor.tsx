@@ -30,9 +30,13 @@ interface MarkdownEditorProps {
     pincode: string;
   };
   lastEdited?: string | null;
+  stats?: {
+    use_count: number;
+    created_at: string;
+  };
 }
 
-export function MarkdownEditor({ slug, initial, lastEdited }: MarkdownEditorProps) {
+export function MarkdownEditor({ slug, initial, lastEdited, stats }: MarkdownEditorProps) {
   const [content, setContent] = useState(initial.markdown_content ?? "");
   const [ogTitle, setOgTitle] = useState(initial.og_title ?? "");
   const [ogDescription, setOgDescription] = useState(initial.og_description ?? "");
@@ -165,6 +169,15 @@ export function MarkdownEditor({ slug, initial, lastEdited }: MarkdownEditorProp
 
       {lastEdited && (
         <p className="text-[10px] text-muted-foreground text-center">last edited {new Date(lastEdited).toLocaleDateString("en", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
+      )}
+
+      {stats && (
+        <div className="flex items-center justify-center gap-4 text-[10px] text-muted-foreground">
+          <span>{stats.use_count} views</span>
+          {stats.created_at && (
+            <span>created {new Date(stats.created_at).toLocaleDateString("en", { year: "numeric", month: "short", day: "numeric" })}</span>
+          )}
+        </div>
       )}
 
       <form onSubmit={handleSave} className="w-full space-y-2">

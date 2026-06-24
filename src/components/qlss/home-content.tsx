@@ -1,13 +1,12 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Link, Plus, Search } from "lucide-react";
+import { Link as LinkIcon, Search, ExternalLink } from "lucide-react";
 import { ShortenerForm } from "@/components/qlss/shortener-form";
-import { MarkdownForm } from "@/components/qlss/markdown-form";
 import { InspectUnifiedForm } from "@/components/qlss/inspect-unified-form";
 import { LegalDialog } from "@/components/qlss/legal-dialog";
 
-type Tab = "shorten" | "create" | "inspect";
+type Tab = "shorten" | "inspect";
 type LegalPage = "privacy" | "tos" | "abuse" | null;
 
 export function HomeContent({ signedIn }: { signedIn: boolean }) {
@@ -16,16 +15,10 @@ export function HomeContent({ signedIn }: { signedIn: boolean }) {
 
   const tabContainerRef = useRef<HTMLDivElement>(null);
   const shortenBtnRef = useRef<HTMLButtonElement>(null);
-  const createBtnRef = useRef<HTMLButtonElement>(null);
   const inspectBtnRef = useRef<HTMLButtonElement>(null);
   const indicatorRef = useRef<HTMLDivElement>(null);
 
-  const activeBtnRef =
-    tab === "shorten"
-      ? shortenBtnRef
-      : tab === "create"
-        ? createBtnRef
-        : inspectBtnRef;
+  const activeBtnRef = tab === "shorten" ? shortenBtnRef : inspectBtnRef;
 
   const updateIndicator = useCallback(() => {
     const btn = activeBtnRef.current;
@@ -48,11 +41,11 @@ export function HomeContent({ signedIn }: { signedIn: boolean }) {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const q = params.get("tab");
-      if (q === "shorten" || q === "create" || q === "inspect") setTab(q);
+      if (q === "shorten" || q === "inspect") setTab(q);
     }
     function handler(e: Event) {
       const detail = (e as CustomEvent<string>).detail;
-      if (detail === "shorten" || detail === "create" || detail === "inspect") setTab(detail);
+      if (detail === "shorten" || detail === "inspect") setTab(detail);
     }
     window.addEventListener("qlss:switch-tab", handler);
     return () => window.removeEventListener("qlss:switch-tab", handler);
@@ -64,7 +57,7 @@ export function HomeContent({ signedIn }: { signedIn: boolean }) {
       if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) return;
       if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
         e.preventDefault();
-        const tabs: Tab[] = ["shorten", "create", "inspect"];
+        const tabs: Tab[] = ["shorten", "inspect"];
         const idx = tabs.indexOf(tab);
         const next = e.key === "ArrowRight" ? Math.min(idx + 1, tabs.length - 1) : Math.max(idx - 1, 0);
         setTab(tabs[next]);
@@ -73,7 +66,6 @@ export function HomeContent({ signedIn }: { signedIn: boolean }) {
       if (!e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
         const key = e.key.toLowerCase();
         if (key === "s") { e.preventDefault(); setTab("shorten"); }
-        else if (key === "c") { e.preventDefault(); setTab("create"); }
         else if (key === "i") { e.preventDefault(); setTab("inspect"); }
       }
     };
@@ -82,8 +74,7 @@ export function HomeContent({ signedIn }: { signedIn: boolean }) {
   }, [tab]);
 
   const tabs: { key: Tab; label: string; icon: React.ReactNode; ref: React.RefObject<HTMLButtonElement | null> }[] = [
-    { key: "shorten", label: "shorten", icon: <Link className="h-3.5 w-3.5" />, ref: shortenBtnRef },
-    { key: "create", label: "create", icon: <Plus className="h-3.5 w-3.5" />, ref: createBtnRef },
+    { key: "shorten", label: "shorten", icon: <LinkIcon className="h-3.5 w-3.5" />, ref: shortenBtnRef },
     { key: "inspect", label: "inspect", icon: <Search className="h-3.5 w-3.5" />, ref: inspectBtnRef },
   ];
 
@@ -114,9 +105,17 @@ export function HomeContent({ signedIn }: { signedIn: boolean }) {
         <div ref={indicatorRef} className="tab-indicator absolute bottom-0 left-0 h-[2px] bg-foreground" />
       </div>
 
+      {/* markdown page button */}
+      <a
+        href="/new/markdown"
+        className="flex items-center justify-center gap-1.5 border border-border bg-card px-3 py-2.5 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors mb-4 btn-press"
+      >
+        <ExternalLink className="h-3.5 w-3.5" />
+        <span>publish markdown page</span>
+      </a>
+
       <div key={tab} className="tab-content-enter mb-3 sm:mb-4">
         {tab === "shorten" ? <ShortenerForm signedIn={signedIn} />
-          : tab === "create" ? <MarkdownForm signedIn={signedIn} />
           : <InspectUnifiedForm />}
       </div>
 

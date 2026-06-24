@@ -581,6 +581,8 @@ async function markdownResponse(
   .md-footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: 0.65rem; color: var(--muted); text-align: center; }
   .md-footer a { color: var(--muted); text-decoration: none; }
   .md-footer a:hover { color: var(--fg); }
+  .theme-btn { position: fixed; bottom: 1rem; right: 1rem; width: 2rem; height: 2rem; background: var(--card); border: 1px solid var(--border); color: var(--muted); font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; z-index: 10; }
+  .theme-btn:hover { background: var(--hover); color: var(--fg); }
   @media (max-width: 640px) {
     .md-shell { margin: 1.5rem auto 3rem; padding: 0 0.5rem; }
     .md-title { font-size: 1.3rem; }
@@ -615,11 +617,20 @@ async function markdownResponse(
   </article>
   <div class="md-footer">${escapeHtml(publishedVia)}</div>
 </div>
+<button class="theme-btn" id="theme-toggle" title="toggle theme">◐</button>
 <script>
   try {
     function getCookie(name) { var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)')); return match ? match[2] : null; }
+    function setCookie(name, value) { document.cookie = name + '=' + value + '; path=/; max-age=31536000; SameSite=Lax'; }
     var theme = getCookie('theme') || localStorage.getItem('theme') || 'system';
     if (theme === 'dark' || theme === 'light') { document.documentElement.setAttribute('data-theme', theme); }
+    document.getElementById('theme-toggle').addEventListener('click', function() {
+      var cur = document.documentElement.getAttribute('data-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      var next = cur === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      setCookie('theme', next);
+      localStorage.setItem('theme', next);
+    });
     // Shiki outputs two <pre> blocks (light/dark) via the .shiki container with
     // CSS variables; the github-light/github-dark themes toggle via color-scheme.
     document.querySelectorAll('.md-content pre').forEach(function(pre) {

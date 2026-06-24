@@ -37,7 +37,7 @@ export default async function EditMarkdownPage({
   const service = createServiceClient();
   const { data: link } = await service
     .from("links")
-    .select("id, user_id, link_type, markdown_content, og_title, og_description, og_image, pincode, updated_at")
+    .select("id, user_id, link_type, markdown_content, og_title, og_description, og_image, pincode, use_count, created_at, updated_at")
     .eq("slug", slug)
     .maybeSingle();
 
@@ -78,6 +78,10 @@ export default async function EditMarkdownPage({
               pincode: link.pincode ?? "",
             }}
             lastEdited={link.updated_at}
+            stats={{
+              use_count: link.use_count ?? 0,
+              created_at: link.created_at ?? "",
+            }}
           />
         </div>
       </section>
