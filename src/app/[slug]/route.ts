@@ -591,6 +591,8 @@ async function markdownResponse(
   .comment-meta { font-size: 0.65rem; color: var(--muted); margin-bottom: 0.25rem; }
   .comment-meta .author { color: var(--fg); font-weight: 600; }
   .comment-body { font-size: 0.75rem; line-height: 1.6; color: var(--fg); word-break: break-word; }
+  .comment-body code { background: var(--hover); padding: 0.1rem 0.3rem; border-radius: 2px; font-size: 0.8em; }
+  .comment-body a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; word-break: break-all; }
   .comment-actions { margin-top: 0.3rem; }
   .comment-actions button { font-size: 0.6rem; color: var(--muted); background: none; border: none; cursor: pointer; padding: 0; font-family: inherit; }
   .comment-actions button:hover { color: var(--fg); text-decoration: underline; }
@@ -652,7 +654,7 @@ ${link.allow_comments ? `
     <div id="comments-sign-in" style="display:none;text-align:center;padding:1rem 0;">
       <a href="/auth" style="color:var(--accent);font-size:0.75rem;text-decoration:underline;">sign in to comment</a>
     </div>
-    <textarea id="comment-input" placeholder="write a comment..." rows="3"></textarea>
+    <textarea id="comment-input" placeholder="write a comment... (markdown supported)" rows="3"></textarea>
     <div class="row">
       <input id="comment-author" type="text" placeholder="name (optional)" />
       <button id="comment-submit" type="button">post comment</button>
@@ -728,6 +730,16 @@ ${link.allow_comments ? `
       var storedName = localStorage.getItem('qlss-comment-name') || '';
       if (storedName) commentAuthor.value = storedName;
       function escape(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+      function renderCommentMd(s) {
+        return escape(s)
+          .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+          .replace(/__(.+?)__/g, '<strong>$1</strong>')
+          .replace(/\*(.+?)\*/g, '<em>$1</em>')
+          .replace(/_(.+?)_/g, '<em>$1</em>')
+          .replace(/`([^`]+)`/g, '<code>$1</code>')
+          .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" rel="nofollow">$1</a>')
+          .replace(/\n/g, '<br>');
+      }
       function timeAgo(dateStr) {
         var diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
         if (diff < 60) return 'just now';
@@ -748,7 +760,7 @@ ${link.allow_comments ? `
           var indent = depth >= maxDepth ? '' : 'comment-replies';
           var html = '<div class="comment">';
           html += '<div class="comment-meta"><span class="author">' + escape(c.author_name) + '</span> · ' + timeAgo(c.created_at) + '</div>';
-          html += '<div class="comment-body">' + escape(c.content) + '</div>';
+          html += '<div class="comment-body">' + renderCommentMd(c.content) + '</div>';
           html += '<div class="comment-actions"><button class="reply-btn" data-id="' + c.id + '" data-name="' + escape(c.author_name) + '">reply</button></div>';
           if (c.children.length > 0 && depth < maxDepth) {
             html += '<div class="' + indent + '">';
