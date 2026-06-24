@@ -747,9 +747,9 @@ ${link.allow_comments ? `
       function setupForm() {
         if (REGISTERED_ONLY) {
           fetch('/api/auth/status').then(function(r){ return r.json(); }).then(function(j){
-            if (j.signedIn) { showForm(); fetch('/api/auth/name').then(function(r2){ return r2.json(); }).then(function(j2){ if (j2.name) setRegisteredName(j2.name); }); }
+            if (j.signedIn) { showForm(); fetch('/api/auth/name').then(function(r2){ return r2.json(); }).then(function(j2){ if (j2.name) setRegisteredName(j2.name); }).catch(function(e){ console.error('[qlss] name fetch', e); }); }
             else { hideForm(); }
-          }).catch(function(){});
+          }).catch(function(e){ console.error('[qlss] auth/status', e); });
         } else {
           showForm();
         }
@@ -813,7 +813,7 @@ ${link.allow_comments ? `
             var form = document.createElement('div');
             form.className = 'reply-form open';
             form.id = 'reply-form-' + id;
-            form.innerHTML = '<textarea id="reply-input-' + id + '" placeholder="reply to ' + name + '..." rows="2" style="width:100%;background:var(--card);border:1px solid var(--border);color:var(--fg);padding:0.4rem;font-size:0.7rem;font-family:inherit;outline:none;resize:vertical;min-height:2.5rem;"></textarea><div style="display:flex;gap:0.5rem;margin-top:0.3rem;align-items:center;flex-wrap:wrap;"><input id="reply-author-' + id + '" type="text" placeholder="name (optional)" style="flex:1;min-width:80px;background:var(--card);border:1px solid var(--border);color:var(--fg);padding:0.3rem 0.4rem;font-size:0.65rem;font-family:inherit;outline:none;' + (REGISTERED_ONLY ? 'display:none;' : '') + '" value="' + escape(storedName) + '" + ' /><button class="reply-submit" data-id="' + id + '" style="background:var(--fg);color:var(--bg);border:none;padding:0.35rem 0.7rem;font-size:0.65rem;cursor:pointer;font-family:inherit;">reply</button></div>';
+            form.innerHTML = '<textarea id="reply-input-' + id + '" placeholder="reply to ' + name + '..." rows="2" style="width:100%;background:var(--card);border:1px solid var(--border);color:var(--fg);padding:0.4rem;font-size:0.7rem;font-family:inherit;outline:none;resize:vertical;min-height:2.5rem;"></textarea><div style="display:flex;gap:0.5rem;margin-top:0.3rem;align-items:center;flex-wrap:wrap;"><input id="reply-author-' + id + '" type="text" placeholder="name (optional)" style="flex:1;min-width:80px;background:var(--card);border:1px solid var(--border);color:var(--fg);padding:0.3rem 0.4rem;font-size:0.65rem;font-family:inherit;outline:none;' + (REGISTERED_ONLY ? 'display:none;' : '') + '" value="' + escape(storedName) + '" /><button class="reply-submit" data-id="' + id + '" style="background:var(--fg);color:var(--bg);border:none;padding:0.35rem 0.7rem;font-size:0.65rem;cursor:pointer;font-family:inherit;">reply</button></div>';
             btn.parentNode.parentNode.appendChild(form);
             document.getElementById('reply-input-' + id).focus();
             form.querySelector('.reply-submit').addEventListener('click', function() {
@@ -833,12 +833,12 @@ ${link.allow_comments ? `
                   return r.json();
                 })
                 .then(function(j){
-                  if (j.error) { commentError.textContent = j.error; return; }
+                  if (j.error) { if (commentError) commentError.textContent = j.error; return; }
                   form.classList.remove('open');
-                  commentInput.value = '';
+                  if (commentInput) commentInput.value = '';
                   fetchComments();
                 })
-                .catch(function(e){ if (e.message !== 'sign in required') commentError.textContent = 'network error'; })
+                .catch(function(e){ if (e.message !== 'sign in required' && commentError) commentError.textContent = 'network error'; })
                 .finally(function(){ submitBtn.disabled = false; });
             });
           });
@@ -853,12 +853,13 @@ ${link.allow_comments ? `
       fetchComments();
       if (commentSubmit) {
         commentSubmit.addEventListener('click', function() {
+          if (!commentInput) return;
           var content = commentInput.value.trim();
           if (!content) return;
           commentSubmit.disabled = true;
           var body = JSON.stringify({ slug:SLUG, content:content });
           if (!REGISTERED_ONLY) {
-            var author = commentAuthor.value.trim() || 'anonymous';
+            var author = (commentAuthor ? commentAuthor.value.trim() : '') || 'anonymous';
             try { localStorage.setItem('qlss-comment-name', author); } catch(e) {}
             body = JSON.stringify({ slug:SLUG, author_name:author, content:content });
           }
@@ -868,12 +869,12 @@ ${link.allow_comments ? `
                   return r.json();
                 })
                 .then(function(j){
-                  if (j.error) { commentError.textContent = j.error; return; }
+                  if (j.error) { if (commentError) commentError.textContent = j.error; return; }
                   commentInput.value = '';
-                  commentError.textContent = '';
+                  if (commentError) commentError.textContent = '';
                   fetchComments();
                 })
-                .catch(function(e){ if (e.message !== 'sign in required') commentError.textContent = 'network error'; })
+                .catch(function(e){ if (e.message !== 'sign in required' && commentError) commentError.textContent = 'network error'; })
             .finally(function(){ commentSubmit.disabled = false; });
         });
       }
