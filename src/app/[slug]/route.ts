@@ -732,9 +732,9 @@ ${link.allow_comments ? `
       function escape(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
       function md(s) {
         s = s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-        s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        s = s.replace(/[*][*](.+?)[*][*]/g, '<strong>$1</strong>');
         s = s.replace(/__(.+?)__/g, '<strong>$1</strong>');
-        s = s.replace(/\*(.+?)\*/g, '<em>$1</em>');
+        s = s.replace(/[*](.+?)[*]/g, '<em>$1</em>');
         s = s.replace(/_(.+?)_/g, '<em>$1</em>');
         var bt = String.fromCharCode(96);
         var parts = s.split(bt);
