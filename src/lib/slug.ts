@@ -14,7 +14,6 @@ const RESERVED_SLUGS = new Set([
   "sitemap.xml",
   "manifest.json",
   "site.webmanifest",
-  "unshorten",
 ]);
 
 export function normalizeSlug(slug: string): string {

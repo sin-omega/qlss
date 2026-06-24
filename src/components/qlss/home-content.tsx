@@ -1,21 +1,19 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Link, Undo2, FileText, Search } from "lucide-react";
+import { Link, FileText, Search } from "lucide-react";
 import { ShortenerForm } from "@/components/qlss/shortener-form";
-import { UnshortenerForm } from "@/components/qlss/unshortener-form";
 import { MarkdownForm } from "@/components/qlss/markdown-form";
 import { InspectUnifiedForm } from "@/components/qlss/inspect-unified-form";
 import { LegalDialog } from "@/components/qlss/legal-dialog";
 import { HomeNotConfigured } from "@/components/qlss/home-not-configured";
-import { t } from "@/lib/i18n";
 
-type Tab = "shorten" | "unshorten" | "markdown" | "inspect";
+type Tab = "shorten" | "markdown" | "inspect";
 type LegalPage = "privacy" | "tos" | "abuse" | null;
 
 /**
  * Tabs that genuinely require Supabase to function (link creation / markdown
- * publishing). The unshorten / inspect tabs are public utilities that work
+ * publishing). The inspect tab is a public utility that works
  * without any backend.
  */
 const TABS_NEEDING_SUPABASE: ReadonlySet<Tab> = new Set([
@@ -29,7 +27,6 @@ export function HomeContent({ signedIn, configured = true }: { signedIn: boolean
 
   const tabContainerRef = useRef<HTMLDivElement>(null);
   const shortenBtnRef = useRef<HTMLButtonElement>(null);
-  const unshortenBtnRef = useRef<HTMLButtonElement>(null);
   const markdownBtnRef = useRef<HTMLButtonElement>(null);
   const inspectBtnRef = useRef<HTMLButtonElement>(null);
   const indicatorRef = useRef<HTMLDivElement>(null);
@@ -37,11 +34,9 @@ export function HomeContent({ signedIn, configured = true }: { signedIn: boolean
   const activeBtnRef =
     tab === "shorten"
       ? shortenBtnRef
-      : tab === "unshorten"
-        ? unshortenBtnRef
-        : tab === "markdown"
-          ? markdownBtnRef
-          : inspectBtnRef;
+      : tab === "markdown"
+        ? markdownBtnRef
+        : inspectBtnRef;
 
   const updateIndicator = useCallback(() => {
     const btn = activeBtnRef.current;
@@ -72,7 +67,6 @@ export function HomeContent({ signedIn, configured = true }: { signedIn: boolean
       const q = params.get("tab");
       if (
         q === "shorten" ||
-        q === "unshorten" ||
         q === "markdown" ||
         q === "inspect"
       ) {
@@ -84,7 +78,6 @@ export function HomeContent({ signedIn, configured = true }: { signedIn: boolean
       const detail = (e as CustomEvent<string>).detail;
       if (
         detail === "shorten" ||
-        detail === "unshorten" ||
         detail === "markdown" ||
         detail === "inspect"
       ) {
@@ -108,22 +101,19 @@ export function HomeContent({ signedIn, configured = true }: { signedIn: boolean
 
       if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
         e.preventDefault();
-        const tabs: Tab[] = ["shorten", "unshorten", "markdown", "inspect"];
+        const tabs: Tab[] = ["shorten", "markdown", "inspect"];
         const idx = tabs.indexOf(tab);
         const next = e.key === "ArrowRight" ? Math.min(idx + 1, tabs.length - 1) : Math.max(idx - 1, 0);
         setTab(tabs[next]);
         return;
       }
 
-      // Direct tab shortcuts: s=shorten, u=unshorten, m=markdown, i=inspect
+      // Direct tab shortcuts: s=shorten, m=markdown, i=inspect
       if (!e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
         const key = e.key.toLowerCase();
         if (key === "s") {
           e.preventDefault();
           setTab("shorten");
-        } else if (key === "u") {
-          e.preventDefault();
-          setTab("unshorten");
         } else if (key === "m") {
           e.preventDefault();
           setTab("markdown");
@@ -144,10 +134,9 @@ export function HomeContent({ signedIn, configured = true }: { signedIn: boolean
     icon: React.ReactNode;
     ref: React.RefObject<HTMLButtonElement | null>;
   }[] = [
-    { key: "shorten", label: t("home.shorten_tab"), icon: <Link className="h-3.5 w-3.5" />, ref: shortenBtnRef },
-    { key: "unshorten", label: t("home.unshorten_tab"), icon: <Undo2 className="h-3.5 w-3.5" />, ref: unshortenBtnRef },
-    { key: "markdown", label: t("home.markdown_tab"), icon: <FileText className="h-3.5 w-3.5" />, ref: markdownBtnRef },
-    { key: "inspect", label: t("inspector.tab"), icon: <Search className="h-3.5 w-3.5" />, ref: inspectBtnRef },
+    { key: "shorten", label: "shorten", icon: <Link className="h-3.5 w-3.5" />, ref: shortenBtnRef },
+    { key: "markdown", label: "markdown", icon: <FileText className="h-3.5 w-3.5" />, ref: markdownBtnRef },
+    { key: "inspect", label: "inspect", icon: <Search className="h-3.5 w-3.5" />, ref: inspectBtnRef },
   ];
 
   return (
@@ -189,8 +178,6 @@ export function HomeContent({ signedIn, configured = true }: { signedIn: boolean
       <div key={tab} className="tab-content-enter">
         {tab === "shorten" ? (
           <ShortenerForm signedIn={signedIn} />
-        ) : tab === "unshorten" ? (
-          <UnshortenerForm />
         ) : tab === "markdown" ? (
           <MarkdownForm signedIn={signedIn} />
         ) : (

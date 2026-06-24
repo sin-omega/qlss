@@ -2,12 +2,11 @@ import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 import { siteOrigin } from "@/lib/env";
 
-// Routes that bypass the ban check (auth, public shorten, unshorten API,
+// Routes that bypass the ban check (auth, public shorten,
 // onboarding, and static assets). Banned users can still sign out and reach
 // the onboarding page (though onboarding itself requires being signed in).
 const PUBLIC_PATHS = [
   "/api/shorten",
-  "/api/unshorten",
   "/api/auth",
   "/api/logout",
   "/api/onboard",

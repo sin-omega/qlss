@@ -21,12 +21,6 @@ const envSchema = z.object({
   // Site origin
   NEXT_PUBLIC_SITE_URL: z.string().optional(),
 
-  // Unshorten API token (server-side secret). Required for /api/unshorten.
-  UNSHORTEN_API_TOKEN: z.string().optional(),
-
-  // Public mirror of the unshorten token that the in-browser tab sends.
-  NEXT_PUBLIC_UNSHORTEN_API_TOKEN: z.string().optional(),
-
   // Vercel auto-injects this — used as a fallback for siteOrigin()
   VERCEL_URL: z.string().optional(),
 
@@ -57,23 +51,6 @@ export function isSupabaseConfigured(): boolean {
 
 export function isServiceRoleConfigured(): boolean {
   return Boolean(env.NEXT_PUBLIC_SUPABASE_URL) && Boolean(env.SUPABASE_SERVICE_ROLE_KEY);
-}
-
-/**
- * The token external API consumers must present to call /api/unshorten.
- * Accepts either the server-side secret or the public mirror (so the built-in
- * browser tab works when both are set to the same value).
- */
-export function unshortenTokens(): string[] {
-  const tokens: string[] = [];
-  if (env.UNSHORTEN_API_TOKEN) tokens.push(env.UNSHORTEN_API_TOKEN);
-  if (
-    env.NEXT_PUBLIC_UNSHORTEN_API_TOKEN &&
-    env.NEXT_PUBLIC_UNSHORTEN_API_TOKEN !== env.UNSHORTEN_API_TOKEN
-  ) {
-    tokens.push(env.NEXT_PUBLIC_UNSHORTEN_API_TOKEN);
-  }
-  return tokens;
 }
 
 export function siteOrigin(): string {

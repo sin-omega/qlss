@@ -12,7 +12,6 @@ import {
 import {
   Search,
   Link as LinkIcon,
-  Undo2,
   FileText,
   Home,
   List,
@@ -25,7 +24,7 @@ import {
 } from "lucide-react";
 import { t } from "@/lib/i18n";
 
-type TabKey = "shorten" | "unshorten" | "markdown" | "inspect";
+type TabKey = "shorten" | "markdown" | "inspect";
 type GroupKey = "actions" | "navigate" | "settings" | "help";
 
 interface Command {
@@ -109,15 +108,6 @@ export function CommandPalette() {
         shortcut: "S",
         keywords: "shorten url link create new",
         run: () => switchTab("shorten"),
-      },
-      {
-        id: "tab:unshorten",
-        group: "actions",
-        label: t("command_palette.cmd_unshorten"),
-        icon: <Undo2 className="h-3.5 w-3.5 shrink-0" />,
-        shortcut: "U",
-        keywords: "unshorten expand resolve redirect",
-        run: () => switchTab("unshorten"),
       },
       {
         id: "tab:markdown",

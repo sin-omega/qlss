@@ -44,7 +44,6 @@ export function KeyboardHelpOverlay() {
     { keys: "←", label: t("shortcuts.prev_tab") },
     { keys: "→", label: t("shortcuts.next_tab") },
     { keys: "s", label: t("shortcuts.tab_shorten") },
-    { keys: "u", label: t("shortcuts.tab_unshorten") },
     { keys: "m", label: t("shortcuts.tab_markdown") },
     { keys: "i", label: t("shortcuts.tab_inspect") },
     { keys: "t", label: t("shortcuts.toggle_theme") },

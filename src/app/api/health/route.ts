@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { isSupabaseConfigured, isServiceRoleConfigured, unshortenTokens } from "@/lib/env";
+import { isSupabaseConfigured, isServiceRoleConfigured } from "@/lib/env";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,7 +17,6 @@ export async function GET() {
   const checks = {
     supabase: isSupabaseConfigured(),
     supabase_service_role: isServiceRoleConfigured(),
-    unshorten_token_configured: unshortenTokens().length > 0,
   };
 
   const ok = checks.supabase; // Supabase is the hard dependency for core features

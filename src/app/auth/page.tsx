@@ -3,10 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { isSupabaseConfigured, siteOrigin } from "@/lib/env";
+import { siteOrigin } from "@/lib/env";
 import { SiteHeader } from "@/components/qlss/site-header";
 import { SiteFooter } from "@/components/qlss/site-footer";
-import { t } from "@/lib/i18n";
 import { ArrowLeft, Loader2, Mail } from "lucide-react";
 
 export default function AuthPage() {
@@ -20,18 +19,19 @@ export default function AuthPage() {
   const [magicLinkSent, setMagicLinkSent] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
 
-  const configured = isSupabaseConfigured();
-
   useEffect(() => {
-    if (!configured) return;
     (async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data.session) {
-        setSignedIn(true);
-        router.replace("/");
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (data.session) {
+          setSignedIn(true);
+          router.replace("/");
+        }
+      } catch {
+        // supabase not configured
       }
     })();
-  }, [configured, router, supabase]);
+  }, [router, supabase]);
 
   async function handleGoogle() {
     setError(null);
@@ -90,7 +90,7 @@ export default function AuthPage() {
 
   return (
     <main className="cli-grid relative min-h-screen w-full flex flex-col">
-      <SiteHeader signedIn={signedIn} isAdmin={false} backHref="/" backLabel={t("common.home")} />
+      <SiteHeader signedIn={signedIn} isAdmin={false} backHref="/" backLabel="home" />
       <div className="header-accent-line" />
 
       <section className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-16">
@@ -98,17 +98,17 @@ export default function AuthPage() {
           {view === "landing" && !magicLinkSent && (
             <>
               <h1 className="text-lg font-bold tracking-tight mb-1 text-center">
-                {t("auth.sign_in_title")}
+                sign in to QLSS
               </h1>
               <p className="text-xs text-muted-foreground mb-8 text-center leading-relaxed">
-                {t("auth.sign_in_subtitle")}
+                manage links &amp; view analytics
               </p>
 
               <div className="space-y-2.5">
                 <button
                   type="button"
                   onClick={handleGoogle}
-                  disabled={busy !== null || !configured}
+                  disabled={busy !== null}
                   className="w-full flex items-center justify-center gap-3 border border-border bg-card hover:bg-accent px-4 py-3 text-sm transition-colors disabled:opacity-50"
                 >
                   {busy === "google" ? (
@@ -116,12 +116,12 @@ export default function AuthPage() {
                   ) : (
                     <GoogleMark />
                   )}
-                  {t("auth.continue_google")}
+                  Continue with Google
                 </button>
 
                 <div className="relative flex items-center gap-3 py-1">
                   <div className="flex-1 border-t border-border" />
-                  <span className="text-[10px] text-muted-foreground uppercase tracking-widest">{t("auth.or")}</span>
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-widest">or</span>
                   <div className="flex-1 border-t border-border" />
                 </div>
 
@@ -131,11 +131,11 @@ export default function AuthPage() {
                     setError(null);
                     setView("email");
                   }}
-                  disabled={busy !== null || !configured}
+                  disabled={busy !== null}
                   className="w-full flex items-center justify-center gap-3 border border-border bg-card hover:bg-accent px-4 py-3 text-sm transition-colors disabled:opacity-50"
                 >
                   <EmailMark />
-                  {t("auth.continue_email")}
+                  Continue with email
                 </button>
               </div>
 
@@ -143,14 +143,6 @@ export default function AuthPage() {
                 <div className="mt-4 border border-destructive/20 bg-destructive/5 px-4 py-2.5">
                   <p className="text-xs text-destructive leading-relaxed text-center">
                     ! {error}
-                  </p>
-                </div>
-              )}
-
-              {!configured && (
-                <div className="mt-6 border border-dashed border-border p-3 bg-card text-center">
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    <span className="text-foreground">!</span> {t("auth.not_configured")}
                   </p>
                 </div>
               )}
@@ -166,14 +158,14 @@ export default function AuthPage() {
                   className="text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1.5"
                 >
                   <ArrowLeft className="h-3 w-3" />
-                  {t("common.back")}
+                  back
                 </button>
               </div>
               <h1 className="text-lg font-bold tracking-tight mb-1 text-center">
-                {t("auth.sign_in_email_title")}
+                sign in with email
               </h1>
               <p className="text-xs text-muted-foreground mb-8 text-center leading-relaxed">
-                {t("auth.sign_in_email_subtitle")}
+                we&apos;ll send you a magic link — no password needed
               </p>
 
               <form onSubmit={handleMagicLink} className="space-y-4">
@@ -186,7 +178,7 @@ export default function AuthPage() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder={t("auth.email_placeholder")}
+                    placeholder="email address"
                     className="flex-1 bg-transparent border-0 outline-none py-2.5 text-sm placeholder:text-muted-foreground/60"
                     disabled={busy !== null}
                     autoFocus
@@ -209,7 +201,7 @@ export default function AuthPage() {
                   {busy === "email" ? (
                     <Loader2 className="h-4 w-4 animate-spin mx-auto" />
                   ) : (
-                    t("auth.send_magic_link")
+                    "send magic link"
                   )}
                 </button>
               </form>
@@ -220,10 +212,12 @@ export default function AuthPage() {
             <div className="text-center">
               <Mail className="h-8 w-8 text-muted-foreground mx-auto mb-4" />
               <h1 className="text-lg font-bold tracking-tight mb-3">
-                {t("auth.check_inbox")}
+                check your inbox
               </h1>
               <p className="text-xs text-muted-foreground leading-relaxed max-w-xs mx-auto mb-8">
-                {t("auth.magic_link_sent").replace("{email}", email)}
+                we sent a magic link to{" "}
+                <span className="text-foreground">{email}</span>. click it to
+                sign in — no password required.
               </p>
               <button
                 type="button"
@@ -234,7 +228,7 @@ export default function AuthPage() {
                 }}
                 className="text-xs text-muted-foreground hover:text-foreground transition-colors"
               >
-                {t("auth.try_different_email")}
+                try a different email
               </button>
             </div>
           )}
@@ -288,14 +282,14 @@ function EmailMark() {
 
 function humanizeError(message: string): string {
   const m = message.toLowerCase();
-  if (m.includes("invalid login")) return t("auth.err_invalid_login");
+  if (m.includes("invalid login")) return "Wrong email or password.";
   if (m.includes("user already registered"))
-    return t("auth.err_already_registered");
+    return "An account with that email already exists.";
   if (m.includes("rate limit"))
-    return t("auth.err_rate_limit");
+    return "Too many attempts. Try again in a minute.";
   if (m.includes("password"))
-    return t("auth.err_password");
+    return "Password must be at least 6 characters.";
   if (m.includes("not found") || m.includes("no account"))
-    return t("auth.err_not_found");
+    return "No account found with that email.";
   return message;
 }
