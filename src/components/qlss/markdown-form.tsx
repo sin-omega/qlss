@@ -22,6 +22,7 @@ import {
   ChevronRight,
   KeyRound,
   Tag,
+  MessageSquare,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "@/hooks/use-toast";
@@ -57,6 +58,7 @@ export function MarkdownForm({ signedIn }: { signedIn: boolean }) {
   const [expiryIndex, setExpiryIndex] = useState(0);
   const [maxUses, setMaxUses] = useState("");
   const [expiryOpen, setExpiryOpen] = useState(false);
+  const [allowComments, setAllowComments] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
 
@@ -222,6 +224,7 @@ export function MarkdownForm({ signedIn }: { signedIn: boolean }) {
         og_description: ogDescription || undefined,
         og_image: ogImage || undefined,
       };
+      body.allow_comments = allowComments;
       if (expiryOption.seconds !== null) {
         body.expires_in = expiryOption.seconds;
       }
@@ -435,6 +438,13 @@ export function MarkdownForm({ signedIn }: { signedIn: boolean }) {
                     <input type="url" value={ogImage} onChange={(e) => setOgImage(e.target.value)} placeholder="og:image URL" className="w-full bg-background border border-border px-2 py-1.5 text-xs outline-none placeholder:text-muted-foreground/50" disabled={busy} />
                   </div>
                 </div>
+
+                {/* Comments toggle */}
+                <label className="flex items-center gap-2 border border-border bg-background px-3 py-2 cursor-pointer hover:bg-accent/20 transition-colors select-none">
+                  <input type="checkbox" checked={allowComments} onChange={(e) => setAllowComments(e.target.checked)} className="accent-foreground" disabled={busy} />
+                  <MessageSquare className="h-3 w-3 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">enable comments</span>
+                </label>
               </div>
             )}
           </>

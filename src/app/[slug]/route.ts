@@ -30,6 +30,7 @@ interface LinkRow {
   title: string | null;
   description: string | null;
   deleted: boolean;
+  allow_comments: boolean;
 }
 
 interface OgMeta {
@@ -138,7 +139,7 @@ async function resolveLink(slug: string): Promise<LinkRow | null> {
   const { data, error } = await serviceClient
     .from("links")
     .select(
-      "id, destination_url, pincode, expires_at, max_uses, use_count, link_type, markdown_content, og_title, og_description, og_image, title, description, deleted",
+      "id, destination_url, pincode, expires_at, max_uses, use_count, link_type, markdown_content, og_title, og_description, og_image, title, description, deleted, allow_comments",
     )
     .eq("slug", slug)
     .maybeSingle();
@@ -583,6 +584,30 @@ async function markdownResponse(
   .md-footer a:hover { color: var(--fg); }
   .theme-btn { position: fixed; bottom: 1rem; right: 1rem; width: 2rem; height: 2rem; background: var(--card); border: 1px solid var(--border); color: var(--muted); font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; z-index: 10; }
   .theme-btn:hover { background: var(--hover); color: var(--fg); }
+  .comments-section { max-width: 46rem; width: 100%; margin: 2rem auto 5rem; padding: 0 0.5rem; }
+  .comments-title { font-size: 0.85rem; font-weight: 700; margin-bottom: 1.2rem; letter-spacing: -0.01em; }
+  .comment { border-left: 2px solid var(--border); padding-left: 0.8rem; margin: 0.6rem 0; }
+  .comment-meta { font-size: 0.65rem; color: var(--muted); margin-bottom: 0.25rem; }
+  .comment-meta .author { color: var(--fg); font-weight: 600; }
+  .comment-body { font-size: 0.75rem; line-height: 1.6; color: var(--fg); word-break: break-word; }
+  .comment-actions { margin-top: 0.3rem; }
+  .comment-actions button { font-size: 0.6rem; color: var(--muted); background: none; border: none; cursor: pointer; padding: 0; font-family: inherit; }
+  .comment-actions button:hover { color: var(--fg); text-decoration: underline; }
+  .comment-replies { margin-left: 1.2rem; border-left: 1px solid var(--border); padding-left: 0.8rem; }
+  .comments-form { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+  .comments-form textarea { width: 100%; background: var(--card); border: 1px solid var(--border); color: var(--fg); padding: 0.5rem; font-size: 0.75rem; font-family: inherit; resize: vertical; min-height: 4rem; outline: none; }
+  .comments-form textarea:focus { border-color: var(--fg); }
+  .comments-form .row { display: flex; gap: 0.5rem; margin-top: 0.5rem; align-items: center; flex-wrap: wrap; }
+  .comments-form input { flex: 1; min-width: 100px; background: var(--card); border: 1px solid var(--border); color: var(--fg); padding: 0.35rem 0.5rem; font-size: 0.7rem; font-family: inherit; outline: none; }
+  .comments-form input:focus { border-color: var(--fg); }
+  .comments-form button { background: var(--fg); color: var(--bg); border: none; padding: 0.4rem 0.9rem; font-size: 0.7rem; cursor: pointer; font-family: inherit; }
+  .comments-form button:hover { opacity: 0.85; }
+  .comments-form button:disabled { opacity: 0.4; cursor: default; }
+  .comments-empty { color: var(--muted); font-size: 0.7rem; text-align: center; padding: 2rem 0; }
+  .comments-disabled { color: var(--muted); font-size: 0.7rem; text-align: center; padding: 2rem 0; }
+  .reply-form { margin: 0.5rem 0 0.5rem 0.8rem; display: none; }
+  .reply-form.open { display: block; }
+  .comment-error { color: var(--error); font-size: 0.65rem; margin-top: 0.3rem; }
   @media (max-width: 640px) {
     .md-shell { margin: 1.5rem auto 3rem; padding: 0 0.5rem; }
     .md-title { font-size: 1.3rem; }
@@ -617,6 +642,26 @@ async function markdownResponse(
   </article>
   <div class="md-footer">${escapeHtml(publishedVia)}</div>
 </div>
+
+${link.allow_comments ? `
+<div class="comments-section" id="comments-section">
+  <div class="comments-title">comments</div>
+  <div id="comments-list"></div>
+  <div id="comments-form-container" class="comments-form">
+    <textarea id="comment-input" placeholder="write a comment..." rows="3"></textarea>
+    <div class="row">
+      <input id="comment-author" type="text" placeholder="name (optional)" />
+      <button id="comment-submit" type="button">post comment</button>
+    </div>
+    <div id="comment-error" class="comment-error"></div>
+  </div>
+</div>
+` : `
+<div class="comments-section" id="comments-section">
+  <div class="comments-disabled">comments are disabled for this page</div>
+</div>
+`}
+
 <button class="theme-btn" id="theme-toggle" title="toggle theme">◐</button>
 <script>
   try {
@@ -648,6 +693,112 @@ async function markdownResponse(
       };
       pre.appendChild(btn);
     });
+    ${link.allow_comments ? `
+    // ── Comments ──────────────────────────────────────────
+    var SLUG = ${JSON.stringify(slug)};
+    var commentsList = document.getElementById('comments-list');
+    var commentInput = document.getElementById('comment-input');
+    var commentAuthor = document.getElementById('comment-author');
+    var commentSubmit = document.getElementById('comment-submit');
+    var commentError = document.getElementById('comment-error');
+    if (commentsList) {
+      var storedName = localStorage.getItem('qlss-comment-name') || '';
+      if (storedName) commentAuthor.value = storedName;
+      function escape(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+      function timeAgo(dateStr) {
+        var diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+        if (diff < 60) return 'just now';
+        if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+        if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
+        return Math.floor(diff/86400) + 'd ago';
+      }
+      function renderThread(comments) {
+        var map = {};
+        var roots = [];
+        comments.forEach(function(c) { map[c.id] = c; c.children = []; });
+        comments.forEach(function(c) {
+          if (c.parent_id && map[c.parent_id]) map[c.parent_id].children.push(c);
+          else roots.push(c);
+        });
+        function renderComment(c, depth) {
+          var maxDepth = 5;
+          var indent = depth >= maxDepth ? '' : 'comment-replies';
+          var html = '<div class="comment">';
+          html += '<div class="comment-meta"><span class="author">' + escape(c.author_name) + '</span> · ' + timeAgo(c.created_at) + '</div>';
+          html += '<div class="comment-body">' + escape(c.content) + '</div>';
+          html += '<div class="comment-actions"><button class="reply-btn" data-id="' + c.id + '" data-name="' + escape(c.author_name) + '">reply</button></div>';
+          if (c.children.length > 0 && depth < maxDepth) {
+            html += '<div class="' + indent + '">';
+            c.children.forEach(function(child) { html += renderComment(child, depth + 1); });
+            html += '</div>';
+          }
+          html += '</div>';
+          return html;
+        }
+        var html = '';
+        roots.forEach(function(c) { html += renderComment(c, 0); });
+        commentsList.innerHTML = html || '<div class="comments-empty">no comments yet</div>';
+        document.querySelectorAll('.reply-btn').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            var id = btn.getAttribute('data-id');
+            var name = btn.getAttribute('data-name');
+            var existing = document.getElementById('reply-form-' + id);
+            if (existing) { existing.classList.toggle('open'); return; }
+            var form = document.createElement('div');
+            form.className = 'reply-form open';
+            form.id = 'reply-form-' + id;
+            form.innerHTML = '<textarea id="reply-input-' + id + '" placeholder="reply to ' + name + '..." rows="2" style="width:100%;background:var(--card);border:1px solid var(--border);color:var(--fg);padding:0.4rem;font-size:0.7rem;font-family:inherit;outline:none;resize:vertical;min-height:2.5rem;"></textarea><div style="display:flex;gap:0.5rem;margin-top:0.3rem;align-items:center;flex-wrap:wrap;"><input id="reply-author-' + id + '" type="text" placeholder="name (optional)" style="flex:1;min-width:80px;background:var(--card);border:1px solid var(--border);color:var(--fg);padding:0.3rem 0.4rem;font-size:0.65rem;font-family:inherit;outline:none;" value="' + escape(storedName) + '" /><button class="reply-submit" data-id="' + id + '" style="background:var(--fg);color:var(--bg);border:none;padding:0.35rem 0.7rem;font-size:0.65rem;cursor:pointer;font-family:inherit;">reply</button></div>';
+            btn.parentNode.parentNode.appendChild(form);
+            document.getElementById('reply-input-' + id).focus();
+            form.querySelector('.reply-submit').addEventListener('click', function() {
+              var replyContent = document.getElementById('reply-input-' + id).value.trim();
+              if (!replyContent) return;
+              var replyAuthor = document.getElementById('reply-author-' + id).value.trim() || 'anonymous';
+              var submitBtn = form.querySelector('.reply-submit');
+              submitBtn.disabled = true;
+              localStorage.setItem('qlss-comment-name', replyAuthor);
+              fetch('/api/comments', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ slug:SLUG, parent_id:id, author_name:replyAuthor, content:replyContent }) })
+                .then(function(r){ return r.json(); })
+                .then(function(j){
+                  if (j.error) { commentError.textContent = j.error; return; }
+                  form.classList.remove('open');
+                  commentInput.value = '';
+                  fetchComments();
+                })
+                .catch(function(){ commentError.textContent = 'network error'; })
+                .finally(function(){ submitBtn.disabled = false; });
+            });
+          });
+        });
+      }
+      function fetchComments() {
+        fetch('/api/comments?slug=' + encodeURIComponent(SLUG))
+          .then(function(r){ return r.json(); })
+          .then(function(j){ renderThread(j.comments || []); })
+          .catch(function(){ commentsList.innerHTML = '<div class="comments-empty">could not load comments</div>'; });
+      }
+      fetchComments();
+      if (commentSubmit) {
+        commentSubmit.addEventListener('click', function() {
+          var content = commentInput.value.trim();
+          if (!content) return;
+          var author = commentAuthor.value.trim() || 'anonymous';
+          commentSubmit.disabled = true;
+          localStorage.setItem('qlss-comment-name', author);
+          fetch('/api/comments', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ slug:SLUG, author_name:author, content:content }) })
+            .then(function(r){ return r.json(); })
+            .then(function(j){
+              if (j.error) { commentError.textContent = j.error; return; }
+              commentInput.value = '';
+              commentError.textContent = '';
+              fetchComments();
+            })
+            .catch(function(){ commentError.textContent = 'network error'; })
+            .finally(function(){ commentSubmit.disabled = false; });
+        });
+      }
+    }
+    ` : ''}
   } catch(e) {}
 </script>
 </body>

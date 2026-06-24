@@ -76,6 +76,7 @@ export async function PATCH(
     pincode?: string | null;
     expires_at?: string | null;
     max_uses?: number | null;
+    allow_comments?: boolean;
   };
   try {
     body = (await request.json()) as {
@@ -88,6 +89,7 @@ export async function PATCH(
       pincode?: string | null;
       expires_at?: string | null;
       max_uses?: number | null;
+      allow_comments?: boolean;
     };
   } catch {
     return jsonError(400, "Send a JSON body.");
@@ -136,6 +138,9 @@ export async function PATCH(
     if (mu === null) update.max_uses = null;
     else if (typeof mu === "number" && Number.isInteger(mu) && mu > 0) update.max_uses = mu;
     else return jsonError(400, "max_uses must be a positive integer or null.");
+  }
+  if (body.allow_comments !== undefined) {
+    update.allow_comments = body.allow_comments === true;
   }
 
   if (Object.keys(update).length === 0) {
