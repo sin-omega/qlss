@@ -736,7 +736,7 @@ ${link.allow_comments ? `
           .replace(/__(.+?)__/g, '<strong>$1</strong>')
           .replace(/\*(.+?)\*/g, '<em>$1</em>')
           .replace(/_(.+?)_/g, '<em>$1</em>')
-          .replace(/`([^`]+)`/g, '<code>$1</code>')
+          .replace(/\x60([^\x60]+)\x60/g, '<code>$1</code>')
           .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" rel="nofollow">$1</a>')
           .replace(/\n/g, '<br>');
       }
