@@ -730,15 +730,15 @@ ${link.allow_comments ? `
       var storedName = localStorage.getItem('qlss-comment-name') || '';
       if (storedName) commentAuthor.value = storedName;
       function escape(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-      function renderCommentMd(s) {
-        return escape(s)
-          .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-          .replace(/__(.+?)__/g, '<strong>$1</strong>')
-          .replace(/\*(.+?)\*/g, '<em>$1</em>')
-          .replace(/_(.+?)_/g, '<em>$1</em>')
-          .replace(/\x60([^\x60]+)\x60/g, '<code>$1</code>')
-          .replace(/\x5b([^\x5d]+)\x5d\x28([^\x29]+)\x29/g, '<a href="$2" rel="nofollow">$1</a>')
-          .replace(/\n/g, '<br>');
+      function md(s) {
+        s = s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        s = s.replace(/__(.+?)__/g, '<strong>$1</strong>');
+        s = s.replace(/\*(.+?)\*/g, '<em>$1</em>');
+        s = s.replace(/_(.+?)_/g, '<em>$1</em>');
+        s = s.replace(/\x60([^\x60]+)\x60/g, '<code>$1</code>');
+        s = s.replace(/\n/g, '<br>');
+        return s;
       }
       function timeAgo(dateStr) {
         var diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
@@ -760,7 +760,7 @@ ${link.allow_comments ? `
           var indent = depth >= maxDepth ? '' : 'comment-replies';
           var html = '<div class="comment">';
           html += '<div class="comment-meta"><span class="author">' + escape(c.author_name) + '</span> · ' + timeAgo(c.created_at) + '</div>';
-          html += '<div class="comment-body">' + renderCommentMd(c.content) + '</div>';
+          html += '<div class="comment-body">' + md(c.content) + '</div>';
           html += '<div class="comment-actions"><button class="reply-btn" data-id="' + c.id + '" data-name="' + escape(c.author_name) + '">reply</button></div>';
           if (c.children.length > 0 && depth < maxDepth) {
             html += '<div class="' + indent + '">';
