@@ -442,7 +442,7 @@ function pincodeRequiredResponse(origin: string, slug: string, og: OgMeta): Next
     try {
       function getCookie(name) { var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)')); return match ? match[2] : null; }
       var theme = getCookie('theme') || localStorage.getItem('theme') || 'system';
-      if (theme === 'dark' || theme === 'light') { document.documentElement.setAttribute('data-theme', theme); }
+    if (theme === 'dark' || theme === 'light') { document.documentElement.setAttribute('data-theme', theme); document.documentElement.style.colorScheme = theme; }
   } catch(e) { console.error('[qlss]', e); }
   })();
 </script>
@@ -680,14 +680,16 @@ ${link.allow_comments ? `
   try {
     function getCookie(name) { var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)')); return match ? match[2] : null; }
     function setCookie(name, value) { document.cookie = name + '=' + value + '; path=/; max-age=31536000; SameSite=Lax'; }
-    var theme = getCookie('theme') || localStorage.getItem('theme') || 'system';
+    function gs(key) { try { return localStorage.getItem(key); } catch(e) {} return null; }
+    var theme = getCookie('theme') || gs('theme') || 'system';
     if (theme === 'dark' || theme === 'light') { document.documentElement.setAttribute('data-theme', theme); }
     document.getElementById('theme-toggle').addEventListener('click', function() {
       var cur = document.documentElement.getAttribute('data-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
       var next = cur === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', next);
+      document.documentElement.style.colorScheme = next;
       setCookie('theme', next);
-      localStorage.setItem('theme', next);
+      try { localStorage.setItem('theme', next); } catch(e) {}
     });
     // Shiki outputs two <pre> blocks (light/dark) via the .shiki container with
     // CSS variables; the github-light/github-dark themes toggle via color-scheme.
@@ -718,7 +720,7 @@ ${link.allow_comments ? `
     var commentsSignIn = document.getElementById('comments-sign-in');
     var commentAuthorReg = document.getElementById('comment-author-registered');
     if (commentsList) {
-      var storedName = localStorage.getItem('qlss-comment-name') || '';
+      var storedName = gs('qlss-comment-name') || '';
       if (storedName && commentAuthor) commentAuthor.value = storedName;
       function hideForm() {
         if (commentInput) commentInput.style.display = 'none';
@@ -811,7 +813,7 @@ ${link.allow_comments ? `
             var form = document.createElement('div');
             form.className = 'reply-form open';
             form.id = 'reply-form-' + id;
-            form.innerHTML = '<textarea id="reply-input-' + id + '" placeholder="reply to ' + name + '..." rows="2" style="width:100%;background:var(--card);border:1px solid var(--border);color:var(--fg);padding:0.4rem;font-size:0.7rem;font-family:inherit;outline:none;resize:vertical;min-height:2.5rem;"></textarea><div style="display:flex;gap:0.5rem;margin-top:0.3rem;align-items:center;flex-wrap:wrap;"><input id="reply-author-' + id + '" type="text" placeholder="name (optional)" style="flex:1;min-width:80px;background:var(--card);border:1px solid var(--border);color:var(--fg);padding:0.3rem 0.4rem;font-size:0.65rem;font-family:inherit;outline:none;" value="' + escape(storedName) + '"' + (REGISTERED_ONLY ? ' style="display:none"': '') + ' /><button class="reply-submit" data-id="' + id + '" style="background:var(--fg);color:var(--bg);border:none;padding:0.35rem 0.7rem;font-size:0.65rem;cursor:pointer;font-family:inherit;">reply</button></div>';
+            form.innerHTML = '<textarea id="reply-input-' + id + '" placeholder="reply to ' + name + '..." rows="2" style="width:100%;background:var(--card);border:1px solid var(--border);color:var(--fg);padding:0.4rem;font-size:0.7rem;font-family:inherit;outline:none;resize:vertical;min-height:2.5rem;"></textarea><div style="display:flex;gap:0.5rem;margin-top:0.3rem;align-items:center;flex-wrap:wrap;"><input id="reply-author-' + id + '" type="text" placeholder="name (optional)" style="flex:1;min-width:80px;background:var(--card);border:1px solid var(--border);color:var(--fg);padding:0.3rem 0.4rem;font-size:0.65rem;font-family:inherit;outline:none;' + (REGISTERED_ONLY ? 'display:none;' : '') + '" value="' + escape(storedName) + '" + ' /><button class="reply-submit" data-id="' + id + '" style="background:var(--fg);color:var(--bg);border:none;padding:0.35rem 0.7rem;font-size:0.65rem;cursor:pointer;font-family:inherit;">reply</button></div>';
             btn.parentNode.parentNode.appendChild(form);
             document.getElementById('reply-input-' + id).focus();
             form.querySelector('.reply-submit').addEventListener('click', function() {
@@ -857,7 +859,7 @@ ${link.allow_comments ? `
           var body = JSON.stringify({ slug:SLUG, content:content });
           if (!REGISTERED_ONLY) {
             var author = commentAuthor.value.trim() || 'anonymous';
-            localStorage.setItem('qlss-comment-name', author);
+            try { localStorage.setItem('qlss-comment-name', author); } catch(e) {}
             body = JSON.stringify({ slug:SLUG, author_name:author, content:content });
           }
           fetch('/api/comments', { method:'POST', headers:{'Content-Type':'application/json'}, body:body })
@@ -877,7 +879,7 @@ ${link.allow_comments ? `
       }
     }
     ` : ''}
-  } catch(e) {}
+  } catch(e) { console.error('[qlss]', e); }
 </script>
 </body>
 </html>`;
