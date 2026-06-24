@@ -2,8 +2,7 @@
 
 import { useEffect } from "react";
 import { useTheme } from "next-themes";
-import { Sun, Moon, User } from "lucide-react";
-import { SignOutButton } from "@/components/qlss/sign-out-button";
+import { Sun, Moon, User, LogOut } from "lucide-react";
 
 export function SiteHeader({
   signedIn,
@@ -36,7 +35,13 @@ export function SiteHeader({
         {theme === "dark" ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
       </button>
       {signedIn ? (
-        <SignOutButton compact />
+        <a
+          href="/profile"
+          className="w-8 h-8 flex items-center justify-center border border-border bg-background/80 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+          aria-label="Your profile"
+        >
+          <User className="h-3.5 w-3.5" />
+        </a>
       ) : (
         <a
           href="/auth"
@@ -44,6 +49,15 @@ export function SiteHeader({
           aria-label="Sign in"
         >
           <User className="h-3.5 w-3.5" />
+        </a>
+      )}
+      {signedIn && (
+        <a
+          href="/api/logout"
+          className="w-8 h-8 flex items-center justify-center border border-border bg-background/80 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+          aria-label="Sign out"
+        >
+          <LogOut className="h-3.5 w-3.5" />
         </a>
       )}
     </div>
