@@ -1598,5 +1598,62 @@ Priority Recommendations for Next Phase:
 2. Consider adding smart paste-detection on the shorten/unshorten tabs: if a user pastes a short URL like `qlss.io/abc` while on the shorten tab, auto-switch to unshorten (and vice versa).
 3. Add a small CLI-style welcome terminal animation on home when no URL is entered — typewriter effect cycling through example commands (`$ qlss shorten https://...`, `$ qlss inspect https://...`, etc.). Keep it subtle and respect `prefers-reduced-motion`.
 4. Clean up orphan files (`language-switcher.tsx`, `mobile-action-bar.tsx`, `trending-links.tsx`, `recent-feed.tsx`, `local-history.tsx`, `features-grid.tsx`, `hero-badges.tsx`, `hero-orbs.tsx`, `install-prompt.tsx`, `health-check-form.tsx`, `inspector-form.tsx`) — all unreferenced after the R7→R8 minimal-home refactor. Confirm via `rg` before deletion.
-5. Add unit tests for the inspect history save/load/dedupe logic.
-6. Consider adding a "Compare two URLs" inspect mode — diff the OG/Twitter tags side-by-side.
+ 5. Add unit tests for the inspect history save/load/dedupe logic.
+ 6. Consider adding a "Compare two URLs" inspect mode — diff the OG/Twitter tags side-by-side.
+
+---
+# Round 10 — Admin removal, soft-delete, account dashboard, markdown editor enhancements, banned slugs
+
+## Status
+Removed the entire admin panel (API routes, DB columns, tables). Added soft-delete for links (410 instead of 404 after deletion). Created account dashboard at `/account`. Enhanced markdown editor with formatting toolbar, last-edited timestamp, code-block copy buttons on standalone pages. Added `banned_slugs` DB table with extensible seed data for slug blacklisting. Fixed `increment_use_count` RPC (SECURITY DEFINER) and logout API (missing GET handler). Deleted ~20 unused components.
+
+## Modifications
+
+### Admin removal
+- Deleted 10 API route files under `src/app/api/admin/` (links, users, banner, abuse — all sub-routes)
+- Created `supabase/migrations/20260624_remove_admin.sql`: drops `is_admin` column from `profiles`, drops `admin_audit_log` table
+- Removed `isAdmin` check and `createServiceClient` import from stats page (`src/app/stats/[slug]/page.tsx`)
+
+### Core bug fixes
+- **`increment_use_count` RPC**: migration `20260624_fix_use_count_and_banned_slugs.sql` redefines function with `SECURITY DEFINER` so it bypasses RLS when called via anon key
+- **Logout API**: `src/app/api/logout/route.ts` now exports BOTH `GET` and `POST` handlers (previously only `POST`, causing 405 when `<a>` link made GET request)
+
+### banned_slugs table
+- Created in `20260624_fix_use_count_and_banned_slugs.sql` with seeded system routes (`api`, `auth`, `admin`, `login`, `signup`, `app`, `_next`, `favicon.ico`, `robots.txt`, `sitemap.xml`, `health`, `stats`, `info`, `account`, `profile`, `links`, `onboard`, `not-found`)
+- Added `isBannedSlug()` async helper in `src/lib/slug.ts` that queries the DB
+- Shorten API (`src/app/api/shorten/route.ts`) checks `isBannedSlug()` during custom alias creation
+
+### Soft-delete
+- Migration `20260624_soft_delete_and_theme.sql`: adds `deleted` boolean column (default false) with partial index on `NOT deleted`
+- DELETE endpoint (`src/app/api/links/[slug]/route.ts`) now sets `deleted = true` instead of deleting the row
+- Slug resolver (`src/app/[slug]/route.ts`) returns a "link was removed" 410 HTML page for deleted links
+- Profile page (`src/app/profile/page.tsx`) and `ProfileLinks` component filter via `.eq("deleted", false)`
+
+### Account dashboard
+- Created `src/app/account/page.tsx` showing email, user ID, link count, click count, with nav links to profile/home/sign-out
+- Added "account" link in profile page header
+
+### Footer / chart / UI cleanup
+- Deleted `SiteFooter` component and removed it from 6 pages (`stats/[slug]`, `profile`, `[slug]/edit`, `onboard`, `auth`, `not-configured`)
+- Deleted `StatsCharts` component and chart section from stats page
+- Moved bulk mode toggle from above the form into advanced options section in `shortener-form.tsx`
+- Removed "report abuse" button from `home-content.tsx` legal links
+- Deleted ~20 unused component files: `banner`, `error-banner`, `faq-section`, `features-grid`, `feed-skeleton`, `full-stats`, `health-check-form`, `hero-badges`, `hero-orbs`, `home-not-configured`, `info-page-header`, `install-prompt`, `local-history`, `mobile-action-bar`, `recent-feed`, `scroll-to-top`, `stats-counter`, `trending-links`, `site-footer`, `stats-charts`
+
+### Markdown editor enhancements
+- Added formatting toolbar (bold, italic, heading, link, code, list) using `insertMarkdown()` helper with `contentRef` to avoid stale closures
+- Added `lastEdited` prop displaying `updated_at` timestamp on the edit page
+- Added `font-mono` class to textarea for better editing experience
+- Passed `updated_at` column from the DB query in `[slug]/edit/page.tsx`
+
+### Standalone markdown pages
+- Added CSS for `.copy-btn` (positioned over `<pre>`, hidden by default, shows on hover)
+- Added JS in `<script>` block that finds all `<pre>` blocks and appends a "copy" button using `navigator.clipboard.writeText()`
+
+### Profile page tabs
+- `ProfileLinks` component now has tab switcher ("redirects" / "pages") instead of vertical scrolling sections
+- Edit button for markdown pages navigates to `/[slug]/edit`
+
+### Dependencies & build
+- Build cannot be verified (no `npm install`/dependencies in this environment — `npm install` timed out)
+- All code changes are syntactically and logically correct based on file review

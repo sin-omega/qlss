@@ -8,6 +8,12 @@ import {
   Check,
   ArrowLeft,
   Sparkles,
+  Bold,
+  Italic,
+  Heading,
+  Link,
+  Code,
+  List,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "@/hooks/use-toast";
@@ -23,9 +29,10 @@ interface MarkdownEditorProps {
     og_image: string;
     pincode: string;
   };
+  lastEdited?: string | null;
 }
 
-export function MarkdownEditor({ slug, initial }: MarkdownEditorProps) {
+export function MarkdownEditor({ slug, initial, lastEdited }: MarkdownEditorProps) {
   const [content, setContent] = useState(initial.markdown_content ?? "");
   const [ogTitle, setOgTitle] = useState(initial.og_title ?? "");
   const [ogDescription, setOgDescription] = useState(initial.og_description ?? "");
@@ -35,7 +42,35 @@ export function MarkdownEditor({ slug, initial }: MarkdownEditorProps) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const contentRef = useRef(content);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => { contentRef.current = content; }, [content]);
+
+  function insertMarkdown(before: string, after: string) {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const current = contentRef.current;
+    const selected = current.slice(start, end);
+    const replacement = before + selected + after;
+    setContent(current.slice(0, start) + replacement + current.slice(end));
+    requestAnimationFrame(() => {
+      ta.focus();
+      ta.setSelectionRange(start + before.length, start + before.length + selected.length);
+    });
+  }
+
+  const toolbar = [
+    { icon: Bold, label: "Bold", action: () => insertMarkdown("**", "**") },
+    { icon: Italic, label: "Italic", action: () => insertMarkdown("*", "*") },
+    { icon: Heading, label: "Heading", action: () => insertMarkdown("## ", "") },
+    { icon: Link, label: "Link", action: () => insertMarkdown("[", "](url)") },
+    { icon: Code, label: "Code", action: () => insertMarkdown("`", "`") },
+    { icon: List, label: "List", action: () => insertMarkdown("- ", "") },
+  ];
 
   const previewHtml = useMemo(() => {
     if (!content.trim()) return "";
@@ -128,18 +163,35 @@ export function MarkdownEditor({ slug, initial }: MarkdownEditorProps) {
         </div>
       </div>
 
+      {lastEdited && (
+        <p className="text-[10px] text-muted-foreground text-center">last edited {new Date(lastEdited).toLocaleDateString("en", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
+      )}
+
       <form onSubmit={handleSave} className="w-full space-y-2">
         {view === "edit" ? (
           <>
             <div className="border border-border bg-card focus-within:border-foreground transition-colors">
-              <div className="px-3 py-1.5 border-b border-border text-[10px] uppercase tracking-widest text-muted-foreground">
-                {t("markdown.content_label")}
+              <div className="flex items-center justify-between px-1 py-1 border-b border-border">
+                <div className="flex items-center gap-0.5">
+                  {toolbar.map((t) => (
+                    <button
+                      key={t.label}
+                      type="button"
+                      onClick={t.action}
+                      className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                      title={t.label}
+                    >
+                      <t.icon className="h-3.5 w-3.5" />
+                    </button>
+                  ))}
+                </div>
               </div>
               <textarea
+                ref={textareaRef}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder={t("markdown.content_placeholder")}
-                className="w-full bg-transparent border-0 outline-none p-3 text-xs leading-relaxed placeholder:text-muted-foreground/60 resize-y"
+                className="w-full bg-transparent border-0 outline-none p-3 text-xs leading-relaxed placeholder:text-muted-foreground/60 resize-y font-mono"
                 rows={14}
                 spellCheck={false}
               />

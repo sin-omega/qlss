@@ -566,8 +566,12 @@ async function markdownResponse(
   .md-content li { margin: 0.3rem 0; }
   .md-content blockquote { border-left: 3px solid var(--border); padding-left: 1rem; color: var(--muted); margin: 1rem 0; }
   .md-content code { font-family: inherit; background: var(--hover); padding: 0.1rem 0.35rem; border-radius: 2px; font-size: 0.82em; }
-  .md-content pre { margin: 1rem 0; border: 1px solid var(--border); overflow-x: auto; }
+  .md-content pre { margin: 1rem 0; border: 1px solid var(--border); overflow-x: auto; position: relative; }
+  .md-content pre:hover .copy-btn { opacity: 1; }
   .md-content pre code { background: transparent; padding: 0; font-size: 0.8em; }
+  .copy-btn { position: absolute; top: 4px; right: 4px; background: var(--hover); color: var(--muted); border: 1px solid var(--border); padding: 2px 6px; font-size: 0.6rem; cursor: pointer; opacity: 0; transition: opacity 0.15s; border-radius: 2px; font-family: inherit; }
+  .copy-btn:hover { color: var(--fg); background: var(--border); }
+  .copy-btn.copied { opacity: 1; background: var(--accent); color: var(--fg); }
   .md-content hr { border: none; border-top: 1px solid var(--border); margin: 1.6rem 0; }
   .md-content table { border-collapse: collapse; margin: 1rem 0; width: 100%; font-size: 0.8rem; }
   .md-content th, .md-content td { border: 1px solid var(--border); padding: 0.4rem 0.6rem; text-align: left; }
@@ -618,6 +622,21 @@ async function markdownResponse(
     if (theme === 'dark' || theme === 'light') { document.documentElement.setAttribute('data-theme', theme); }
     // Shiki outputs two <pre> blocks (light/dark) via the .shiki container with
     // CSS variables; the github-light/github-dark themes toggle via color-scheme.
+    document.querySelectorAll('.md-content pre').forEach(function(pre) {
+      var btn = document.createElement('button');
+      btn.className = 'copy-btn';
+      btn.textContent = 'copy';
+      btn.onclick = function() {
+        var code = pre.querySelector('code');
+        if (!code) return;
+        navigator.clipboard.writeText(code.textContent).then(function() {
+          btn.textContent = 'copied!';
+          btn.classList.add('copied');
+          setTimeout(function() { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 2000);
+        });
+      };
+      pre.appendChild(btn);
+    });
   } catch(e) {}
 </script>
 </body>
