@@ -443,7 +443,7 @@ function pincodeRequiredResponse(origin: string, slug: string, og: OgMeta): Next
       function getCookie(name) { var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)')); return match ? match[2] : null; }
       var theme = getCookie('theme') || localStorage.getItem('theme') || 'system';
       if (theme === 'dark' || theme === 'light') { document.documentElement.setAttribute('data-theme', theme); }
-    } catch(e) {}
+  } catch(e) { console.error('[qlss]', e); }
   })();
 </script>
 </body>
@@ -719,7 +719,7 @@ ${link.allow_comments ? `
     var commentAuthorReg = document.getElementById('comment-author-registered');
     if (commentsList) {
       var storedName = localStorage.getItem('qlss-comment-name') || '';
-      if (storedName) commentAuthor.value = storedName;
+      if (storedName && commentAuthor) commentAuthor.value = storedName;
       function hideForm() {
         if (commentInput) commentInput.style.display = 'none';
         if (commentAuthor) commentAuthor.style.display = 'none';
@@ -742,22 +742,17 @@ ${link.allow_comments ? `
       function setRegisteredName(name) {
         if (commentAuthorReg) commentAuthorReg.textContent = 'commenting as ' + name;
       }
-      if (REGISTERED_ONLY) {
-        fetch('/api/auth/status').then(function(r){ return r.json(); }).then(function(j){
-          if (j.signedIn) {
-            showForm();
-            fetch('/api/auth/name').then(function(r){ return r.json(); }).then(function(j2){
-              if (j2.name) { setRegisteredName(j2.name); }
-            });
-          } else {
-            hideForm();
-          }
-        });
-      } else {
-        showForm();
+      function setupForm() {
+        if (REGISTERED_ONLY) {
+          fetch('/api/auth/status').then(function(r){ return r.json(); }).then(function(j){
+            if (j.signedIn) { showForm(); fetch('/api/auth/name').then(function(r2){ return r2.json(); }).then(function(j2){ if (j2.name) setRegisteredName(j2.name); }); }
+            else { hideForm(); }
+          }).catch(function(){});
+        } else {
+          showForm();
+        }
       }
-      var storedName = localStorage.getItem('qlss-comment-name') || '';
-      if (storedName && commentAuthor) commentAuthor.value = storedName;
+      setupForm();
       function escape(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
       function md(s) {
         s = s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
