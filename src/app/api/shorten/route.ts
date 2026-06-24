@@ -6,6 +6,7 @@ import {
   normalizeSlug,
   isValidSlug,
   isReservedSlug,
+  isBannedSlug,
 } from "@/lib/slug";
 
 export const runtime = "nodejs";
@@ -127,6 +128,9 @@ export async function POST(request: NextRequest) {
     }
     if (isReservedSlug(requestedSlug)) {
       return jsonError(400, "That alias is reserved. Try another.");
+    }
+    if (await isBannedSlug(requestedSlug, serviceClient)) {
+      return jsonError(400, "That alias is not allowed. Try another.");
     }
     const { data: existing } = await serviceClient
       .from("links")

@@ -27,3 +27,15 @@ export function isValidSlug(slug: string): boolean {
 export function isReservedSlug(slug: string): boolean {
   return RESERVED_SLUGS.has(slug.toLowerCase());
 }
+
+export async function isBannedSlug(
+  slug: string,
+  serviceClient: { from: (table: string) => { select: (columns: string) => { eq: (col: string, val: string) => { maybeSingle: () => Promise<{ data: unknown }> } } } },
+): Promise<boolean> {
+  const { data } = await serviceClient
+    .from("banned_slugs")
+    .select("id")
+    .eq("slug", slug.toLowerCase())
+    .maybeSingle();
+  return data !== null;
+}
