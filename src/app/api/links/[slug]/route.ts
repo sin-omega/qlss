@@ -77,6 +77,7 @@ export async function PATCH(
     expires_at?: string | null;
     max_uses?: number | null;
     allow_comments?: boolean;
+    comments_registered_only?: boolean;
   };
   try {
     body = (await request.json()) as {
@@ -90,6 +91,7 @@ export async function PATCH(
       expires_at?: string | null;
       max_uses?: number | null;
       allow_comments?: boolean;
+      comments_registered_only?: boolean;
     };
   } catch {
     return jsonError(400, "Send a JSON body.");
@@ -141,6 +143,9 @@ export async function PATCH(
   }
   if (body.allow_comments !== undefined) {
     update.allow_comments = body.allow_comments === true;
+  }
+  if (body.comments_registered_only !== undefined) {
+    update.comments_registered_only = body.comments_registered_only === true;
   }
 
   if (Object.keys(update).length === 0) {

@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { isSupabaseConfigured } from "@/lib/env";
 
@@ -65,7 +66,7 @@ export async function POST(request: NextRequest) {
   const service = createServiceClient();
   const { data: link } = await service
     .from("links")
-    .select("id, allow_comments")
+    .select("id, allow_comments, comments_registered_only")
     .eq("slug", body.slug)
     .maybeSingle();
 
@@ -75,6 +76,14 @@ export async function POST(request: NextRequest) {
 
   if (!link.allow_comments) {
     return NextResponse.json({ error: "Comments are disabled for this page." }, { status: 403 });
+  }
+
+  if (link.comments_registered_only) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "You must be signed in to comment on this page." }, { status: 401 });
+    }
   }
 
   if (body.parent_id) {

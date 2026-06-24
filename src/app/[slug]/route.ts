@@ -31,6 +31,7 @@ interface LinkRow {
   description: string | null;
   deleted: boolean;
   allow_comments: boolean;
+  comments_registered_only: boolean;
 }
 
 interface OgMeta {
@@ -139,7 +140,7 @@ async function resolveLink(slug: string): Promise<LinkRow | null> {
   const { data, error } = await serviceClient
     .from("links")
     .select(
-      "id, destination_url, pincode, expires_at, max_uses, use_count, link_type, markdown_content, og_title, og_description, og_image, title, description, deleted, allow_comments",
+      "id, destination_url, pincode, expires_at, max_uses, use_count, link_type, markdown_content, og_title, og_description, og_image, title, description, deleted, allow_comments, comments_registered_only",
     )
     .eq("slug", slug)
     .maybeSingle();
@@ -648,6 +649,9 @@ ${link.allow_comments ? `
   <div class="comments-title">comments</div>
   <div id="comments-list"></div>
   <div id="comments-form-container" class="comments-form">
+    <div id="comments-sign-in" style="display:none;text-align:center;padding:1rem 0;">
+      <a href="/auth" style="color:var(--accent);font-size:0.75rem;text-decoration:underline;">sign in to comment</a>
+    </div>
     <textarea id="comment-input" placeholder="write a comment..." rows="3"></textarea>
     <div class="row">
       <input id="comment-author" type="text" placeholder="name (optional)" />
@@ -696,12 +700,31 @@ ${link.allow_comments ? `
     ${link.allow_comments ? `
     // ── Comments ──────────────────────────────────────────
     var SLUG = ${JSON.stringify(slug)};
+    var REGISTERED_ONLY = ${JSON.stringify(link.comments_registered_only)};
     var commentsList = document.getElementById('comments-list');
     var commentInput = document.getElementById('comment-input');
     var commentAuthor = document.getElementById('comment-author');
     var commentSubmit = document.getElementById('comment-submit');
     var commentError = document.getElementById('comment-error');
+    var commentsSignIn = document.getElementById('comments-sign-in');
     if (commentsList) {
+      function hideForm() {
+        if (commentInput) commentInput.style.display = 'none';
+        if (commentAuthor) commentAuthor.style.display = 'none';
+        if (commentSubmit) commentSubmit.style.display = 'none';
+        if (commentsSignIn) commentsSignIn.style.display = 'block';
+      }
+      function showForm() {
+        if (commentInput) commentInput.style.display = '';
+        if (commentAuthor) commentAuthor.style.display = '';
+        if (commentSubmit) commentSubmit.style.display = '';
+        if (commentsSignIn) commentsSignIn.style.display = 'none';
+      }
+      if (REGISTERED_ONLY) {
+        fetch('/api/auth/status').then(function(r){ return r.json(); }).then(function(j){
+          if (!j.signedIn) { hideForm(); }
+        });
+      }
       var storedName = localStorage.getItem('qlss-comment-name') || '';
       if (storedName) commentAuthor.value = storedName;
       function escape(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -758,14 +781,17 @@ ${link.allow_comments ? `
               submitBtn.disabled = true;
               localStorage.setItem('qlss-comment-name', replyAuthor);
               fetch('/api/comments', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ slug:SLUG, parent_id:id, author_name:replyAuthor, content:replyContent }) })
-                .then(function(r){ return r.json(); })
+                .then(function(r){
+                  if (r.status === 401) { hideForm(); if (commentsSignIn) commentsSignIn.style.display = 'block'; throw new Error('sign in required'); }
+                  return r.json();
+                })
                 .then(function(j){
                   if (j.error) { commentError.textContent = j.error; return; }
                   form.classList.remove('open');
                   commentInput.value = '';
                   fetchComments();
                 })
-                .catch(function(){ commentError.textContent = 'network error'; })
+                .catch(function(e){ if (e.message !== 'sign in required') commentError.textContent = 'network error'; })
                 .finally(function(){ submitBtn.disabled = false; });
             });
           });
@@ -785,15 +811,18 @@ ${link.allow_comments ? `
           var author = commentAuthor.value.trim() || 'anonymous';
           commentSubmit.disabled = true;
           localStorage.setItem('qlss-comment-name', author);
-          fetch('/api/comments', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ slug:SLUG, author_name:author, content:content }) })
-            .then(function(r){ return r.json(); })
-            .then(function(j){
-              if (j.error) { commentError.textContent = j.error; return; }
-              commentInput.value = '';
-              commentError.textContent = '';
-              fetchComments();
-            })
-            .catch(function(){ commentError.textContent = 'network error'; })
+              fetch('/api/comments', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ slug:SLUG, author_name:author, content:content }) })
+                .then(function(r){
+                  if (r.status === 401) { hideForm(); if (commentsSignIn) commentsSignIn.style.display = 'block'; throw new Error('sign in required'); }
+                  return r.json();
+                })
+                .then(function(j){
+                  if (j.error) { commentError.textContent = j.error; return; }
+                  commentInput.value = '';
+                  commentError.textContent = '';
+                  fetchComments();
+                })
+                .catch(function(e){ if (e.message !== 'sign in required') commentError.textContent = 'network error'; })
             .finally(function(){ commentSubmit.disabled = false; });
         });
       }

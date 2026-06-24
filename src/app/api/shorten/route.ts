@@ -32,6 +32,7 @@ interface CreateLinkBody {
   og_description?: string;
   og_image?: string;
   allow_comments?: boolean;
+  comments_registered_only?: boolean;
   bulk?: string[];
 }
 
@@ -196,6 +197,7 @@ export async function POST(request: NextRequest) {
   const ogDescription = (body.og_description ?? "").trim().slice(0, 500) || null;
   const ogImage = (body.og_image ?? "").trim().slice(0, 2000) || null;
   const allowComments = body.allow_comments === true;
+  const commentsRegisteredOnly = body.comments_registered_only !== false;
   if (ogImage) {
     try {
       const u = new URL(ogImage);
@@ -223,6 +225,7 @@ export async function POST(request: NextRequest) {
     og_description: ogDescription,
     og_image: ogImage,
     allow_comments: allowComments,
+    comments_registered_only: commentsRegisteredOnly,
   };
 
   const { data, error } = await serviceClient

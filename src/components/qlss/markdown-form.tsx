@@ -58,7 +58,8 @@ export function MarkdownForm({ signedIn }: { signedIn: boolean }) {
   const [expiryIndex, setExpiryIndex] = useState(0);
   const [maxUses, setMaxUses] = useState("");
   const [expiryOpen, setExpiryOpen] = useState(false);
-  const [allowComments, setAllowComments] = useState(false);
+  const [allowComments, setAllowComments] = useState(true);
+  const [commentsRegisteredOnly, setCommentsRegisteredOnly] = useState(true);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
 
@@ -225,6 +226,7 @@ export function MarkdownForm({ signedIn }: { signedIn: boolean }) {
         og_image: ogImage || undefined,
       };
       body.allow_comments = allowComments;
+      body.comments_registered_only = commentsRegisteredOnly;
       if (expiryOption.seconds !== null) {
         body.expires_in = expiryOption.seconds;
       }
@@ -445,6 +447,13 @@ export function MarkdownForm({ signedIn }: { signedIn: boolean }) {
                   <MessageSquare className="h-3 w-3 text-muted-foreground" />
                   <span className="text-xs text-muted-foreground">enable comments</span>
                 </label>
+
+                {allowComments && (
+                  <label className="flex items-center gap-2 border border-border bg-background px-3 py-2 cursor-pointer hover:bg-accent/20 transition-colors select-none">
+                    <input type="checkbox" checked={commentsRegisteredOnly} onChange={(e) => setCommentsRegisteredOnly(e.target.checked)} className="accent-foreground" disabled={busy} />
+                    <span className="text-xs text-muted-foreground">registered users only</span>
+                  </label>
+                )}
               </div>
             )}
           </>

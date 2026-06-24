@@ -30,6 +30,7 @@ interface MarkdownEditorProps {
     og_image: string;
     pincode: string;
     allow_comments: boolean;
+    comments_registered_only: boolean;
   };
   lastEdited?: string | null;
   stats?: {
@@ -40,6 +41,7 @@ interface MarkdownEditorProps {
 
 export function MarkdownEditor({ slug, initial, lastEdited, stats }: MarkdownEditorProps) {
   const [allowComments, setAllowComments] = useState(initial.allow_comments);
+  const [commentsRegisteredOnly, setCommentsRegisteredOnly] = useState(initial.comments_registered_only);
   const [content, setContent] = useState(initial.markdown_content ?? "");
   const [ogTitle, setOgTitle] = useState(initial.og_title ?? "");
   const [ogDescription, setOgDescription] = useState(initial.og_description ?? "");
@@ -125,6 +127,7 @@ export function MarkdownEditor({ slug, initial, lastEdited, stats }: MarkdownEdi
           og_image: ogImage,
           pincode: pincode,
           allow_comments: allowComments,
+          comments_registered_only: commentsRegisteredOnly,
         }),
       });
       const json = await res.json();
@@ -256,6 +259,13 @@ export function MarkdownEditor({ slug, initial, lastEdited, stats }: MarkdownEdi
               <MessageSquare className="h-3 w-3 text-muted-foreground" />
               <span className="text-xs text-muted-foreground">enable comments</span>
             </label>
+
+            {allowComments && (
+              <label className="flex items-center gap-2 border border-border bg-background px-3 py-2 cursor-pointer hover:bg-accent/20 transition-colors select-none">
+                <input type="checkbox" checked={commentsRegisteredOnly} onChange={(e) => setCommentsRegisteredOnly(e.target.checked)} className="accent-foreground" disabled={busy} />
+                <span className="text-xs text-muted-foreground">registered users only</span>
+              </label>
+            )}
           </>
         ) : (
           <div className="border border-border bg-card min-h-[200px]">

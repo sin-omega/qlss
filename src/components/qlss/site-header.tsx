@@ -60,6 +60,10 @@ export function SiteHeader({
           <LogOut className="h-3.5 w-3.5" />
         </a>
       )}
+      <div className="fixed bottom-4 right-4 z-40 flex gap-2">
+        <a href="/legal/tos" className="text-[10px] text-muted-foreground/50 hover:text-muted-foreground transition-colors no-underline">tos</a>
+        <a href="/legal/privacy" className="text-[10px] text-muted-foreground/50 hover:text-muted-foreground transition-colors no-underline">privacy</a>
+      </div>
     </div>
   );
 }
