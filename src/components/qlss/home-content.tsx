@@ -1,24 +1,19 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Link, FileText, Search } from "lucide-react";
+import { Link, Plus, Search } from "lucide-react";
 import { ShortenerForm } from "@/components/qlss/shortener-form";
 import { MarkdownForm } from "@/components/qlss/markdown-form";
 import { InspectUnifiedForm } from "@/components/qlss/inspect-unified-form";
 import { LegalDialog } from "@/components/qlss/legal-dialog";
 import { HomeNotConfigured } from "@/components/qlss/home-not-configured";
 
-type Tab = "shorten" | "markdown" | "inspect";
+type Tab = "shorten" | "create" | "inspect";
 type LegalPage = "privacy" | "tos" | "abuse" | null;
 
-/**
- * Tabs that genuinely require Supabase to function (link creation / markdown
- * publishing). The inspect tab is a public utility that works
- * without any backend.
- */
 const TABS_NEEDING_SUPABASE: ReadonlySet<Tab> = new Set([
   "shorten",
-  "markdown",
+  "create",
 ]);
 
 export function HomeContent({ signedIn, configured = true }: { signedIn: boolean; configured?: boolean }) {
@@ -27,15 +22,15 @@ export function HomeContent({ signedIn, configured = true }: { signedIn: boolean
 
   const tabContainerRef = useRef<HTMLDivElement>(null);
   const shortenBtnRef = useRef<HTMLButtonElement>(null);
-  const markdownBtnRef = useRef<HTMLButtonElement>(null);
+  const createBtnRef = useRef<HTMLButtonElement>(null);
   const inspectBtnRef = useRef<HTMLButtonElement>(null);
   const indicatorRef = useRef<HTMLDivElement>(null);
 
   const activeBtnRef =
     tab === "shorten"
       ? shortenBtnRef
-      : tab === "markdown"
-        ? markdownBtnRef
+      : tab === "create"
+        ? createBtnRef
         : inspectBtnRef;
 
   const updateIndicator = useCallback(() => {
@@ -60,27 +55,18 @@ export function HomeContent({ signedIn, configured = true }: { signedIn: boolean
     return () => window.removeEventListener("resize", updateIndicator);
   }, [updateIndicator]);
 
-  // Read `?tab=` from URL on mount and listen for `qlss:switch-tab` CustomEvents.
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const q = params.get("tab");
-      if (
-        q === "shorten" ||
-        q === "markdown" ||
-        q === "inspect"
-      ) {
+      if (q === "shorten" || q === "create" || q === "inspect") {
         setTab(q);
       }
     }
 
     function handler(e: Event) {
       const detail = (e as CustomEvent<string>).detail;
-      if (
-        detail === "shorten" ||
-        detail === "markdown" ||
-        detail === "inspect"
-      ) {
+      if (detail === "shorten" || detail === "create" || detail === "inspect") {
         setTab(detail);
       }
     }
@@ -101,22 +87,21 @@ export function HomeContent({ signedIn, configured = true }: { signedIn: boolean
 
       if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
         e.preventDefault();
-        const tabs: Tab[] = ["shorten", "markdown", "inspect"];
+        const tabs: Tab[] = ["shorten", "create", "inspect"];
         const idx = tabs.indexOf(tab);
         const next = e.key === "ArrowRight" ? Math.min(idx + 1, tabs.length - 1) : Math.max(idx - 1, 0);
         setTab(tabs[next]);
         return;
       }
 
-      // Direct tab shortcuts: s=shorten, m=markdown, i=inspect
       if (!e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
         const key = e.key.toLowerCase();
         if (key === "s") {
           e.preventDefault();
           setTab("shorten");
-        } else if (key === "m") {
+        } else if (key === "c") {
           e.preventDefault();
-          setTab("markdown");
+          setTab("create");
         } else if (key === "i") {
           e.preventDefault();
           setTab("inspect");
@@ -135,7 +120,7 @@ export function HomeContent({ signedIn, configured = true }: { signedIn: boolean
     ref: React.RefObject<HTMLButtonElement | null>;
   }[] = [
     { key: "shorten", label: "shorten", icon: <Link className="h-3.5 w-3.5" />, ref: shortenBtnRef },
-    { key: "markdown", label: "markdown", icon: <FileText className="h-3.5 w-3.5" />, ref: markdownBtnRef },
+    { key: "create", label: "create", icon: <Plus className="h-3.5 w-3.5" />, ref: createBtnRef },
     { key: "inspect", label: "inspect", icon: <Search className="h-3.5 w-3.5" />, ref: inspectBtnRef },
   ];
 
@@ -178,14 +163,13 @@ export function HomeContent({ signedIn, configured = true }: { signedIn: boolean
       <div key={tab} className="tab-content-enter">
         {tab === "shorten" ? (
           <ShortenerForm signedIn={signedIn} />
-        ) : tab === "markdown" ? (
+        ) : tab === "create" ? (
           <MarkdownForm signedIn={signedIn} />
         ) : (
           <InspectUnifiedForm />
         )}
       </div>
 
-      {/* "Almost ready" warning — only on tabs that genuinely need Supabase. */}
       {!configured && TABS_NEEDING_SUPABASE.has(tab) && <HomeNotConfigured />}
 
       <LegalDialog page={legalPage} onClose={() => setLegalPage(null)} />

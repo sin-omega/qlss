@@ -100,7 +100,7 @@ export default async function StatsPage({
 
   return (
     <main className="cli-grid relative min-h-screen w-full flex flex-col">
-      <SiteHeader signedIn={true} isAdmin={isAdmin} backHref="/links" backLabel="my links" />
+      <SiteHeader signedIn={true} />
       <div className="header-accent-line" />
 
       <section className="pt-10 pb-4 px-4 sm:px-6">

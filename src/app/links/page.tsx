@@ -51,7 +51,7 @@ export default async function LinksPage() {
   if (error) {
     return (
       <main className="cli-grid relative min-h-screen w-full flex flex-col">
-        <SiteHeader signedIn={true} isAdmin={false} backHref="/" backLabel="home" />
+        <SiteHeader signedIn={true} />
         <div className="header-accent-line" />
         <section className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-16">
           <div className="text-center max-w-md">
@@ -88,7 +88,7 @@ export default async function LinksPage() {
 
   return (
     <main className="cli-grid relative min-h-screen w-full flex flex-col">
-      <SiteHeader signedIn={true} isAdmin={isAdmin} backHref="/" backLabel="home" />
+      <SiteHeader signedIn={true} />
       <div className="header-accent-line" />
 
       <section className="pt-10 pb-4 px-4 sm:px-6">

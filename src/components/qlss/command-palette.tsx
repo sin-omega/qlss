@@ -20,11 +20,10 @@ import {
   Sun,
   Moon,
   Keyboard,
-  Info,
 } from "lucide-react";
 import { t } from "@/lib/i18n";
 
-type TabKey = "shorten" | "markdown" | "inspect";
+type TabKey = "shorten" | "create" | "inspect";
 type GroupKey = "actions" | "navigate" | "settings" | "help";
 
 interface Command {
@@ -110,13 +109,13 @@ export function CommandPalette() {
         run: () => switchTab("shorten"),
       },
       {
-        id: "tab:markdown",
+        id: "tab:create",
         group: "actions",
-        label: t("command_palette.cmd_markdown"),
+        label: "create",
         icon: <FileText className="h-3.5 w-3.5 shrink-0" />,
-        shortcut: "M",
-        keywords: "markdown md publish post",
-        run: () => switchTab("markdown"),
+        shortcut: "C",
+        keywords: "create markdown md publish post page",
+        run: () => switchTab("create"),
       },
       {
         id: "tab:inspect",
@@ -135,14 +134,6 @@ export function CommandPalette() {
         icon: <Home className="h-3.5 w-3.5 shrink-0" />,
         keywords: "home root landing index",
         run: () => router.push("/"),
-      },
-      {
-        id: "nav:info",
-        group: "navigate",
-        label: t("info.page_subtitle"),
-        icon: <Info className="h-3.5 w-3.5 shrink-0" />,
-        keywords: "info faq statistics stats about help",
-        run: () => router.push("/info"),
       },
       {
         id: "nav:links",

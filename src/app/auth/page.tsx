@@ -46,7 +46,7 @@ export default function AuthPage() {
       if (error) throw error;
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : t("auth.err_google");
+        err instanceof Error ? err.message : "Could not start Google sign-in.";
       setError(humanizeError(message));
       setBusy(null);
     }
@@ -60,7 +60,7 @@ export default function AuthPage() {
     try {
       const trimmed = email.trim();
       if (!trimmed.includes("@")) {
-        throw new Error(t("auth.err_invalid_email"));
+        throw new Error("Enter a valid email address.");
       }
 
       const { error } = await supabase.auth.signInWithOtp({
@@ -74,7 +74,7 @@ export default function AuthPage() {
       setMagicLinkSent(true);
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : t("common.something_went_wrong");
+        err instanceof Error ? err.message : "Something went wrong.";
       setError(humanizeError(message));
     } finally {
       setBusy(null);
@@ -90,7 +90,7 @@ export default function AuthPage() {
 
   return (
     <main className="cli-grid relative min-h-screen w-full flex flex-col">
-      <SiteHeader signedIn={signedIn} isAdmin={false} backHref="/" backLabel="home" />
+      <SiteHeader signedIn={signedIn} />
       <div className="header-accent-line" />
 
       <section className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-16">

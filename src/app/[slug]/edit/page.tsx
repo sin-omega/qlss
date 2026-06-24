@@ -58,7 +58,7 @@ export default async function EditMarkdownPage({
 
   return (
     <main className="cli-grid relative min-h-screen w-full flex flex-col">
-      <SiteHeader signedIn={true} backHref={`/${slug}`} backLabel={`/${slug}`} />
+      <SiteHeader signedIn={true} />
       <div className="header-accent-line" />
 
       <section className="flex-1 flex items-start justify-center px-4 sm:px-6 pt-6 sm:pt-10 pb-20">

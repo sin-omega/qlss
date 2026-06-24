@@ -110,7 +110,7 @@ export default async function AdminPage() {
 
   return (
     <main className="cli-grid relative min-h-screen w-full flex flex-col">
-      <SiteHeader signedIn={true} isAdmin={true} backHref="/links" backLabel="my links" />
+      <SiteHeader signedIn={true} />
       <div className="header-accent-line" />
 
       <section className="pt-10 pb-16 px-4 sm:px-6">

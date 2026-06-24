@@ -37,7 +37,7 @@ export function NotConfiguredPage({
 
   return (
     <main className="cli-grid relative min-h-screen w-full flex flex-col">
-      <SiteHeader signedIn={signedIn} isAdmin={isAdmin} backHref="/" backLabel={t("common.home")} />
+      <SiteHeader signedIn={signedIn} />
       <div className="header-accent-line" />
 
       <section className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-24">
