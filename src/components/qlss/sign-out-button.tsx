@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { LogOut, Loader2 } from "lucide-react";
 
-export function SignOutButton() {
+export function SignOutButton({ compact }: { compact?: boolean }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
 
@@ -17,6 +17,20 @@ export function SignOutButton() {
     } finally {
       setBusy(false);
     }
+  }
+
+  if (compact) {
+    return (
+      <button
+        type="button"
+        onClick={signOut}
+        disabled={busy}
+        className="w-8 h-8 flex items-center justify-center border border-border bg-background/80 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+        aria-label="Sign out"
+      >
+        {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <LogOut className="h-3.5 w-3.5" />}
+      </button>
+    );
   }
 
   return (

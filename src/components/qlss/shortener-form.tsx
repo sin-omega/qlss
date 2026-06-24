@@ -18,7 +18,6 @@ import {
   FileText,
   Code,
   Braces,
-  Layers,
   Sparkles,
   Loader2,
   Globe,
@@ -821,10 +820,9 @@ export function ShortenerForm({ signedIn }: { signedIn: boolean }) {
         <button
           type="button"
           onClick={() => setBulkMode((b) => !b)}
-          className={`flex items-center gap-1.5 text-[11px] border border-border bg-card px-3 py-1.5 transition-colors hover:bg-accent btn-press touch-target ${bulkMode ? "text-foreground" : "text-muted-foreground"}`}
+          className={`text-[10px] transition-colors hover:text-foreground ${bulkMode ? "text-foreground" : "text-muted-foreground"}`}
         >
-          <Layers className="h-3 w-3" />
-          {bulkMode ? t("home.shorten_tab") : t("home.bulk_toggle")}
+          {bulkMode ? "single" : "bulk"}
         </button>
       )}
       {bulkMode && signedIn ? (
