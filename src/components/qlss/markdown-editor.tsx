@@ -263,7 +263,7 @@ export function MarkdownEditor({ slug, initial, lastEdited, stats }: MarkdownEdi
             {allowComments && (
               <label className="flex items-center gap-2 border border-border bg-background px-3 py-2 cursor-pointer hover:bg-accent/20 transition-colors select-none">
                 <input type="checkbox" checked={commentsRegisteredOnly} onChange={(e) => setCommentsRegisteredOnly(e.target.checked)} className="accent-foreground" disabled={busy} />
-                <span className="text-xs text-muted-foreground">registered users only</span>
+                <span className="text-xs text-muted-foreground">registered users only (shows @name)</span>
               </label>
             )}
           </>

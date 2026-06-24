@@ -548,19 +548,20 @@ async function markdownResponse(
 
   const css = sharedPageCSS() + `
   body { display: block; justify-content: flex-start; align-items: flex-start; }
-  .md-shell { max-width: 46rem; width: 100%; margin: 3rem auto 5rem; }
-  .md-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem; margin-bottom: 2rem; }
+  .md-shell { max-width: 46rem; width: 100%; margin: 3rem auto 5rem; padding: 0 1rem; }
+  .md-header { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; margin-bottom: 2rem; background: var(--card); border: 1px solid var(--border); }
   .md-header .left { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; }
   .md-header .left .slug { color: var(--accent); }
   .md-header .right a { font-size: 0.7rem; color: var(--muted); text-decoration: none; border: 1px solid var(--border); padding: 0.3rem 0.7rem; transition: background 0.15s; }
   .md-header .right a:hover { background: var(--hover); color: var(--fg); }
-  .md-title { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 0.5rem; }
-  .md-desc { color: var(--muted); font-size: 0.85rem; margin-bottom: 2rem; }
+  .md-body { background: var(--card); border: 1px solid var(--border); padding: 2rem 2.5rem; margin-bottom: 1.5rem; }
+  .md-title { font-size: 2rem; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
+  .md-desc { color: var(--muted); font-size: 0.9rem; margin-bottom: 2rem; line-height: 1.5; }
   .md-content { font-family: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.85rem; line-height: 1.75; color: var(--fg); }
-  .md-content h1, .md-content h2, .md-content h3, .md-content h4 { font-weight: 700; letter-spacing: -0.01em; margin: 1.8rem 0 0.8rem; line-height: 1.3; }
-  .md-content h1 { font-size: 1.4rem; }
-  .md-content h2 { font-size: 1.2rem; border-bottom: 1px solid var(--border); padding-bottom: 0.3rem; }
-  .md-content h3 { font-size: 1.05rem; }
+  .md-content h1, .md-content h2, .md-content h3, .md-content h4 { font-weight: 700; letter-spacing: -0.01em; margin: 2rem 0 0.8rem; line-height: 1.3; }
+  .md-content h1 { font-size: 1.5rem; }
+  .md-content h2 { font-size: 1.25rem; border-bottom: 1px solid var(--border); padding-bottom: 0.4rem; }
+  .md-content h3 { font-size: 1.1rem; }
   .md-content p { margin: 0.8rem 0; }
   .md-content a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
   .md-content a:hover { opacity: 0.8; }
@@ -585,9 +586,10 @@ async function markdownResponse(
   .md-footer a:hover { color: var(--fg); }
   .theme-btn { position: fixed; bottom: 1rem; right: 1rem; width: 2rem; height: 2rem; background: var(--card); border: 1px solid var(--border); color: var(--muted); font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; z-index: 10; }
   .theme-btn:hover { background: var(--hover); color: var(--fg); }
-  .comments-section { max-width: 46rem; width: 100%; margin: 2rem auto 5rem; padding: 0 0.5rem; }
+  .comments-section { max-width: 46rem; width: 100%; margin: 2rem auto 5rem; padding: 0 1rem; }
   .comments-title { font-size: 0.85rem; font-weight: 700; margin-bottom: 1.2rem; letter-spacing: -0.01em; }
-  .comment { border-left: 2px solid var(--border); padding-left: 0.8rem; margin: 0.6rem 0; }
+  .comments-inner { background: var(--card); border: 1px solid var(--border); padding: 1.5rem; }
+  .comment { border-left: 2px solid var(--border); padding-left: 0.8rem; margin: 0.8rem 0; }
   .comment-meta { font-size: 0.65rem; color: var(--muted); margin-bottom: 0.25rem; }
   .comment-meta .author { color: var(--fg); font-weight: 600; }
   .comment-body { font-size: 0.75rem; line-height: 1.6; color: var(--fg); word-break: break-word; }
@@ -638,17 +640,20 @@ async function markdownResponse(
     <div class="left"><span>QLSS</span><span style="color:var(--muted)">/</span><span class="slug">${escapeHtml(slug)}</span></div>
     <div class="right"><a href="${escapeHtml(origin)}">${escapeHtml(backLink)}</a></div>
   </div>
+  <div class="md-body">
   <h1 class="md-title">${escapeHtml(title)}</h1>
   ${description ? `<p class="md-desc">${escapeHtml(description)}</p>` : ""}
   <article class="md-content">
   ${bodyHtml}
   </article>
+  </div>
   <div class="md-footer">${escapeHtml(publishedVia)}</div>
 </div>
 
 ${link.allow_comments ? `
 <div class="comments-section" id="comments-section">
   <div class="comments-title">comments</div>
+  <div class="comments-inner">
   <div id="comments-list"></div>
   <div id="comments-form-container" class="comments-form">
     <div id="comments-sign-in" style="display:none;text-align:center;padding:1rem 0;">
@@ -657,9 +662,11 @@ ${link.allow_comments ? `
     <textarea id="comment-input" placeholder="write a comment... (markdown supported)" rows="3"></textarea>
     <div class="row">
       <input id="comment-author" type="text" placeholder="name (optional)" />
+      <div id="comment-author-registered" style="display:none;font-size:0.7rem;color:var(--fg);padding:0.35rem 0;"></div>
       <button id="comment-submit" type="button">post comment</button>
     </div>
     <div id="comment-error" class="comment-error"></div>
+  </div>
   </div>
 </div>
 ` : `
@@ -709,26 +716,48 @@ ${link.allow_comments ? `
     var commentSubmit = document.getElementById('comment-submit');
     var commentError = document.getElementById('comment-error');
     var commentsSignIn = document.getElementById('comments-sign-in');
+    var commentAuthorReg = document.getElementById('comment-author-registered');
     if (commentsList) {
+      var storedName = localStorage.getItem('qlss-comment-name') || '';
+      if (storedName) commentAuthor.value = storedName;
       function hideForm() {
         if (commentInput) commentInput.style.display = 'none';
         if (commentAuthor) commentAuthor.style.display = 'none';
         if (commentSubmit) commentSubmit.style.display = 'none';
+        if (commentAuthorReg) commentAuthorReg.style.display = 'none';
         if (commentsSignIn) commentsSignIn.style.display = 'block';
       }
       function showForm() {
         if (commentInput) commentInput.style.display = '';
-        if (commentAuthor) commentAuthor.style.display = '';
         if (commentSubmit) commentSubmit.style.display = '';
         if (commentsSignIn) commentsSignIn.style.display = 'none';
+        if (REGISTERED_ONLY) {
+          if (commentAuthor) commentAuthor.style.display = 'none';
+          if (commentAuthorReg) commentAuthorReg.style.display = '';
+        } else {
+          if (commentAuthor) commentAuthor.style.display = '';
+          if (commentAuthorReg) commentAuthorReg.style.display = 'none';
+        }
+      }
+      function setRegisteredName(name) {
+        if (commentAuthorReg) commentAuthorReg.textContent = 'commenting as ' + name;
       }
       if (REGISTERED_ONLY) {
         fetch('/api/auth/status').then(function(r){ return r.json(); }).then(function(j){
-          if (!j.signedIn) { hideForm(); }
+          if (j.signedIn) {
+            showForm();
+            fetch('/api/auth/name').then(function(r){ return r.json(); }).then(function(j2){
+              if (j2.name) { setRegisteredName(j2.name); }
+            });
+          } else {
+            hideForm();
+          }
         });
+      } else {
+        showForm();
       }
       var storedName = localStorage.getItem('qlss-comment-name') || '';
-      if (storedName) commentAuthor.value = storedName;
+      if (storedName && commentAuthor) commentAuthor.value = storedName;
       function escape(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
       function md(s) {
         s = s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -787,17 +816,21 @@ ${link.allow_comments ? `
             var form = document.createElement('div');
             form.className = 'reply-form open';
             form.id = 'reply-form-' + id;
-            form.innerHTML = '<textarea id="reply-input-' + id + '" placeholder="reply to ' + name + '..." rows="2" style="width:100%;background:var(--card);border:1px solid var(--border);color:var(--fg);padding:0.4rem;font-size:0.7rem;font-family:inherit;outline:none;resize:vertical;min-height:2.5rem;"></textarea><div style="display:flex;gap:0.5rem;margin-top:0.3rem;align-items:center;flex-wrap:wrap;"><input id="reply-author-' + id + '" type="text" placeholder="name (optional)" style="flex:1;min-width:80px;background:var(--card);border:1px solid var(--border);color:var(--fg);padding:0.3rem 0.4rem;font-size:0.65rem;font-family:inherit;outline:none;" value="' + escape(storedName) + '" /><button class="reply-submit" data-id="' + id + '" style="background:var(--fg);color:var(--bg);border:none;padding:0.35rem 0.7rem;font-size:0.65rem;cursor:pointer;font-family:inherit;">reply</button></div>';
+            form.innerHTML = '<textarea id="reply-input-' + id + '" placeholder="reply to ' + name + '..." rows="2" style="width:100%;background:var(--card);border:1px solid var(--border);color:var(--fg);padding:0.4rem;font-size:0.7rem;font-family:inherit;outline:none;resize:vertical;min-height:2.5rem;"></textarea><div style="display:flex;gap:0.5rem;margin-top:0.3rem;align-items:center;flex-wrap:wrap;"><input id="reply-author-' + id + '" type="text" placeholder="name (optional)" style="flex:1;min-width:80px;background:var(--card);border:1px solid var(--border);color:var(--fg);padding:0.3rem 0.4rem;font-size:0.65rem;font-family:inherit;outline:none;" value="' + escape(storedName) + '"' + (REGISTERED_ONLY ? ' style="display:none"': '') + ' /><button class="reply-submit" data-id="' + id + '" style="background:var(--fg);color:var(--bg);border:none;padding:0.35rem 0.7rem;font-size:0.65rem;cursor:pointer;font-family:inherit;">reply</button></div>';
             btn.parentNode.parentNode.appendChild(form);
             document.getElementById('reply-input-' + id).focus();
             form.querySelector('.reply-submit').addEventListener('click', function() {
               var replyContent = document.getElementById('reply-input-' + id).value.trim();
               if (!replyContent) return;
-              var replyAuthor = document.getElementById('reply-author-' + id).value.trim() || 'anonymous';
               var submitBtn = form.querySelector('.reply-submit');
               submitBtn.disabled = true;
-              localStorage.setItem('qlss-comment-name', replyAuthor);
-              fetch('/api/comments', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ slug:SLUG, parent_id:id, author_name:replyAuthor, content:replyContent }) })
+              var replyBody = JSON.stringify({ slug:SLUG, parent_id:id, content:replyContent });
+              if (!REGISTERED_ONLY) {
+                var replyAuthor = document.getElementById('reply-author-' + id);
+                var authorName = replyAuthor ? replyAuthor.value.trim() || 'anonymous' : 'anonymous';
+                replyBody = JSON.stringify({ slug:SLUG, parent_id:id, author_name:authorName, content:replyContent });
+              }
+              fetch('/api/comments', { method:'POST', headers:{'Content-Type':'application/json'}, body:replyBody })
                 .then(function(r){
                   if (r.status === 401) { hideForm(); if (commentsSignIn) commentsSignIn.style.display = 'block'; throw new Error('sign in required'); }
                   return r.json();
@@ -825,10 +858,14 @@ ${link.allow_comments ? `
         commentSubmit.addEventListener('click', function() {
           var content = commentInput.value.trim();
           if (!content) return;
-          var author = commentAuthor.value.trim() || 'anonymous';
           commentSubmit.disabled = true;
-          localStorage.setItem('qlss-comment-name', author);
-              fetch('/api/comments', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ slug:SLUG, author_name:author, content:content }) })
+          var body = JSON.stringify({ slug:SLUG, content:content });
+          if (!REGISTERED_ONLY) {
+            var author = commentAuthor.value.trim() || 'anonymous';
+            localStorage.setItem('qlss-comment-name', author);
+            body = JSON.stringify({ slug:SLUG, author_name:author, content:content });
+          }
+          fetch('/api/comments', { method:'POST', headers:{'Content-Type':'application/json'}, body:body })
                 .then(function(r){
                   if (r.status === 401) { hideForm(); if (commentsSignIn) commentsSignIn.style.display = 'block'; throw new Error('sign in required'); }
                   return r.json();

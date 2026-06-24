@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      return NextResponse.json({ error: "You must be signed in to comment on this page." }, { status: 401 });
+      return NextResponse.json({ error: "You must be signed in to comment." }, { status: 401 });
     }
   }
 
@@ -97,7 +97,15 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const author = (body.author_name ?? "").trim().slice(0, 60) || "anonymous";
+  let author: string;
+  if (link.comments_registered_only) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    const local = (user?.email ?? "anonymous").split("@")[0].slice(0, 58);
+    author = "@" + local;
+  } else {
+    author = (body.author_name ?? "").trim().slice(0, 60) || "anonymous";
+  }
 
   const { data: inserted, error } = await service
     .from("comments")
